@@ -1,0 +1,42 @@
+{
+  "project_info": {
+    "project_number": "946323987274",
+    "firebase_url": "https://blaulichtplaner.firebaseio.com",
+    "project_id": "blaulichtplaner",
+    "storage_bucket": "blaulichtplaner.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:946323987274:android:04f69f50fa3fa472",
+        "android_client_info": {
+          "package_name": "de.grundid.blaulichtplanerapp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "946323987274-ue2mdtoc84g6uth1lqiknsjfkrept8nr.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDow5_VtmGbJB6yDmyUzPPRaGN3SnUyCIo"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:blaulichtplaner_app/bid_editor.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
@@ -132,7 +133,10 @@ class ShiftBidsViewState extends State<ShiftBidsView> {
                 new FlatButton(
                   child: Text('Bewerben'),
                   onPressed: () {
-                    /* ... */
+                    Navigator.push(context,
+                        MaterialPageRoute(builder: (context) {
+                      return new BidEditor();
+                    }));
                   },
                 ),
               ],

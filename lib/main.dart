@@ -1,8 +1,8 @@
 import 'package:async_loader/async_loader.dart';
 import 'package:blaulichtplaner_app/api_service.dart';
+import 'package:blaulichtplaner_app/shift_bids_view.dart';
 import 'package:blaulichtplaner_app/shift_view.dart';
 import 'package:blaulichtplaner_app/welcome_widget.dart';
-import 'package:blaulichtplaner_app/shift_bids_view.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -63,6 +63,8 @@ class LaunchScreenState extends State<LaunchScreen> {
   FirebaseUser _user;
   final FirebaseAuth _auth = FirebaseAuth.instance;
   int selectedTab = 0;
+  bool upcomingShifts = true;
+  String currentTitle = "Blaulichtplaner";
 
   // TODO also store the role
   Map<String, List<DocumentReference>> userRoles = {};
@@ -164,7 +166,7 @@ class LaunchScreenState extends State<LaunchScreen> {
       case 0:
         return new ShiftView(
             employeeRefs:
-                userRoles.containsKey("employee") ? userRoles["employee"] : []);
+                userRoles.containsKey("employee") ? userRoles["employee"] : [], upcomingShifts: upcomingShifts);
       case 2:
         return new ShiftBidsView(
             workAreaRefs:
@@ -172,6 +174,36 @@ class LaunchScreenState extends State<LaunchScreen> {
       default:
         return Text("unkown tab id");
     }
+  }
+
+  List<Widget> _createAppBarActions() {
+    switch (selectedTab) {
+      case 0:
+        return [IconButton(icon: Icon(Icons.rotate_90_degrees_ccw), onPressed: () {
+          setState(() {
+            upcomingShifts = !upcomingShifts;
+          });
+        })];
+      case 2:
+        return [];
+      default:
+        return [];
+    }
+  }
+
+  String _createTitle() {
+    switch (selectedTab) {
+      case 0: {
+        return upcomingShifts ? "Kommende Dienste" : "Vergangene Dienste";
+      }
+      case 1: {
+        return "Dienstpläne";
+      }
+      case 2: {
+        return "Offene Dienste";
+      }
+    }
+    return "Blaulichtplaner";
   }
 
   @override
@@ -193,7 +225,8 @@ class LaunchScreenState extends State<LaunchScreen> {
       } else {
         return new Scaffold(
           appBar: new AppBar(
-            title: new Text("Blaulichtplaner"),
+            title: new Text(_createTitle()),
+            actions: _createAppBarActions(),
           ),
           drawer: Drawer(
             child: ListView(

@@ -7,9 +7,9 @@ import 'package:intl/intl.dart';
 
 class ShiftView extends StatefulWidget {
   final List<DocumentReference> employeeRefs;
+  final bool upcomingShifts;
 
-  ShiftView({Key key, @required List<DocumentReference> employeeRefs})
-      : employeeRefs = employeeRefs;
+  ShiftView({Key key, @required this.employeeRefs, @required this.upcomingShifts});
 
   bool hasEmployeeRefs() {
     return employeeRefs != null && employeeRefs.isNotEmpty;
@@ -42,14 +42,27 @@ class ShiftViewState extends State<ShiftView> {
   @override
   void initState() {
     super.initState();
+    print("initState");
+    _initDataListeners();
+  }
+
+  void _initDataListeners() {
     final firestore = Firestore.instance;
     if (widget.hasEmployeeRefs()) {
-      print("Listening for assignments: ");
-      final queryStream = firestore
+      print("Listening for assignments: ${widget.upcomingShifts}");
+      Query query = firestore
           .collection("assignments")
-          .where("employeeRef", isEqualTo: widget.employeeRefs.first)
-          .snapshots();
-      subs.add(queryStream.listen((snapshot) {
+          .where("employeeRef", isEqualTo: widget.employeeRefs.first);
+      if (widget.upcomingShifts) {
+        query = query
+            .where("to", isGreaterThanOrEqualTo: DateTime.now())
+            .orderBy("to");
+      } else {
+        query = query
+            .where("to", isLessThanOrEqualTo: DateTime.now())
+            .orderBy("to", descending: true);
+      }
+      subs.add(query.snapshots().listen((snapshot) {
         setState(() {
           for (final doc in snapshot.documentChanges) {
             final shiftId = doc.document.documentID;
@@ -72,12 +85,20 @@ class ShiftViewState extends State<ShiftView> {
   @override
   void didUpdateWidget(ShiftView oldWidget) {
     super.didUpdateWidget(oldWidget);
-    // TODO
+    print("didUpdateWidget");
+    _cancelDataListeners();
+    _shifts.clear();
+    _initDataListeners();
   }
 
   @override
   void dispose() {
     super.dispose();
+    print("dispose");
+    _cancelDataListeners();
+  }
+
+  void _cancelDataListeners() {
     for (final sub in subs) {
       sub.cancel();
     }
@@ -106,31 +127,46 @@ class ShiftViewState extends State<ShiftView> {
         shiftDurationLabel +
         ")";
 
-    return new Card(
-      child: new Column(
-        mainAxisSize: MainAxisSize.max,
-        children: <Widget>[
-          Padding(
-            padding: EdgeInsets.only(left: 16.0, right: 16.0, top: 8.0),
-            child: Row(
-              children: <Widget>[
-                Expanded(child: Text(shift.workAreaLabel)),
-                Expanded(
-                  child: Align(
-                      alignment: Alignment.centerRight,
-                      child: Text("Gesundbrunnen")),
-                )
-              ],
-            ),
-          ),
-          ListTile(
-            title: Text(dateTimeLabel),
-            subtitle: Text(timeTimeLabel),
-            contentPadding:
-                EdgeInsets.only(left: 16.0, right: 16.0, top: 0.0, bottom: 0.0),
-          ),
-        ],
+    List<Widget> cardChildren = [
+      Padding(
+        padding: EdgeInsets.only(left: 16.0, right: 16.0, top: 8.0),
+        child: Row(
+          children: <Widget>[
+            Expanded(child: Text(shift.workAreaLabel)),
+            Expanded(
+              child: Align(
+                  alignment: Alignment.centerRight,
+                  child: Text("Gesundbrunnen")),
+            )
+          ],
+        ),
       ),
+      ListTile(
+        title: Text(dateTimeLabel),
+        subtitle: Text(timeTimeLabel),
+        contentPadding:
+            EdgeInsets.only(left: 16.0, right: 16.0, top: 0.0, bottom: 0.0),
+      ),
+    ];
+
+    if (shift.from.isBefore(DateTime.now())) {
+      cardChildren.add(new ButtonTheme.bar(
+        // make buttons use the appropriate styles for cards
+        child: new ButtonBar(
+          children: <Widget>[
+            new FlatButton(
+              child: Text('Diskutieren'),
+              onPressed: () {
+                /* ... */
+              },
+            ),
+          ],
+        ),
+      ));
+    }
+
+    return new Card(
+      child: new Column(mainAxisSize: MainAxisSize.max, children: cardChildren),
     );
   }
 

@@ -31,7 +31,7 @@ class BidEditorState extends State<BidEditor> {
                             child: TextFormField(
                               enabled: false,
                               decoration:
-                                  const InputDecoration(helperText: "Gekommen"),
+                                  const InputDecoration(labelText: "von", counterText:"1/12"),
                               validator: (value) =>
                                   value.isEmpty ? "Feld erforderlich" : null,
                             ),
@@ -40,20 +40,33 @@ class BidEditorState extends State<BidEditor> {
                         Expanded(
                           child: TextFormField(
                             decoration:
-                                const InputDecoration(helperText: "Gegangen"),
+                                const InputDecoration(hintText: "bis"),
                             validator: (value) =>
                                 value.isEmpty ? "Feld erforderlich" : null,
                           ),
                         )
                       ],
                     ),
-                    Row(children: <Widget>[
-                      DropdownButton(items: [DropdownMenuItem(child: Text("10 Stunden")),
-                      DropdownMenuItem(child: Text("20 Stunden")),
-                      DropdownMenuItem(child: Text("30 Stunden"))], onChanged: null)
-                    ],),
+                    Row(
+                      children: <Widget>[
+                        Expanded(
+                          child: DropdownButton(items: [
+                            DropdownMenuItem(child: Text("min. 12 Stunden")),
+                            DropdownMenuItem(child: Text("min. 24 Stunden")),
+                            DropdownMenuItem(child: Text("min. 48 Stunden"))
+                          ], onChanged: null),
+                        ),
+                        Expanded(
+                          child: DropdownButton(items: [
+                            DropdownMenuItem(child: Text("max. 12 Stunden")),
+                            DropdownMenuItem(child: Text("max. 24 Stunden")),
+                            DropdownMenuItem(child: Text("max. 48 Stunden"))
+                          ], onChanged: null),
+                        ),
+                      ],
+                    ),
                     TextField(
-                      maxLines: 6,
+                      maxLines: 3,
                       decoration: InputDecoration(helperText: "Bemerkungen"),
                     ),
                     Padding(

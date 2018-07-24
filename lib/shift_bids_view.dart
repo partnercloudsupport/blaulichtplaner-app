@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:blaulichtplaner_app/bid_editor.dart';
+import 'package:blaulichtplaner_app/bid/bid_editor.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
@@ -26,12 +26,18 @@ class Shift {
   DateTime from;
   DateTime to;
   String workAreaLabel;
+  DocumentReference shiftplanRef;
+  DocumentReference workAreaRef;
+  String publicNote;
 
   Shift.fromSnapshot(DocumentSnapshot snapshot) {
     id = snapshot.documentID;
     from = snapshot.data["from"];
     to = snapshot.data["to"];
     workAreaLabel = snapshot.data["workAreaLabel"];
+    shiftplanRef = snapshot.data["shiftplanRef"];
+    workAreaRef = snapshot.data["workAreaRef"];
+    publicNote = snapshot.data["publicNote"];
   }
 }
 
@@ -135,7 +141,9 @@ class ShiftBidsViewState extends State<ShiftBidsView> {
                   onPressed: () {
                     Navigator.push(context,
                         MaterialPageRoute(builder: (context) {
-                      return new BidEditor();
+                      return new BidEditor(
+                        shift: shift,
+                      );
                     }));
                   },
                 ),

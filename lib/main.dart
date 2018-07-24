@@ -11,7 +11,7 @@ import 'package:http/http.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
 void main() {
-  //debugPaintSizeEnabled=true;
+  debugPaintSizeEnabled=true;
 
   initializeDateFormatting();
   runApp(new ShiftplanApp());
@@ -66,7 +66,7 @@ class LaunchScreenState extends State<LaunchScreen> {
   bool upcomingShifts = true;
   String currentTitle = "Blaulichtplaner";
 
-  // TODO also store the role
+  // TODO also store the role name
   Map<String, List<DocumentReference>> userRoles = {};
 
   @override

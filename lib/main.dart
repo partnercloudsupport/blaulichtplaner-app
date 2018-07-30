@@ -1,7 +1,8 @@
 import 'package:async_loader/async_loader.dart';
 import 'package:blaulichtplaner_app/api_service.dart';
-import 'package:blaulichtplaner_app/shift_bids_view.dart';
+import 'package:blaulichtplaner_app/bid/shift_bids_view.dart';
 import 'package:blaulichtplaner_app/shift_view.dart';
+import 'package:blaulichtplaner_app/utils/user_manager.dart';
 import 'package:blaulichtplaner_app/welcome_widget.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -11,7 +12,7 @@ import 'package:http/http.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
 void main() {
-  debugPaintSizeEnabled=true;
+  // debugPaintSizeEnabled = true;
 
   initializeDateFormatting();
   runApp(new ShiftplanApp());
@@ -66,37 +67,26 @@ class LaunchScreenState extends State<LaunchScreen> {
   bool upcomingShifts = true;
   String currentTitle = "Blaulichtplaner";
 
-  // TODO also store the role name
-  Map<String, List<DocumentReference>> userRoles = {};
+  final UserManager userManager = UserManager.get();
 
   @override
   void initState() {
     super.initState();
-    print("init State");
 
     _auth.onAuthStateChanged.listen((user) {
       print("onAuthStateChanged: $user");
-      updateUserData(user);
+      _updateUserData(user);
     });
   }
 
-  void updateUserData(FirebaseUser user) async {
+  void _updateUserData(FirebaseUser user) async {
     if (user != null) {
       final docQuery = await Firestore.instance
           .collection("users/${user.uid}/roles")
           .getDocuments();
-      for (final doc in docQuery.documents) {
-        final type = doc.data["type"];
-        final DocumentReference ref = doc.data["reference"];
-        List<DocumentReference> typeReferences = userRoles[type];
-        if (typeReferences == null) {
-          typeReferences = [];
-          userRoles[type] = typeReferences;
-        }
-        typeReferences.add(ref);
-      }
+      userManager.initWithDocuments(user, docQuery.documents);
     } else {
-      userRoles.clear();
+      userManager.clearRoles();
     }
 
     setState(() {
@@ -165,12 +155,13 @@ class LaunchScreenState extends State<LaunchScreen> {
     switch (selectedTab) {
       case 0:
         return new ShiftView(
-            employeeRefs:
-                userRoles.containsKey("employee") ? userRoles["employee"] : [], upcomingShifts: upcomingShifts);
+            employeeRoles: userManager.rolesForType("employee"),
+            upcomingShifts: upcomingShifts);
       case 2:
         return new ShiftBidsView(
-            workAreaRefs:
-                userRoles.containsKey("workArea") ? userRoles["workArea"] : []);
+          workAreaRoles: userManager.rolesForType("workArea"),
+          employeeRoles: userManager.rolesForType("employee"),
+        );
       default:
         return Text("unkown tab id");
     }
@@ -179,11 +170,15 @@ class LaunchScreenState extends State<LaunchScreen> {
   List<Widget> _createAppBarActions() {
     switch (selectedTab) {
       case 0:
-        return [IconButton(icon: Icon(Icons.rotate_90_degrees_ccw), onPressed: () {
-          setState(() {
-            upcomingShifts = !upcomingShifts;
-          });
-        })];
+        return [
+          IconButton(
+              icon: Icon(Icons.rotate_90_degrees_ccw),
+              onPressed: () {
+                setState(() {
+                  upcomingShifts = !upcomingShifts;
+                });
+              })
+        ];
       case 2:
         return [];
       default:
@@ -193,15 +188,18 @@ class LaunchScreenState extends State<LaunchScreen> {
 
   String _createTitle() {
     switch (selectedTab) {
-      case 0: {
-        return upcomingShifts ? "Kommende Dienste" : "Vergangene Dienste";
-      }
-      case 1: {
-        return "Dienstpläne";
-      }
-      case 2: {
-        return "Offene Dienste";
-      }
+      case 0:
+        {
+          return upcomingShifts ? "Kommende Dienste" : "Vergangene Dienste";
+        }
+      case 1:
+        {
+          return "Dienstpläne";
+        }
+      case 2:
+        {
+          return "Offene Dienste";
+        }
     }
     return "Blaulichtplaner";
   }

@@ -1,18 +1,20 @@
 import 'dart:async';
 
+import 'package:blaulichtplaner_app/utils/user_manager.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:intl/intl.dart';
 
 class ShiftView extends StatefulWidget {
-  final List<DocumentReference> employeeRefs;
+  final List<Role> employeeRoles;
   final bool upcomingShifts;
 
-  ShiftView({Key key, @required this.employeeRefs, @required this.upcomingShifts});
+  ShiftView(
+      {Key key, @required this.employeeRoles, @required this.upcomingShifts});
 
-  bool hasEmployeeRefs() {
-    return employeeRefs != null && employeeRefs.isNotEmpty;
+  bool hasEmployeeRoles() {
+    return employeeRoles != null && employeeRoles.isNotEmpty;
   }
 
   @override
@@ -48,37 +50,40 @@ class ShiftViewState extends State<ShiftView> {
 
   void _initDataListeners() {
     final firestore = Firestore.instance;
-    if (widget.hasEmployeeRefs()) {
+    if (widget.hasEmployeeRoles()) {
       print("Listening for assignments: ${widget.upcomingShifts}");
-      Query query = firestore
-          .collection("assignments")
-          .where("employeeRef", isEqualTo: widget.employeeRefs.first);
-      if (widget.upcomingShifts) {
-        query = query
-            .where("to", isGreaterThanOrEqualTo: DateTime.now())
-            .orderBy("to");
-      } else {
-        query = query
-            .where("to", isLessThanOrEqualTo: DateTime.now())
-            .orderBy("to", descending: true);
-      }
-      subs.add(query.snapshots().listen((snapshot) {
-        setState(() {
-          for (final doc in snapshot.documentChanges) {
-            final shiftId = doc.document.documentID;
 
-            if (doc.type == DocumentChangeType.added) {
-              _shifts.add(Shift.fromSnapshot(doc.document));
-            } else if (doc.type == DocumentChangeType.modified) {
-              _shifts.removeWhere((shift) => shift.id == shiftId);
-              _shifts.add(Shift.fromSnapshot(doc.document));
-            } else if (doc.type == DocumentChangeType.removed) {
-              _shifts.removeWhere((shift) => shift.id == shiftId);
+      for (final role in widget.employeeRoles) {
+        Query query = firestore
+            .collection("assignments")
+            .where("employeeRef", isEqualTo: role.reference);
+        if (widget.upcomingShifts) {
+          query = query
+              .where("to", isGreaterThanOrEqualTo: DateTime.now())
+              .orderBy("to");
+        } else {
+          query = query
+              .where("to", isLessThanOrEqualTo: DateTime.now())
+              .orderBy("to", descending: true);
+        }
+        subs.add(query.snapshots().listen((snapshot) {
+          setState(() {
+            for (final doc in snapshot.documentChanges) {
+              final shiftId = doc.document.documentID;
+
+              if (doc.type == DocumentChangeType.added) {
+                _shifts.add(Shift.fromSnapshot(doc.document));
+              } else if (doc.type == DocumentChangeType.modified) {
+                _shifts.removeWhere((shift) => shift.id == shiftId);
+                _shifts.add(Shift.fromSnapshot(doc.document));
+              } else if (doc.type == DocumentChangeType.removed) {
+                _shifts.removeWhere((shift) => shift.id == shiftId);
+              }
             }
-          }
-          _shifts.sort((s1, s2) => s1.from.compareTo(s2.from));
-        });
-      }));
+            _shifts.sort((s1, s2) => s1.from.compareTo(s2.from));
+          });
+        }));
+      }
     }
   }
 
@@ -172,7 +177,7 @@ class ShiftViewState extends State<ShiftView> {
 
   @override
   Widget build(BuildContext context) {
-    if (widget.hasEmployeeRefs()) {
+    if (widget.hasEmployeeRoles()) {
       if (_shifts.isEmpty) {
         return new Center(
           child: new Column(

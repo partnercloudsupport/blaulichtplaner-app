@@ -1,5 +1,4 @@
 import 'package:blaulichtplaner_app/widgets/date_time_picker.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
 class BidModel {
@@ -8,7 +7,6 @@ class BidModel {
   int minHours = 0;
   int maxHours = 0;
   String remarks;
-  DocumentReference workAreaRef;
 }
 
 typedef void SaveBid(BidModel bidModel);
@@ -135,6 +133,10 @@ class BidFormState extends State<BidForm> {
               TextField(
                 maxLines: 3,
                 decoration: InputDecoration(helperText: "Bemerkungen"),
+                controller: TextEditingController(text: bidModel.remarks),
+                onChanged: (value) {
+                  bidModel.remarks = value;
+                },
               ),
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,

@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:blaulichtplaner_app/evaluation/evaluation_editor.dart';
 import 'package:blaulichtplaner_app/utils/user_manager.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
@@ -23,22 +24,24 @@ class ShiftView extends StatefulWidget {
   }
 }
 
-class Shift {
-  String id;
+class Assignment {
+  DocumentReference selfRef;
   DateTime from;
   DateTime to;
   String workAreaLabel;
+  DocumentReference shiftRef;
 
-  Shift.fromSnapshot(DocumentSnapshot snapshot) {
-    id = snapshot.documentID;
+  Assignment.fromSnapshot(DocumentSnapshot snapshot) {
+    selfRef = snapshot.reference;
     from = snapshot.data["from"];
     to = snapshot.data["to"];
     workAreaLabel = snapshot.data["workAreaLabel"];
+    shiftRef = snapshot.data["shiftRef"];
   }
 }
 
 class ShiftViewState extends State<ShiftView> {
-  final List<Shift> _shifts = [];
+  final List<Assignment> _shifts = [];
   final List<StreamSubscription> subs = [];
 
   @override
@@ -69,15 +72,17 @@ class ShiftViewState extends State<ShiftView> {
         subs.add(query.snapshots().listen((snapshot) {
           setState(() {
             for (final doc in snapshot.documentChanges) {
-              final shiftId = doc.document.documentID;
+              final assignmentRef = doc.document.reference;
 
               if (doc.type == DocumentChangeType.added) {
-                _shifts.add(Shift.fromSnapshot(doc.document));
+                _shifts.add(Assignment.fromSnapshot(doc.document));
               } else if (doc.type == DocumentChangeType.modified) {
-                _shifts.removeWhere((shift) => shift.id == shiftId);
-                _shifts.add(Shift.fromSnapshot(doc.document));
+                _shifts.removeWhere(
+                        (assignment) => assignment.selfRef == assignmentRef);
+                _shifts.add(Assignment.fromSnapshot(doc.document));
               } else if (doc.type == DocumentChangeType.removed) {
-                _shifts.removeWhere((shift) => shift.id == shiftId);
+                _shifts.removeWhere(
+                        (assignment) => assignment.selfRef == assignmentRef);
               }
             }
             _shifts.sort((s1, s2) => s1.from.compareTo(s2.from));
@@ -109,14 +114,14 @@ class ShiftViewState extends State<ShiftView> {
     }
   }
 
-  Widget _shiftBuilder(BuildContext context, int index) {
-    Shift shift = _shifts[index];
+  Widget _assignmentBuilder(BuildContext context, int index) {
+    Assignment assignment = _shifts[index];
     final dateFormatter = DateFormat.EEEE("de_DE").add_yMd();
     final timeFormatter = DateFormat.Hm("de_DE");
 
-    String dateTimeLabel = dateFormatter.format(shift.from);
+    String dateTimeLabel = dateFormatter.format(assignment.from);
 
-    final shiftDuration = shift.to.difference(shift.from);
+    final shiftDuration = assignment.to.difference(assignment.from);
     int shiftHours = shiftDuration.inHours;
     final minutesDuration = shiftDuration - Duration(hours: shiftHours);
     int shiftMinutes = minutesDuration.inMinutes;
@@ -125,9 +130,9 @@ class ShiftViewState extends State<ShiftView> {
         "h" +
         (shiftMinutes > 0 ? (" " + shiftMinutes.toString() + "m") : "");
 
-    String timeTimeLabel = timeFormatter.format(shift.from) +
+    String timeTimeLabel = timeFormatter.format(assignment.from) +
         " - " +
-        timeFormatter.format(shift.to) +
+        timeFormatter.format(assignment.to) +
         " (" +
         shiftDurationLabel +
         ")";
@@ -137,7 +142,7 @@ class ShiftViewState extends State<ShiftView> {
         padding: EdgeInsets.only(left: 16.0, right: 16.0, top: 8.0),
         child: Row(
           children: <Widget>[
-            Expanded(child: Text(shift.workAreaLabel)),
+            Expanded(child: Text(assignment.workAreaLabel)),
             Expanded(
               child: Align(
                   alignment: Alignment.centerRight,
@@ -154,15 +159,19 @@ class ShiftViewState extends State<ShiftView> {
       ),
     ];
 
-    if (shift.from.isBefore(DateTime.now())) {
+    if (assignment.from.isBefore(DateTime.now())) {
       cardChildren.add(new ButtonTheme.bar(
         // make buttons use the appropriate styles for cards
         child: new ButtonBar(
           children: <Widget>[
             new FlatButton(
-              child: Text('Diskutieren'),
+              child: Text('Auswertung'),
               onPressed: () {
-                /* ... */
+                Navigator.push(context, MaterialPageRoute(builder: (context) {
+                  return new EvaluationEditor(
+                    assignment: assignment,
+                  );
+                }));
               },
             ),
           ],
@@ -181,13 +190,13 @@ class ShiftViewState extends State<ShiftView> {
       if (_shifts.isEmpty) {
         return new Center(
           child: new Column(
-            children: <Widget>[Text("Keine Schichten verfügbar")],
+            children: <Widget>[Text("Keine zugewiesenen Schichten verfügbar")],
             mainAxisAlignment: MainAxisAlignment.center,
           ),
         );
       } else {
         return ListView.builder(
-            itemCount: _shifts.length, itemBuilder: _shiftBuilder);
+            itemCount: _shifts.length, itemBuilder: _assignmentBuilder);
       }
     } else {
       return new Center(

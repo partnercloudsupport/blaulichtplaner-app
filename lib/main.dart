@@ -206,7 +206,7 @@ class LaunchScreenState extends State<LaunchScreen> {
 
   @override
   Widget build(BuildContext context) {
-    print("build screen: $_initialized | $_user");
+//    print("build screen: $_initialized | $_user");
 
     if (!_initialized) {
       return new Container(

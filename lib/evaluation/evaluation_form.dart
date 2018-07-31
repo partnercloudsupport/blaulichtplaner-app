@@ -11,7 +11,7 @@ class EvaluationModel {
   List<String> assignmentNumbers = [];
 }
 
-typedef void SaveEvaluation(EvaluationModel model);
+typedef void SaveEvaluation(bool finish);
 
 class EvaluationForm extends StatefulWidget {
   final EvaluationModel model;
@@ -31,8 +31,6 @@ class EvaluationFormState extends State<EvaluationForm> {
   final EvaluationModel model;
 
   EvaluationFormState(this.model);
-
-  _saveAssignment(bool finish) {}
 
   Widget _buildDialog(BuildContext context) {
     String number;
@@ -188,13 +186,15 @@ class EvaluationFormState extends State<EvaluationForm> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: <Widget>[
                     RaisedButton(
-                      onPressed: () {},
+                      onPressed: () {
+                        widget.onSave(true);
+                      },
                       child: Text("Finalisieren"),
                     ),
                     RaisedButton(
                       onPressed: () {
                         if (_formKey.currentState.validate()) {
-                          widget.onSave(model);
+                          widget.onSave(false);
                         } else {
                           Scaffold.of(context).showSnackBar(SnackBar(
                               content:

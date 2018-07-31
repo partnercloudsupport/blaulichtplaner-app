@@ -17,16 +17,6 @@ class EvaluationEditor extends StatefulWidget {
   }
 }
 
-class Evaluation {
-  DocumentReference assignmentRef;
-  DateTime actualFrom;
-  DateTime actualTo;
-  int reasonOvertime;
-  String remarks;
-  DocumentReference shiftplanRef;
-  DocumentReference shiftRef;
-}
-
 class EvaluationEditorState extends State<EvaluationEditor> {
   final EvaluationModel model = EvaluationModel();
   bool _initialized = false;
@@ -47,7 +37,7 @@ class EvaluationEditorState extends State<EvaluationEditor> {
   Future initFromPreviousEvaluation(DocumentReference assignmentRef) async {
     final query = await Firestore.instance
         .collection("evaluations")
-        .where("assignmentId", isEqualTo: assignmentRef)
+        .where("assignmentRef", isEqualTo: assignmentRef)
         .getDocuments();
     if (query.documents.isNotEmpty) {
       final doc = query.documents.first;
@@ -56,9 +46,36 @@ class EvaluationEditorState extends State<EvaluationEditor> {
       model.actualTo = doc.data["actualTo"];
       model.reasonOvertime = doc.data["reasonOvertime"];
       model.remarks = doc.data["remarks"];
+      model.assignmentNumbers = List.from(doc.data["assignmentNumbers"]);
     }
     setState(() {
       _initialized = true;
+    });
+  }
+
+  Future _saveEvaluation(bool finish) async {
+    Map<String, dynamic> data = {};
+    data["finished"] = finish;
+    data["actualFrom"] = model.actualFrom;
+    data["actualTo"] = model.actualTo;
+    data["reasonOvertime"] = model.reasonOvertime;
+    data["remarks"] = model.remarks;
+    data["assignmentRef"] = widget.assignment.selfRef;
+    data["shiftplanRef"] = widget.assignment.shiftplanRef;
+    data["assignmentNumbers"] = model.assignmentNumbers;
+    if (knownEvaluation == null) {
+      knownEvaluation = await Firestore.instance
+          .collection("evaluations")
+          .add({"created": DateTime.now()});
+    }
+
+    DocumentReference assignmentRef = widget.assignment.selfRef;
+
+    return Firestore.instance.runTransaction((transaction) async {
+      await transaction.update(knownEvaluation, data);
+      if (finish) {
+        await transaction.update(assignmentRef, {"evaluated": true});
+      }
     });
   }
 
@@ -70,7 +87,10 @@ class EvaluationEditorState extends State<EvaluationEditor> {
           body: SingleChildScrollView(
               child: EvaluationForm(
             model: model,
-            onSave: (model) {},
+                onSave: (finish) async {
+                  await _saveEvaluation(finish);
+                  Navigator.pop(context);
+                },
           )));
     } else {
       return Scaffold(

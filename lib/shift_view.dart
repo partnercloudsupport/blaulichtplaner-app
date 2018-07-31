@@ -30,6 +30,7 @@ class Assignment {
   DateTime to;
   String workAreaLabel;
   DocumentReference shiftRef;
+  DocumentReference shiftplanRef;
 
   Assignment.fromSnapshot(DocumentSnapshot snapshot) {
     selfRef = snapshot.reference;
@@ -37,6 +38,7 @@ class Assignment {
     to = snapshot.data["to"];
     workAreaLabel = snapshot.data["workAreaLabel"];
     shiftRef = snapshot.data["shiftRef"];
+    shiftplanRef = snapshot.data["shiftplanRef"];
   }
 }
 
@@ -66,6 +68,7 @@ class ShiftViewState extends State<ShiftView> {
               .orderBy("to");
         } else {
           query = query
+              .where("evaluated", isEqualTo: false)
               .where("to", isLessThanOrEqualTo: DateTime.now())
               .orderBy("to", descending: true);
         }

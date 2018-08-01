@@ -77,12 +77,13 @@ class AssignmentService {
         .where("assignmentRef", isEqualTo: assignment.selfRef)
         .getDocuments();
     DocumentReference knownEvaluation;
+    EvaluationModel model = EvaluationModel();
+    initModelWithAssignment(model, assignment);
     if (query.documents.isNotEmpty) {
       final doc = query.documents.first;
       knownEvaluation = doc.reference;
+      initModelWithEvaluation(model, doc.data);
     }
-    EvaluationModel model = EvaluationModel();
-    initModelWithAssignment(model, assignment);
     return saveEvaluation(knownEvaluation, assignment, model, true);
   }
 

@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:blaulichtplaner_app/assignment/assignment_service.dart';
 import 'package:blaulichtplaner_app/evaluation/evaluation_editor.dart';
 import 'package:blaulichtplaner_app/utils/user_manager.dart';
+import 'package:blaulichtplaner_app/widgets/loader.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
@@ -26,7 +27,7 @@ class AssignmentView extends StatefulWidget {
 }
 
 class AssignmentViewState extends State<AssignmentView> {
-  final List<Assignment> _shifts = [];
+  final List<Loadable<Assignment>> _assignments = [];
   final List<StreamSubscription> subs = [];
   final assignmentService = AssignmentService();
   bool _initialized = false;
@@ -63,17 +64,21 @@ class AssignmentViewState extends State<AssignmentView> {
               final assignmentRef = doc.document.reference;
 
               if (doc.type == DocumentChangeType.added) {
-                _shifts.add(Assignment.fromSnapshot(doc.document));
+                _assignments
+                    .add(Loadable(Assignment.fromSnapshot(doc.document)));
               } else if (doc.type == DocumentChangeType.modified) {
-                _shifts.removeWhere(
-                        (assignment) => assignment.selfRef == assignmentRef);
-                _shifts.add(Assignment.fromSnapshot(doc.document));
+                _assignments.removeWhere(
+                        (assignment) =>
+                    assignment.data.selfRef == assignmentRef);
+                _assignments
+                    .add(Loadable(Assignment.fromSnapshot(doc.document)));
               } else if (doc.type == DocumentChangeType.removed) {
-                _shifts.removeWhere(
-                        (assignment) => assignment.selfRef == assignmentRef);
+                _assignments.removeWhere(
+                        (assignment) =>
+                    assignment.data.selfRef == assignmentRef);
               }
             }
-            _shifts.sort((s1, s2) => s1.from.compareTo(s2.from));
+            _assignments.sort((s1, s2) => s1.data.from.compareTo(s2.data.from));
           });
         }));
       }
@@ -84,7 +89,7 @@ class AssignmentViewState extends State<AssignmentView> {
   void didUpdateWidget(AssignmentView oldWidget) {
     super.didUpdateWidget(oldWidget);
     _cancelDataListeners();
-    _shifts.clear();
+    _assignments.clear();
     _initDataListeners();
   }
 
@@ -101,7 +106,8 @@ class AssignmentViewState extends State<AssignmentView> {
   }
 
   Widget _assignmentBuilder(BuildContext context, int index) {
-    Assignment assignment = _shifts[index];
+    Loadable loadableAssignment = _assignments[index];
+    Assignment assignment = loadableAssignment.data;
     final dateFormatter = DateFormat.EEEE("de_DE").add_yMd();
     final timeFormatter = DateFormat.Hm("de_DE");
 
@@ -146,29 +152,36 @@ class AssignmentViewState extends State<AssignmentView> {
     ];
 
     if (assignment.from.isBefore(DateTime.now())) {
-      cardChildren.add(new ButtonTheme.bar(
-        child: new ButtonBar(
-          alignment: MainAxisAlignment.spaceBetween,
-          children: <Widget>[
-            new FlatButton(
-              child: Text('Finalisieren'),
-              onPressed: () {
-                assignmentService.finishAssignment(assignment);
-              },
+      cardChildren.add(LoaderWidget(
+          loading: loadableAssignment.loading,
+          padding: EdgeInsets.all(14.0),
+          child: ButtonTheme.bar(
+            child: ButtonBar(
+              alignment: MainAxisAlignment.spaceBetween,
+              children: <Widget>[
+                FlatButton(
+                  child: Text('Finalisieren'),
+                  onPressed: () {
+                    setState(() {
+                      loadableAssignment.loading = true;
+                    });
+                    assignmentService.finishAssignment(assignment);
+                  },
+                ),
+                FlatButton(
+                  child: Text('Auswertung'),
+                  onPressed: () {
+                    Navigator.push(context,
+                        MaterialPageRoute(builder: (context) {
+                          return EvaluationEditor(
+                            assignment: assignment,
+                          );
+                        }));
+                  },
+                ),
+              ],
             ),
-            new FlatButton(
-              child: Text('Auswertung'),
-              onPressed: () {
-                Navigator.push(context, MaterialPageRoute(builder: (context) {
-                  return new EvaluationEditor(
-                    assignment: assignment,
-                  );
-                }));
-              },
-            ),
-          ],
-        ),
-      ));
+          )));
     }
 
     return new Card(
@@ -180,16 +193,18 @@ class AssignmentViewState extends State<AssignmentView> {
   Widget build(BuildContext context) {
     if (widget.hasEmployeeRoles()) {
       if (_initialized) {
-        if (_shifts.isEmpty) {
+        if (_assignments.isEmpty) {
           return new Center(
             child: Padding(
               padding: const EdgeInsets.all(16.0),
               child: new Column(
                 children: <Widget>[
-                  Text(widget.upcomingShifts
-                      ? "Keine zugewiesenen Schichten verfügbar"
-                      : "Keine Schichten vorhanden, die eine Auswertung benötigen",
-                    textAlign: TextAlign.center,)
+                  Text(
+                    widget.upcomingShifts
+                        ? "Keine zugewiesenen Schichten verfügbar"
+                        : "Keine Schichten vorhanden, die eine Auswertung benötigen",
+                    textAlign: TextAlign.center,
+                  )
                 ],
                 mainAxisAlignment: MainAxisAlignment.center,
               ),
@@ -197,7 +212,7 @@ class AssignmentViewState extends State<AssignmentView> {
           );
         } else {
           return ListView.builder(
-              itemCount: _shifts.length, itemBuilder: _assignmentBuilder);
+              itemCount: _assignments.length, itemBuilder: _assignmentBuilder);
         }
       } else {
         return new Container(

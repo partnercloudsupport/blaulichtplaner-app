@@ -1,4 +1,5 @@
 import 'package:blaulichtplaner_app/widgets/date_time_picker.dart';
+import 'package:blaulichtplaner_app/widgets/loader.dart';
 import 'package:flutter/material.dart';
 
 class EvaluationModel {
@@ -37,6 +38,7 @@ class EvaluationForm extends StatefulWidget {
 
 class EvaluationFormState extends State<EvaluationForm> {
   final _formKey = GlobalKey<FormState>();
+  bool _saving = false;
 
   Widget _buildDialog(BuildContext context) {
     String number;
@@ -189,28 +191,37 @@ class EvaluationFormState extends State<EvaluationForm> {
               ),
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 16.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: <Widget>[
-                    RaisedButton(
-                      onPressed: () {
-                        widget.onSave(true);
-                      },
-                      child: Text("Finalisieren"),
-                    ),
-                    RaisedButton(
-                      onPressed: () {
-                        if (_formKey.currentState.validate()) {
-                          widget.onSave(false);
-                        } else {
-                          Scaffold.of(context).showSnackBar(SnackBar(
-                              content:
-                              Text('Bitte füllen Sie alle Felder aus.')));
-                        }
-                      },
-                      child: Text('Speichern'),
-                    ),
-                  ],
+                child: LoaderWidget(
+                  loading: _saving,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: <Widget>[
+                      RaisedButton(
+                        onPressed: () {
+                          setState(() {
+                            _saving = true;
+                          });
+                          widget.onSave(true);
+                        },
+                        child: Text("Finalisieren"),
+                      ),
+                      RaisedButton(
+                        onPressed: () {
+                          if (_formKey.currentState.validate()) {
+                            setState(() {
+                              _saving = true;
+                            });
+                            widget.onSave(false);
+                          } else {
+                            Scaffold.of(context).showSnackBar(SnackBar(
+                                content:
+                                Text('Bitte füllen Sie alle Felder aus.')));
+                          }
+                        },
+                        child: Text('Speichern'),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ]),

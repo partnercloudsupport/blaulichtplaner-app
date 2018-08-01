@@ -28,30 +28,8 @@ class AssignmentService {
     model.actualTo = data["actualTo"];
     model.reasonOvertime = data["reasonOvertime"];
     model.remarks = data["remarks"];
-    model.tasks = List < Map < dynamic
-    ,
-    dynamic
-    >
-    >
-        .
-    from
-    (
-    data
-    [
-    "
-    tasks
-    "
-    ]
-    )
-        .
-    map
-    (
-    _mapToTask
-    )
-        .
-    toList
-    (
-    );
+    List list = data["tasks"];
+    model.tasks = list.map(_mapToTask).toList();
   }
 
   void initModelWithAssignment(EvaluationModel model, Assignment assignment) {
@@ -71,7 +49,7 @@ class AssignmentService {
     return data;
   }
 
-  AssignmentTask _mapToTask(Map<dynamic, dynamic> data) {
+  AssignmentTask _mapToTask(data) {
     AssignmentTask task = AssignmentTask(data["reference"]);
     task.remarks = data["remarks"];
     task.type = data["type"];
@@ -93,10 +71,19 @@ class AssignmentService {
     return data;
   }
 
-  Future finishAssignment(Assignment assignment) {
+  Future finishAssignment(Assignment assignment) async {
+    final query = await Firestore.instance
+        .collection("evaluations")
+        .where("assignmentRef", isEqualTo: assignment.selfRef)
+        .getDocuments();
+    DocumentReference knownEvaluation;
+    if (query.documents.isNotEmpty) {
+      final doc = query.documents.first;
+      knownEvaluation = doc.reference;
+    }
     EvaluationModel model = EvaluationModel();
     initModelWithAssignment(model, assignment);
-    return saveEvaluation(null, assignment, model, true);
+    return saveEvaluation(knownEvaluation, assignment, model, true);
   }
 
   Future saveEvaluation(DocumentReference knownEvaluation,

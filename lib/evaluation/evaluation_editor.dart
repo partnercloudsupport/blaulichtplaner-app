@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:blaulichtplaner_app/assignment/assignment_service.dart';
 import 'package:blaulichtplaner_app/evaluation/evaluation_form.dart';
+import 'package:blaulichtplaner_app/widgets/loader.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
@@ -47,10 +48,11 @@ class EvaluationEditorState extends State<EvaluationEditor> {
 
   @override
   Widget build(BuildContext context) {
-    if (_initialized) {
-      return Scaffold(
-          appBar: AppBar(title: Text("Dienstauswertung")),
-          body: SingleChildScrollView(
+    return Scaffold(
+        appBar: AppBar(title: Text("Dienstauswertung")),
+        body: LoaderWidget(
+          loading: !_initialized,
+          child: SingleChildScrollView(
               child: EvaluationForm(
             model: model,
                 onSave: (finish) async {
@@ -58,19 +60,7 @@ class EvaluationEditorState extends State<EvaluationEditor> {
                       knownEvaluation, widget.assignment, model, finish);
                   Navigator.pop(context);
                 },
-          )));
-    } else {
-      return Scaffold(
-        appBar: AppBar(title: Text("Dienstauswertung")),
-        body: new Container(
-            color: Colors.white,
-            child: new Center(
-              child: new Column(
-                children: <Widget>[CircularProgressIndicator()],
-                mainAxisAlignment: MainAxisAlignment.center,
-              ),
-            )),
-      );
-    }
+              )),
+        ));
   }
 }

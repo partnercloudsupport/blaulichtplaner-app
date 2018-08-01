@@ -1,7 +1,7 @@
 import 'package:async_loader/async_loader.dart';
 import 'package:blaulichtplaner_app/api_service.dart';
 import 'package:blaulichtplaner_app/bid/shift_bids_view.dart';
-import 'package:blaulichtplaner_app/shift_view.dart';
+import 'package:blaulichtplaner_app/assignment/assignment_view.dart';
 import 'package:blaulichtplaner_app/utils/user_manager.dart';
 import 'package:blaulichtplaner_app/welcome_widget.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -154,7 +154,7 @@ class LaunchScreenState extends State<LaunchScreen> {
   Widget _createBody() {
     switch (selectedTab) {
       case 0:
-        return new ShiftView(
+        return new AssignmentView(
             employeeRoles: userManager.rolesForType("employee"),
             upcomingShifts: upcomingShifts);
       case 2:
@@ -206,8 +206,6 @@ class LaunchScreenState extends State<LaunchScreen> {
 
   @override
   Widget build(BuildContext context) {
-//    print("build screen: $_initialized | $_user");
-
     if (!_initialized) {
       return new Container(
           color: Colors.white,

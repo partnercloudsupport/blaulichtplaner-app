@@ -1,7 +1,7 @@
 import 'dart:async';
 
+import 'package:blaulichtplaner_app/assignment/assignment_service.dart';
 import 'package:blaulichtplaner_app/evaluation/evaluation_form.dart';
-import 'package:blaulichtplaner_app/shift_view.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
@@ -18,20 +18,16 @@ class EvaluationEditor extends StatefulWidget {
 }
 
 class EvaluationEditorState extends State<EvaluationEditor> {
-  final EvaluationModel model = EvaluationModel();
+  final model = EvaluationModel();
   bool _initialized = false;
   DocumentReference knownEvaluation;
+  final assignmentService = AssignmentService();
 
   @override
   void initState() {
     super.initState();
-    Assignment assignment = widget.assignment;
-    model.originalFrom = assignment.from;
-    model.originalTo = assignment.to;
-    model.actualFrom = assignment.from;
-    model.actualTo = assignment.to;
-    model.reasonOvertime = 0;
-    initFromPreviousEvaluation(assignment.selfRef);
+    assignmentService.initModelWithAssignment(model, widget.assignment);
+    initFromPreviousEvaluation(widget.assignment.selfRef);
   }
 
   Future initFromPreviousEvaluation(DocumentReference assignmentRef) async {
@@ -42,40 +38,10 @@ class EvaluationEditorState extends State<EvaluationEditor> {
     if (query.documents.isNotEmpty) {
       final doc = query.documents.first;
       knownEvaluation = doc.reference;
-      model.actualFrom = doc.data["actualFrom"];
-      model.actualTo = doc.data["actualTo"];
-      model.reasonOvertime = doc.data["reasonOvertime"];
-      model.remarks = doc.data["remarks"];
-      model.assignmentNumbers = List.from(doc.data["assignmentNumbers"]);
+      assignmentService.initModelWithEvaluation(model, doc.data);
     }
     setState(() {
       _initialized = true;
-    });
-  }
-
-  Future _saveEvaluation(bool finish) async {
-    Map<String, dynamic> data = {};
-    data["finished"] = finish;
-    data["actualFrom"] = model.actualFrom;
-    data["actualTo"] = model.actualTo;
-    data["reasonOvertime"] = model.reasonOvertime;
-    data["remarks"] = model.remarks;
-    data["assignmentRef"] = widget.assignment.selfRef;
-    data["shiftplanRef"] = widget.assignment.shiftplanRef;
-    data["assignmentNumbers"] = model.assignmentNumbers;
-    if (knownEvaluation == null) {
-      knownEvaluation = await Firestore.instance
-          .collection("evaluations")
-          .add({"created": DateTime.now()});
-    }
-
-    DocumentReference assignmentRef = widget.assignment.selfRef;
-
-    return Firestore.instance.runTransaction((transaction) async {
-      await transaction.update(knownEvaluation, data);
-      if (finish) {
-        await transaction.update(assignmentRef, {"evaluated": true});
-      }
     });
   }
 
@@ -88,7 +54,8 @@ class EvaluationEditorState extends State<EvaluationEditor> {
               child: EvaluationForm(
             model: model,
                 onSave: (finish) async {
-                  await _saveEvaluation(finish);
+                  await assignmentService.saveEvaluation(
+                      knownEvaluation, widget.assignment, model, finish);
                   Navigator.pop(context);
                 },
           )));

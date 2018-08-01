@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:blaulichtplaner_app/assignment/assignment_service.dart';
 import 'package:blaulichtplaner_app/evaluation/evaluation_editor.dart';
 import 'package:blaulichtplaner_app/utils/user_manager.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -7,11 +8,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:intl/intl.dart';
 
-class ShiftView extends StatefulWidget {
+class AssignmentView extends StatefulWidget {
   final List<Role> employeeRoles;
   final bool upcomingShifts;
 
-  ShiftView(
+  AssignmentView(
       {Key key, @required this.employeeRoles, @required this.upcomingShifts});
 
   bool hasEmployeeRoles() {
@@ -19,37 +20,20 @@ class ShiftView extends StatefulWidget {
   }
 
   @override
-  ShiftViewState createState() {
-    return new ShiftViewState();
+  AssignmentViewState createState() {
+    return new AssignmentViewState();
   }
 }
 
-class Assignment {
-  DocumentReference selfRef;
-  DateTime from;
-  DateTime to;
-  String workAreaLabel;
-  DocumentReference shiftRef;
-  DocumentReference shiftplanRef;
-
-  Assignment.fromSnapshot(DocumentSnapshot snapshot) {
-    selfRef = snapshot.reference;
-    from = snapshot.data["from"];
-    to = snapshot.data["to"];
-    workAreaLabel = snapshot.data["workAreaLabel"];
-    shiftRef = snapshot.data["shiftRef"];
-    shiftplanRef = snapshot.data["shiftplanRef"];
-  }
-}
-
-class ShiftViewState extends State<ShiftView> {
+class AssignmentViewState extends State<AssignmentView> {
   final List<Assignment> _shifts = [];
   final List<StreamSubscription> subs = [];
+  final assignmentService = AssignmentService();
+  bool _initialized = false;
 
   @override
   void initState() {
     super.initState();
-    print("initState");
     _initDataListeners();
   }
 
@@ -74,6 +58,7 @@ class ShiftViewState extends State<ShiftView> {
         }
         subs.add(query.snapshots().listen((snapshot) {
           setState(() {
+            _initialized = true;
             for (final doc in snapshot.documentChanges) {
               final assignmentRef = doc.document.reference;
 
@@ -96,9 +81,8 @@ class ShiftViewState extends State<ShiftView> {
   }
 
   @override
-  void didUpdateWidget(ShiftView oldWidget) {
+  void didUpdateWidget(AssignmentView oldWidget) {
     super.didUpdateWidget(oldWidget);
-    print("didUpdateWidget");
     _cancelDataListeners();
     _shifts.clear();
     _initDataListeners();
@@ -107,7 +91,6 @@ class ShiftViewState extends State<ShiftView> {
   @override
   void dispose() {
     super.dispose();
-    print("dispose");
     _cancelDataListeners();
   }
 
@@ -164,9 +147,15 @@ class ShiftViewState extends State<ShiftView> {
 
     if (assignment.from.isBefore(DateTime.now())) {
       cardChildren.add(new ButtonTheme.bar(
-        // make buttons use the appropriate styles for cards
         child: new ButtonBar(
+          alignment: MainAxisAlignment.spaceBetween,
           children: <Widget>[
+            new FlatButton(
+              child: Text('Finalisieren'),
+              onPressed: () {
+                assignmentService.finishAssignment(assignment);
+              },
+            ),
             new FlatButton(
               child: Text('Auswertung'),
               onPressed: () {
@@ -190,16 +179,35 @@ class ShiftViewState extends State<ShiftView> {
   @override
   Widget build(BuildContext context) {
     if (widget.hasEmployeeRoles()) {
-      if (_shifts.isEmpty) {
-        return new Center(
-          child: new Column(
-            children: <Widget>[Text("Keine zugewiesenen Schichten verfügbar")],
-            mainAxisAlignment: MainAxisAlignment.center,
-          ),
-        );
+      if (_initialized) {
+        if (_shifts.isEmpty) {
+          return new Center(
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: new Column(
+                children: <Widget>[
+                  Text(widget.upcomingShifts
+                      ? "Keine zugewiesenen Schichten verfügbar"
+                      : "Keine Schichten vorhanden, die eine Auswertung benötigen",
+                    textAlign: TextAlign.center,)
+                ],
+                mainAxisAlignment: MainAxisAlignment.center,
+              ),
+            ),
+          );
+        } else {
+          return ListView.builder(
+              itemCount: _shifts.length, itemBuilder: _assignmentBuilder);
+        }
       } else {
-        return ListView.builder(
-            itemCount: _shifts.length, itemBuilder: _assignmentBuilder);
+        return new Container(
+            color: Colors.white,
+            child: new Center(
+              child: new Column(
+                children: <Widget>[CircularProgressIndicator()],
+                mainAxisAlignment: MainAxisAlignment.center,
+              ),
+            ));
       }
     } else {
       return new Center(

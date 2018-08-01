@@ -8,7 +8,16 @@ class EvaluationModel {
   DateTime actualTo;
   int reasonOvertime = 0;
   String remarks;
-  List<String> assignmentNumbers = [];
+  List<AssignmentTask> tasks = [];
+}
+
+class AssignmentTask {
+  String type = "assignment";
+  String reference;
+  String remarks;
+  DateTime taskTime = DateTime.now();
+
+  AssignmentTask(this.reference);
 }
 
 typedef void SaveEvaluation(bool finish);
@@ -22,15 +31,12 @@ class EvaluationForm extends StatefulWidget {
 
   @override
   State<StatefulWidget> createState() {
-    return EvaluationFormState(model);
+    return EvaluationFormState();
   }
 }
 
 class EvaluationFormState extends State<EvaluationForm> {
   final _formKey = GlobalKey<FormState>();
-  final EvaluationModel model;
-
-  EvaluationFormState(this.model);
 
   Widget _buildDialog(BuildContext context) {
     String number;
@@ -60,17 +66,18 @@ class EvaluationFormState extends State<EvaluationForm> {
 
   @override
   Widget build(BuildContext context) {
+    EvaluationModel model = widget.model;
     List<Widget> assignmentRows = [];
-    for (final assignmentNumber in model.assignmentNumbers) {
+    for (final task in model.tasks) {
       assignmentRows.add(Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: <Widget>[
-          Text(assignmentNumber),
+          Text(task.reference),
           IconButton(
               icon: Icon(Icons.delete),
               onPressed: () {
                 setState(() {
-                  model.assignmentNumbers.remove(assignmentNumber);
+                  model.tasks.remove(task);
                 });
               })
         ],
@@ -161,7 +168,7 @@ class EvaluationFormState extends State<EvaluationForm> {
                             context: context, builder: _buildDialog);
                         if (number != null) {
                           setState(() {
-                            model.assignmentNumbers.add(number);
+                            model.tasks.add(AssignmentTask(number));
                           });
                         }
                       },
@@ -198,7 +205,7 @@ class EvaluationFormState extends State<EvaluationForm> {
                         } else {
                           Scaffold.of(context).showSnackBar(SnackBar(
                               content:
-                                  Text('Bitte füllen Sie alle Felder aus.')));
+                              Text('Bitte füllen Sie alle Felder aus.')));
                         }
                       },
                       child: Text('Speichern'),

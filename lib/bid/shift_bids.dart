@@ -8,6 +8,7 @@ class Shift {
   DateTime from;
   DateTime to;
   String workAreaLabel;
+  String locationLabel;
   DocumentReference shiftplanRef;
   DocumentReference workAreaRef;
   String publicNote;
@@ -18,6 +19,7 @@ class Shift {
     from = snapshot.data["from"];
     to = snapshot.data["to"];
     workAreaLabel = snapshot.data["workAreaLabel"];
+    locationLabel = snapshot.data["locationLabel"];
     shiftplanRef = snapshot.data["shiftplanRef"];
     workAreaRef = snapshot.data["workAreaRef"];
     publicNote = snapshot.data["publicNote"];
@@ -51,6 +53,13 @@ class ShiftBid {
       return shift.workAreaLabel;
     } else {
       return "Eigene Bewerbung";
+    }
+  }
+  String get locationLabel {
+    if (shift != null) {
+      return shift.locationLabel;
+    } else {
+      return "Unbekannter Ort";
     }
   }
 

@@ -243,7 +243,7 @@ class ShiftBidsViewState extends State<ShiftBidsView> {
             Expanded(
               child: Align(
                   alignment: Alignment.centerRight,
-                  child: Text("Gesundbrunnen")),
+                  child: Text(shiftBid.locationLabel)),
             )
           ],
         ),

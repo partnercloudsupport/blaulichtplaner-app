@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:blaulichtplaner_app/assignment/assignment_service.dart';
 import 'package:blaulichtplaner_app/evaluation/evaluation_editor.dart';
+import 'package:blaulichtplaner_app/evaluation/evaluation_form.dart';
 import 'package:blaulichtplaner_app/utils/user_manager.dart';
 import 'package:blaulichtplaner_app/widgets/loader.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -29,7 +30,6 @@ class AssignmentView extends StatefulWidget {
 class AssignmentViewState extends State<AssignmentView> {
   final List<Loadable<Assignment>> _assignments = [];
   final List<StreamSubscription> subs = [];
-  final assignmentService = AssignmentService();
   bool _initialized = false;
 
   @override
@@ -138,7 +138,7 @@ class AssignmentViewState extends State<AssignmentView> {
             Expanded(
               child: Align(
                   alignment: Alignment.centerRight,
-                  child: Text("Gesundbrunnen")),
+                  child: Text(assignment.locationLabel)),
             )
           ],
         ),
@@ -161,12 +161,12 @@ class AssignmentViewState extends State<AssignmentView> {
               children: <Widget>[
                 FlatButton(
                   child: Text('Finalisieren'),
-                  onPressed: () {
+                  onPressed: DateTime.now().isAfter(assignment.to) ? () {
                     setState(() {
                       loadableAssignment.loading = true;
                     });
-                    assignmentService.finishAssignment(assignment);
-                  },
+                    AssignmentService.finishAssignment(assignment);
+                  } : null,
                 ),
                 FlatButton(
                   child: Text('Auswertung'),

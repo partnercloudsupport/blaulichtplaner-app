@@ -136,7 +136,7 @@ class EvaluationFormState extends State<EvaluationForm> {
                       value: model.reasonOvertime,
                       items: [
                         DropdownMenuItem(
-                          child: Text(""),
+                          child: Text("Kein Grund"),
                           value: 0,
                         ),
                         DropdownMenuItem(
@@ -197,12 +197,12 @@ class EvaluationFormState extends State<EvaluationForm> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: <Widget>[
                       RaisedButton(
-                        onPressed: () {
+                        onPressed: DateTime.now().isAfter(model.actualTo) ? () {
                           setState(() {
                             _saving = true;
                           });
                           widget.onSave(true);
-                        },
+                        } : null,
                         child: Text("Finalisieren"),
                       ),
                       RaisedButton(

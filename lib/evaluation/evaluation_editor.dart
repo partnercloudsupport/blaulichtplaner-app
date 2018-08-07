@@ -22,12 +22,11 @@ class EvaluationEditorState extends State<EvaluationEditor> {
   final model = EvaluationModel();
   bool _initialized = false;
   DocumentReference knownEvaluation;
-  final assignmentService = AssignmentService();
 
   @override
   void initState() {
     super.initState();
-    assignmentService.initModelWithAssignment(model, widget.assignment);
+    AssignmentService.initModelWithAssignment(model, widget.assignment);
     initFromPreviousEvaluation(widget.assignment.selfRef);
   }
 
@@ -39,7 +38,7 @@ class EvaluationEditorState extends State<EvaluationEditor> {
     if (query.documents.isNotEmpty) {
       final doc = query.documents.first;
       knownEvaluation = doc.reference;
-      assignmentService.initModelWithEvaluation(model, doc.data);
+      AssignmentService.initModelWithEvaluation(model, doc.data);
     }
     setState(() {
       _initialized = true;
@@ -56,7 +55,7 @@ class EvaluationEditorState extends State<EvaluationEditor> {
               child: EvaluationForm(
             model: model,
                 onSave: (finish) async {
-                  await assignmentService.saveEvaluation(
+                  await AssignmentService.saveEvaluation(
                       knownEvaluation, widget.assignment, model, finish);
                   Navigator.pop(context);
                 },

@@ -8,6 +8,7 @@ class Assignment {
   DateTime from;
   DateTime to;
   String workAreaLabel;
+  String locationLabel;
   DocumentReference shiftRef;
   DocumentReference shiftplanRef;
 
@@ -16,14 +17,15 @@ class Assignment {
     from = snapshot.data["from"];
     to = snapshot.data["to"];
     workAreaLabel = snapshot.data["workAreaLabel"];
+    locationLabel = snapshot.data["locationLabel"];
     shiftRef = snapshot.data["shiftRef"];
     shiftplanRef = snapshot.data["shiftplanRef"];
   }
 }
 
 class AssignmentService {
-  void initModelWithEvaluation(EvaluationModel model,
-      Map<String, dynamic> data) {
+  static void initModelWithEvaluation(
+      EvaluationModel model, Map<String, dynamic> data) {
     model.actualFrom = data["actualFrom"];
     model.actualTo = data["actualTo"];
     model.reasonOvertime = data["reasonOvertime"];
@@ -32,7 +34,8 @@ class AssignmentService {
     model.tasks = list.map(_mapToTask).toList();
   }
 
-  void initModelWithAssignment(EvaluationModel model, Assignment assignment) {
+  static void initModelWithAssignment(
+      EvaluationModel model, Assignment assignment) {
     model.originalFrom = assignment.from;
     model.originalTo = assignment.to;
     model.actualFrom = assignment.from;
@@ -40,7 +43,7 @@ class AssignmentService {
     model.reasonOvertime = 0;
   }
 
-  Map<String, dynamic> _taskToMap(AssignmentTask task) {
+  static Map<String, dynamic> _taskToMap(AssignmentTask task) {
     Map<String, dynamic> data = {};
     data["type"] = task.type;
     data["reference"] = task.reference;
@@ -49,7 +52,7 @@ class AssignmentService {
     return data;
   }
 
-  AssignmentTask _mapToTask(data) {
+  static AssignmentTask _mapToTask(data) {
     AssignmentTask task = AssignmentTask(data["reference"]);
     task.remarks = data["remarks"];
     task.type = data["type"];
@@ -57,8 +60,8 @@ class AssignmentService {
     return task;
   }
 
-  Map<String, dynamic> _createData(EvaluationModel model, bool finish,
-      Assignment assignment) {
+  static Map<String, dynamic> _createData(
+      EvaluationModel model, bool finish, Assignment assignment) {
     Map<String, dynamic> data = {};
     data["finished"] = finish;
     data["actualFrom"] = model.actualFrom;
@@ -71,7 +74,7 @@ class AssignmentService {
     return data;
   }
 
-  Future finishAssignment(Assignment assignment) async {
+  static Future finishAssignment(Assignment assignment) async {
     final query = await Firestore.instance
         .collection("evaluations")
         .where("assignmentRef", isEqualTo: assignment.selfRef)
@@ -87,7 +90,7 @@ class AssignmentService {
     return saveEvaluation(knownEvaluation, assignment, model, true);
   }
 
-  Future saveEvaluation(DocumentReference knownEvaluation,
+  static Future saveEvaluation(DocumentReference knownEvaluation,
       Assignment assignment, EvaluationModel model, bool finish) async {
     final data = _createData(model, finish, assignment);
     if (knownEvaluation == null) {

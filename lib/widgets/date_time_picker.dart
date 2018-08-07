@@ -20,8 +20,8 @@ class DateTimePickerWidget extends StatelessWidget {
       {Key key,
       @required this.dateTime,
       @required this.dateTimeChanged,
-        this.fixedDates = true,
-        this.originalDateTime})
+      this.fixedDates = true,
+      this.originalDateTime})
       : super(key: key);
 
   void _showFixedDatesSnackBar(BuildContext context) {
@@ -95,23 +95,25 @@ class DateTimePickerWidget extends StatelessWidget {
     String overtimeDurationLabel = "";
     if (originalDateTime != null) {
       final overtimeDuration = dateTime.difference(originalDateTime);
-      if (overtimeDuration.inMilliseconds > 0) {
+      if (overtimeDuration.inMilliseconds != 0) {
         int overtimeHours = overtimeDuration.inHours;
         final minutesDuration =
             overtimeDuration - Duration(hours: overtimeHours);
-        int overtimeMinutes = minutesDuration.inMinutes;
+        int overtimeMinutes = (minutesDuration.inMinutes <0) ? -minutesDuration.inMinutes : minutesDuration.inMinutes;
 
-        overtimeDurationLabel = "(+" +
-            overtimeHours.toString() +
-            "h" +
-            (overtimeMinutes > 0
-                ? ("" + overtimeMinutes.toString() + "m")
-                : "") +
-            ")";
+        overtimeDurationLabel =
+            ((overtimeDuration.inMilliseconds > 0) ? "(+" : "(") +
+                overtimeHours.toString() +
+                "h" +
+                (overtimeMinutes > 0
+                    ? (overtimeMinutes.toString() + "m")
+                    : "") +
+                ")";
       }
     }
 
-    rowChildren.add(Expanded(flex: 1,
+    rowChildren.add(Expanded(
+      flex: 1,
       child: Text(
         overtimeDurationLabel,
         style: overtimeInputTextStyle,

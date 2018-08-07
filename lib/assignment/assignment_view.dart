@@ -22,7 +22,7 @@ class AssignmentView extends StatefulWidget {
 
   @override
   AssignmentViewState createState() {
-    return new AssignmentViewState();
+    return AssignmentViewState();
   }
 }
 
@@ -184,8 +184,8 @@ class AssignmentViewState extends State<AssignmentView> {
           )));
     }
 
-    return new Card(
-      child: new Column(mainAxisSize: MainAxisSize.max, children: cardChildren),
+    return Card(
+      child: Column(mainAxisSize: MainAxisSize.max, children: cardChildren),
     );
   }
 
@@ -194,10 +194,10 @@ class AssignmentViewState extends State<AssignmentView> {
     if (widget.hasEmployeeRoles()) {
       if (_initialized) {
         if (_assignments.isEmpty) {
-          return new Center(
+          return Center(
             child: Padding(
               padding: const EdgeInsets.all(16.0),
-              child: new Column(
+              child: Column(
                 children: <Widget>[
                   Text(
                     widget.upcomingShifts
@@ -215,18 +215,18 @@ class AssignmentViewState extends State<AssignmentView> {
               itemCount: _assignments.length, itemBuilder: _assignmentBuilder);
         }
       } else {
-        return new Container(
+        return Container(
             color: Colors.white,
-            child: new Center(
-              child: new Column(
+            child: Center(
+              child: Column(
                 children: <Widget>[CircularProgressIndicator()],
                 mainAxisAlignment: MainAxisAlignment.center,
               ),
             ));
       }
     } else {
-      return new Center(
-        child: new Column(
+      return Center(
+        child: Column(
           children: <Widget>[
             Text(
                 "Sie sind noch an keinem Standort als Mitarbeiter registriert.")

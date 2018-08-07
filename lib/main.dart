@@ -15,18 +15,18 @@ void main() {
   // debugPaintSizeEnabled = true;
 
   initializeDateFormatting();
-  runApp(new ShiftplanApp());
+  runApp(ShiftplanApp());
 }
 
 class ShiftplanApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return new MaterialApp(
+    return MaterialApp(
       title: 'Blaulichtplaner',
-      theme: new ThemeData(
+      theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: new LaunchScreen(),
+      home: LaunchScreen(),
     );
   }
 }
@@ -35,7 +35,7 @@ class LaunchScreen extends StatefulWidget {
   LaunchScreen({Key key}) : super(key: key);
 
   @override
-  LaunchScreenState createState() => new LaunchScreenState();
+  LaunchScreenState createState() => LaunchScreenState();
 }
 
 class UserWidget extends StatelessWidget {
@@ -130,21 +130,21 @@ class LaunchScreenState extends State<LaunchScreen> {
     print("invite Url: $inviteUrl");
     if (inviteUrl != null) {
       final GlobalKey<AsyncLoaderState> _asyncLoaderState =
-          new GlobalKey<AsyncLoaderState>();
+          GlobalKey<AsyncLoaderState>();
 
       final slashPos = inviteUrl.lastIndexOf("/");
       String inviteId = inviteUrl.substring(slashPos + 1);
       print("inviteId: [$inviteId]");
 
-      InvitationRequest request = new InvitationRequest(new IOClient());
+      InvitationRequest request = InvitationRequest(IOClient());
       await request.performPutRequest(_user.uid, "", inviteId, null);
 
-/*      var _asyncLoader = new AsyncLoader(
+/*      var _asyncLoader = AsyncLoader(
         key: _asyncLoaderState,
         initState: () async =>
             await request.performPutRequest(_user.uid, "", inviteId, null),
-        renderLoad: () => new CircularProgressIndicator(),
-        renderError: ([error]) => new Text('Sorry, there was an error loading'),
+        renderLoad: () => CircularProgressIndicator(),
+        renderError: ([error]) => Text('Sorry, there was an error loading'),
         renderSuccess: ({data}) {},
       );*/
     }
@@ -154,11 +154,11 @@ class LaunchScreenState extends State<LaunchScreen> {
   Widget _createBody() {
     switch (selectedTab) {
       case 0:
-        return new AssignmentView(
+        return AssignmentView(
             employeeRoles: userManager.rolesForType("employee"),
             upcomingShifts: upcomingShifts);
       case 2:
-        return new ShiftBidsView(
+        return ShiftBidsView(
           workAreaRoles: userManager.rolesForType("workArea"),
           employeeRoles: userManager.rolesForType("employee"),
         );
@@ -207,10 +207,10 @@ class LaunchScreenState extends State<LaunchScreen> {
   @override
   Widget build(BuildContext context) {
     if (!_initialized) {
-      return new Container(
+      return Container(
           color: Colors.white,
-          child: new Center(
-            child: new Column(
+          child: Center(
+            child: Column(
               children: <Widget>[CircularProgressIndicator()],
               mainAxisAlignment: MainAxisAlignment.center,
             ),
@@ -219,9 +219,9 @@ class LaunchScreenState extends State<LaunchScreen> {
       if (_user == null) {
         return LoginScreen();
       } else {
-        return new Scaffold(
-          appBar: new AppBar(
-            title: new Text(_createTitle()),
+        return Scaffold(
+          appBar: AppBar(
+            title: Text(_createTitle()),
             actions: _createAppBarActions(),
           ),
           drawer: Drawer(
@@ -246,20 +246,20 @@ class LaunchScreenState extends State<LaunchScreen> {
             ),
           ),
           body: _createBody(),
-          bottomNavigationBar: new BottomNavigationBar(
+          bottomNavigationBar: BottomNavigationBar(
             currentIndex: selectedTab,
             items: [
               BottomNavigationBarItem(
-                icon: new Icon(Icons.event_available),
-                title: new Text("Schichten"),
+                icon: Icon(Icons.event_available),
+                title: Text("Schichten"),
               ),
               BottomNavigationBarItem(
-                icon: new Icon(Icons.insert_invitation),
-                title: new Text("Dienstpläne"),
+                icon: Icon(Icons.insert_invitation),
+                title: Text("Dienstpläne"),
               ),
               BottomNavigationBarItem(
-                icon: new Icon(Icons.date_range),
-                title: new Text("Bewerbungen"),
+                icon: Icon(Icons.date_range),
+                title: Text("Bewerbungen"),
               )
             ],
             type: BottomNavigationBarType.fixed,

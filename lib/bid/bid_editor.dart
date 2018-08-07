@@ -14,7 +14,7 @@ class BidEditor extends StatefulWidget {
 
   @override
   State<StatefulWidget> createState() {
-    return new BidEditorState();
+    return BidEditorState();
   }
 }
 

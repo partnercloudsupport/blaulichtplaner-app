@@ -24,7 +24,7 @@ class ShiftBidsView extends StatefulWidget {
 
   @override
   ShiftBidsViewState createState() {
-    return new ShiftBidsViewState();
+    return ShiftBidsViewState();
   }
 }
 
@@ -191,24 +191,24 @@ class ShiftBidsViewState extends State<ShiftBidsView> {
 
     List<FlatButton> buttons = [];
     if (shiftBid.hasBid()) {
-      buttons.add(new FlatButton(
+      buttons.add(FlatButton(
         child: Text('Bewerbung löschen'),
         onPressed: () {
           BidService().deleteBid(shiftBid.bid);
         },
       ));
-      buttons.add(new FlatButton(
+      buttons.add(FlatButton(
         child: Text('Ändern'),
         onPressed: () {
           Navigator.push(context, MaterialPageRoute(builder: (context) {
-            return new BidEditor(
+            return BidEditor(
               shiftBid: shiftBid,
             );
           }));
         },
       ));
     } else {
-      buttons.add(new FlatButton(
+      buttons.add(FlatButton(
         textColor: Colors.red,
         child: Text('Ablehnen'),
         onPressed: () {
@@ -222,11 +222,11 @@ class ShiftBidsViewState extends State<ShiftBidsView> {
           }
         },
       ));
-      buttons.add(new FlatButton(
+      buttons.add(FlatButton(
         child: Text('Bewerben'),
         onPressed: () {
           Navigator.push(context, MaterialPageRoute(builder: (context) {
-            return new BidEditor(
+            return BidEditor(
               shiftBid: shiftBid,
             );
           }));
@@ -264,15 +264,15 @@ class ShiftBidsViewState extends State<ShiftBidsView> {
       rows.add(createInfoBox(shiftBid.bid.remarks, Icons.speaker_notes));
     }
 
-    rows.add(new ButtonTheme.bar(
+    rows.add(ButtonTheme.bar(
       // make buttons use the appropriate styles for cards
-      child: new ButtonBar(
+      child: ButtonBar(
         children: buttons,
       ),
     ));
 
-    return new Card(
-      child: new Column(
+    return Card(
+      child: Column(
         mainAxisSize: MainAxisSize.max,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: rows,
@@ -284,8 +284,8 @@ class ShiftBidsViewState extends State<ShiftBidsView> {
   Widget build(BuildContext context) {
     if (widget.hasWorkAreaRoles()) {
       if (_shiftBidHolder.isEmpty) {
-        return new Center(
-          child: new Column(
+        return Center(
+          child: Column(
             children: <Widget>[Text("Keine offene Schichten verfügbar")],
             mainAxisAlignment: MainAxisAlignment.center,
           ),
@@ -296,8 +296,8 @@ class ShiftBidsViewState extends State<ShiftBidsView> {
             itemBuilder: _listElementBuilder);
       }
     } else {
-      return new Center(
-        child: new Column(
+      return Center(
+        child: Column(
           children: <Widget>[
             Text(
                 "Sie sind noch an keinem Standort als Mitarbeiter registriert.")

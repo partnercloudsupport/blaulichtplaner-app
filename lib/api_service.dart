@@ -22,12 +22,12 @@ abstract class AsyncHttpRequest<T> {
       final response = await _client.put(url,
           headers: headers, body: json.encode(dataMap));
       if (response.statusCode != 200) {
-        throw new Exception("Error ${response.statusCode}");
+        throw Exception("Error ${response.statusCode}");
       } else {
         return true;
       }
     } else {
-      throw new Exception("User not logged in");
+      throw Exception("User not logged in");
     }
   }
 }

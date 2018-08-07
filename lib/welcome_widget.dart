@@ -6,7 +6,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 
 class LoginScreen extends StatelessWidget {
   final FirebaseAuth _auth = FirebaseAuth.instance;
-  final GoogleSignIn _googleSignIn = new GoogleSignIn(
+  final GoogleSignIn _googleSignIn = GoogleSignIn(
     scopes: ['email'],
   );
 
@@ -27,8 +27,8 @@ class LoginScreen extends StatelessWidget {
     return Scaffold(
       body: Container(
         color: Colors.white,
-        child: new Center(
-          child: new Column(
+        child: Center(
+          child: Column(
             children: <Widget>[
               Text("Willkommen beim Blaulichtplaner"),
               FlatButton(

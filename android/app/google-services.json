@@ -15,6 +15,22 @@
       },
       "oauth_client": [
         {
+          "client_id": "946323987274-raluvvc8qivd73jkgaci6min8nk0ulhh.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "de.grundid.blaulichtplanerapp",
+            "certificate_hash": "1a03aa4b06e690b979ea3266337e6db147de076d"
+          }
+        },
+        {
+          "client_id": "946323987274-ee8kdsi4aavv9of7nl3g0fpp5c9mbnlv.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "de.grundid.blaulichtplanerapp",
+            "certificate_hash": "2e957ec6e75e55366fba67b6563cbf61ce2ec6f6"
+          }
+        },
+        {
           "client_id": "946323987274-ue2mdtoc84g6uth1lqiknsjfkrept8nr.apps.googleusercontent.com",
           "client_type": 3
         }
@@ -29,8 +45,20 @@
           "status": 1
         },
         "appinvite_service": {
-          "status": 1,
-          "other_platform_oauth_client": []
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "946323987274-slff67aq23r2m6n1i43e6g6j7tmcrioj.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "946323987274-odc090qqaiu9c1mde0ctqquslkfk9a6u.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "de.grundid.blaulichtplanerApp"
+              }
+            }
+          ]
         },
         "ads_service": {
           "status": 2

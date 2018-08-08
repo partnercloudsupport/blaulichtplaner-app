@@ -25,10 +25,10 @@ abstract class AsyncHttpRequest<T> {
       print("request: $url");
       final response =
           await _client.put(url, headers: headers, body: json.encode(dataMap));
-      if (response.statusCode >= 200 || response.statusCode < 299) {
-        throw Exception("Error ${response.statusCode}");
-      } else {
+      if (response.statusCode >= 200 && response.statusCode < 299) {
         return true;
+      } else {
+        throw Exception("Error ${response.statusCode}");
       }
     } else {
       throw Exception("User not logged in");
@@ -49,10 +49,10 @@ abstract class AsyncHttpRequest<T> {
       print("request: $url");
       final response =
           await _client.post(url, headers: headers, body: json.encode(dataMap));
-      if (response.statusCode >= 200 || response.statusCode < 299) {
-        throw Exception("Error ${response.statusCode}");
-      } else {
+      if (response.statusCode >= 200 && response.statusCode < 299) {
         return true;
+      } else {
+        throw Exception("Error ${response.statusCode}");
       }
     } else {
       throw Exception("User not logged in");

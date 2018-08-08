@@ -36,13 +36,15 @@ class RegistrationModel {
 
 class RegistrationScreen extends StatelessWidget {
   final FirebaseUser user;
-  RegistrationScreen({Key key, this.user}) : super(key: key);
+  final Function successCallback;
+  RegistrationScreen({Key key, @required this.user, @required this.successCallback}) : super(key: key);
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text("Registrieren")),
       body: RegistrationForm(
         user: user,
+        successCallback: successCallback,
       ),
     );
   }
@@ -50,7 +52,8 @@ class RegistrationScreen extends StatelessWidget {
 
 class RegistrationForm extends StatefulWidget {
   final FirebaseUser user;
-  RegistrationForm({Key key, @required this.user}) : super(key: key);
+  final Function successCallback;
+  RegistrationForm({Key key, @required this.user, @required this.successCallback}) : super(key: key);
   @override
   State<StatefulWidget> createState() {
     return RegistrationFormState();
@@ -113,6 +116,7 @@ class RegistrationFormState extends State<RegistrationForm> {
           .setData(_registrationModel.createData());
       RegistrationRequest request = RegistrationRequest(IOClient());
       await request.performPostRequest(widget.user.uid, "", "user", {"token": _registrationModel.token});
+      widget.successCallback();
     } catch (e) {
       print(e);
     }

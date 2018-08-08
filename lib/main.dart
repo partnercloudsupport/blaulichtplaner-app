@@ -1,4 +1,3 @@
-import 'package:async_loader/async_loader.dart';
 import 'package:blaulichtplaner_app/api_service.dart';
 import 'package:blaulichtplaner_app/bid/shift_bids_view.dart';
 import 'package:blaulichtplaner_app/assignment/assignment_view.dart';
@@ -39,29 +38,9 @@ class LaunchScreen extends StatefulWidget {
   LaunchScreenState createState() => LaunchScreenState();
 }
 
-class UserWidget extends StatelessWidget {
-  final FirebaseUser _user;
-
-  const UserWidget({Key key, FirebaseUser user})
-      : _user = user,
-        super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(children: <Widget>[
-      Image.network(
-        _user.photoUrl,
-        width: 64.0,
-        height: 64.0,
-        fit: BoxFit.cover,
-      ),
-      Text(_user.displayName)
-    ]);
-  }
-}
-
 class LaunchScreenState extends State<LaunchScreen> {
   bool _initialized = false;
+  bool _registered = false;
   FirebaseUser _user;
   final FirebaseAuth _auth = FirebaseAuth.instance;
   int selectedTab = 0;
@@ -77,6 +56,7 @@ class LaunchScreenState extends State<LaunchScreen> {
     _auth.onAuthStateChanged.listen((user) {
       print("onAuthStateChanged: $user");
       _updateUserData(user);
+      _isRegistered(user);
     });
   }
 
@@ -94,6 +74,16 @@ class LaunchScreenState extends State<LaunchScreen> {
       _user = user;
       _initialized = true;
     });
+  }
+
+  void _isRegistered(FirebaseUser user) async {
+    if (user != null) {
+      final doc =
+          await Firestore.instance.collection("users").document(user.uid).get();
+      setState(() {
+        _registered = doc.exists;
+      });
+    }
   }
 
   void logout() {
@@ -130,24 +120,12 @@ class LaunchScreenState extends State<LaunchScreen> {
         await showDialog<String>(context: context, builder: _buildDialog);
     print("invite Url: $inviteUrl");
     if (inviteUrl != null) {
-      final GlobalKey<AsyncLoaderState> _asyncLoaderState =
-          GlobalKey<AsyncLoaderState>();
-
       final slashPos = inviteUrl.lastIndexOf("/");
       String inviteId = inviteUrl.substring(slashPos + 1);
       print("inviteId: [$inviteId]");
 
       InvitationRequest request = InvitationRequest(IOClient());
       await request.performPutRequest(_user.uid, "", inviteId, null);
-
-/*      var _asyncLoader = AsyncLoader(
-        key: _asyncLoaderState,
-        initState: () async =>
-            await request.performPutRequest(_user.uid, "", inviteId, null),
-        renderLoad: () => CircularProgressIndicator(),
-        renderError: ([error]) => Text('Sorry, there was an error loading'),
-        renderSuccess: ({data}) {},
-      );*/
     }
     _updateUserData(_user);
     Navigator.pop(context);
@@ -220,6 +198,14 @@ class LaunchScreenState extends State<LaunchScreen> {
     } else {
       if (_user == null) {
         return LoginScreen();
+      } else if (!_registered) {
+        return RegistrationScreen(
+            user: _user,
+            successCallback: () {
+              setState(() {
+                _registered = true;
+              });
+            });
       } else {
         //return RegistrationScreen(user: _user);
         return Scaffold(
@@ -230,8 +216,9 @@ class LaunchScreenState extends State<LaunchScreen> {
           drawer: Drawer(
             child: ListView(
               children: <Widget>[
-                DrawerHeader(
-                  child: UserWidget(user: _user),
+                ListTile(
+                  leading: CircleAvatar(backgroundImage: NetworkImage(_user.photoUrl)),
+                  title: Text(_user.displayName),
                 ),
                 ListTile(
                   leading: Icon(Icons.insert_link),

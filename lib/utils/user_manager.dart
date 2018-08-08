@@ -21,13 +21,16 @@ class UserManager {
   }
 
   final Map<String, List<Role>> _userRoles = {};
-  final _companyLocationMatcher = RegExp(r"companies/(\d*\w*)/locations/(\d*\w*)/.*");
+  final _companyLocationMatcher =
+      RegExp(r"companies/(\d*\w*)/locations/(\d*\w*)/.*");
   FirebaseUser _user;
+  get user => _user;
 
   UserManager._();
 
   Role _createRole(Map<String, dynamic> data) {
-    Role role = Role(data["type"], data["role"], data["reference"], data["label"]);
+    Role role =
+        Role(data["type"], data["role"], data["reference"], data["label"]);
     DocumentReference reference = data["reference"];
     String path = reference.path;
     final match = _companyLocationMatcher.firstMatch(path);

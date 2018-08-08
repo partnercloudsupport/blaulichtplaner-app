@@ -2,6 +2,7 @@ import 'package:blaulichtplaner_app/api_service.dart';
 import 'package:blaulichtplaner_app/bid/shift_bids_view.dart';
 import 'package:blaulichtplaner_app/assignment/assignment_view.dart';
 import 'package:blaulichtplaner_app/registration_widget.dart';
+import 'package:blaulichtplaner_app/shiftplan/shiftplan_view.dart';
 import 'package:blaulichtplaner_app/utils/user_manager.dart';
 import 'package:blaulichtplaner_app/welcome_widget.dart';
 import 'package:blaulichtplaner_app/about_widget.dart';
@@ -38,6 +39,8 @@ class LaunchScreen extends StatefulWidget {
   @override
   LaunchScreenState createState() => LaunchScreenState();
 }
+
+enum FilterOptions { withoutBid, withBid, notInterested }
 
 class DrawerWidget extends StatelessWidget {
   final FirebaseUser user;
@@ -92,6 +95,7 @@ class LaunchScreenState extends State<LaunchScreen> {
   int selectedTab = 0;
   bool upcomingShifts = true;
   String currentTitle = "Blaulichtplaner";
+  FilterOptions _selectedFilterOption = FilterOptions.notInterested;
 
   final UserManager userManager = UserManager.get();
 
@@ -183,6 +187,8 @@ class LaunchScreenState extends State<LaunchScreen> {
         return AssignmentView(
             employeeRoles: userManager.rolesForType("employee"),
             upcomingShifts: upcomingShifts);
+      case 1:
+        return ShiftplanView();
       case 2:
         return ShiftBidsView(
           workAreaRoles: userManager.rolesForType("workArea"),
@@ -196,7 +202,7 @@ class LaunchScreenState extends State<LaunchScreen> {
   List<Widget> _createAppBarActions() {
     switch (selectedTab) {
       case 0:
-        return [
+        return <Widget>[
           IconButton(
               icon: Icon(Icons.rotate_90_degrees_ccw),
               onPressed: () {
@@ -206,7 +212,68 @@ class LaunchScreenState extends State<LaunchScreen> {
               })
         ];
       case 2:
-        return [];
+        return <Widget>[
+          PopupMenuButton(
+            child: Padding(
+                padding: EdgeInsets.only(left: 16.0, right: 16.0),
+                child: Icon(Icons.filter_list)),
+            itemBuilder: (BuildContext context) =>
+                <PopupMenuEntry<FilterOptions>>[
+                  PopupMenuItem(
+                    child: Text(
+                      'Filtern',
+                      style: TextStyle(color: Colors.black),
+                    ),
+                    enabled: false,
+                  ),
+                  PopupMenuItem<FilterOptions>(
+                      value: FilterOptions.withoutBid,
+                      child: Row(
+                        children: <Widget>[
+                          Radio(
+                            onChanged: (val) {
+                              _selectedFilterOption = val;
+                            },
+                            groupValue: _selectedFilterOption,
+                            value: FilterOptions.withoutBid,
+                          ),
+                          Text('Dienste ohne Bewerbung'),
+                          //Icon(Icons.help_outline),
+                        ],
+                      )),
+                  PopupMenuItem(
+                      value: FilterOptions.withBid,
+                      child: Row(
+                        children: <Widget>[
+                          Radio(
+                            onChanged: (val) {
+                              _selectedFilterOption = val;
+                            },
+                            groupValue: _selectedFilterOption,
+                            value: FilterOptions.withBid,
+                          ),
+                          Text('Beworbene Dienste'),
+                          //Icon(Icons.done_outline),
+                        ],
+                      )),
+                  PopupMenuItem(
+                      value: FilterOptions.notInterested,
+                      child: Row(
+                        children: <Widget>[
+                          Radio(
+                            onChanged: (val) {
+                              _selectedFilterOption = val;
+                            },
+                            groupValue: _selectedFilterOption,
+                            value: FilterOptions.notInterested,
+                          ),
+                          Text('Abgelehnte Dienste'),
+                          //Icon(Icons.not_interested),
+                        ],
+                      )),
+                ],
+          ),
+        ];
       default:
         return [];
     }
@@ -228,6 +295,48 @@ class LaunchScreenState extends State<LaunchScreen> {
         }
     }
     return "Blaulichtplaner";
+  }
+
+  Widget _buildHomeScreen(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(_createTitle()),
+        actions: _createAppBarActions(),
+      ),
+      drawer: DrawerWidget(
+        user: _user,
+        invitationCallback: () {
+          acceptInvite(context);
+        },
+        logoutCallback: () {
+          logout();
+        },
+      ),
+      body: _createBody(),
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: selectedTab,
+        items: [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.event_available),
+            title: Text("Schichten"),
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.insert_invitation),
+            title: Text("Dienstpläne"),
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.date_range),
+            title: Text("Bewerbungen"),
+          )
+        ],
+        type: BottomNavigationBarType.fixed,
+        onTap: (tapId) {
+          setState(() {
+            selectedTab = tapId;
+          });
+        },
+      ),
+    );
   }
 
   @override
@@ -253,46 +362,7 @@ class LaunchScreenState extends State<LaunchScreen> {
               });
             });
       } else {
-        //return RegistrationScreen(user: _user);
-        return Scaffold(
-          appBar: AppBar(
-            title: Text(_createTitle()),
-            actions: _createAppBarActions(),
-          ),
-          drawer: DrawerWidget(
-            user: _user,
-            invitationCallback: () {
-              acceptInvite(context);
-            },
-            logoutCallback: () {
-              logout();
-            },
-          ),
-          body: _createBody(),
-          bottomNavigationBar: BottomNavigationBar(
-            currentIndex: selectedTab,
-            items: [
-              BottomNavigationBarItem(
-                icon: Icon(Icons.event_available),
-                title: Text("Schichten"),
-              ),
-              BottomNavigationBarItem(
-                icon: Icon(Icons.insert_invitation),
-                title: Text("Dienstpläne"),
-              ),
-              BottomNavigationBarItem(
-                icon: Icon(Icons.date_range),
-                title: Text("Bewerbungen"),
-              )
-            ],
-            type: BottomNavigationBarType.fixed,
-            onTap: (tapId) {
-              setState(() {
-                selectedTab = tapId;
-              });
-            },
-          ),
-        );
+        return _buildHomeScreen(context);
       }
     }
   }

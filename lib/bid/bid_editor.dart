@@ -61,7 +61,7 @@ class BidEditorState extends State<BidEditor> {
                 "employee", widget.shiftBid.shiftplanRef);
 
             bid.employeeRef = role.reference;
-            bid.employeeLabel = "TODO"; // TODO
+            bid.employeeLabel = UserManager.get().user ?? UserManager.get().user.displayName; // TODO
 
             BidService bidService = BidService();
             bidService.saveBid(bid).then((ref) {

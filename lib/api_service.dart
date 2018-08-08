@@ -25,7 +25,7 @@ abstract class AsyncHttpRequest<T> {
       print("request: $url");
       final response =
           await _client.put(url, headers: headers, body: json.encode(dataMap));
-      if (response.statusCode >= 200 && response.statusCode < 299) {
+      if (response.statusCode >= 200 && response.statusCode < 399) {
         return true;
       } else {
         throw Exception("Error ${response.statusCode}");
@@ -49,7 +49,7 @@ abstract class AsyncHttpRequest<T> {
       print("request: $url");
       final response =
           await _client.post(url, headers: headers, body: json.encode(dataMap));
-      if (response.statusCode >= 200 && response.statusCode < 299) {
+      if (response.statusCode >= 200 && response.statusCode < 399) {
         return true;
       } else {
         throw Exception("Error ${response.statusCode}");

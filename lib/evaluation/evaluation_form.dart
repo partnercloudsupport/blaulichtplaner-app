@@ -36,6 +36,55 @@ class EvaluationForm extends StatefulWidget {
   }
 }
 
+class OvertimeWidget extends StatelessWidget {
+  final int startValue;
+  final Function changeCallback;
+  final bool overtime;
+  OvertimeWidget(
+      {Key key, @required this.changeCallback, @required this.startValue, @required this.overtime})
+      : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    if(overtime){
+    return Column(children: <Widget>[
+      Padding(
+        padding: EdgeInsets.only(top: 16.0),
+        child: Row(
+          children: <Widget>[Text("Grund für Überstunden")],
+        ),
+      ),
+      Row(
+        children: <Widget>[
+          DropdownButton(
+              value: startValue,
+              items: [
+                DropdownMenuItem(
+                  child: Text("Kein Grund"),
+                  value: 0,
+                ),
+                DropdownMenuItem(
+                  child: Text("Einsatz"),
+                  value: 1,
+                ),
+                DropdownMenuItem(
+                  child: Text("Nachfolger verspätet"),
+                  value: 2,
+                ),
+                DropdownMenuItem(
+                  child: Text("Anderer Grund"),
+                  value: 99,
+                )
+              ],
+              onChanged: changeCallback),
+        ],
+      ),
+    ]);} else{
+      return null;
+    }
+  }
+}
+
 class EvaluationFormState extends State<EvaluationForm> {
   final _formKey = GlobalKey<FormState>();
   bool _saving = false;
@@ -124,40 +173,14 @@ class EvaluationFormState extends State<EvaluationForm> {
                       model.actualTo = dateTime;
                     });
                   }),
-              Padding(
-                padding: EdgeInsets.only(top: 16.0),
-                child: Row(
-                  children: <Widget>[Text("Grund für Überstunden")],
-                ),
-              ),
-              Row(
-                children: <Widget>[
-                  DropdownButton(
-                      value: model.reasonOvertime,
-                      items: [
-                        DropdownMenuItem(
-                          child: Text("Kein Grund"),
-                          value: 0,
-                        ),
-                        DropdownMenuItem(
-                          child: Text("Einsatz"),
-                          value: 1,
-                        ),
-                        DropdownMenuItem(
-                          child: Text("Nachfolger verspätet"),
-                          value: 2,
-                        ),
-                        DropdownMenuItem(
-                          child: Text("Anderer Grund"),
-                          value: 99,
-                        )
-                      ],
-                      onChanged: (value) {
-                        setState(() {
-                          model.reasonOvertime = value;
-                        });
-                      }),
-                ],
+              OvertimeWidget(
+                changeCallback: (value) {
+                  setState(() {
+                    model.reasonOvertime = value;
+                  });
+                },
+                startValue: model.reasonOvertime,
+                overtime: model.actualTo.isAfter(model.originalTo)
               ),
               Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -197,12 +220,14 @@ class EvaluationFormState extends State<EvaluationForm> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: <Widget>[
                       RaisedButton(
-                        onPressed: DateTime.now().isAfter(model.actualTo) ? () {
-                          setState(() {
-                            _saving = true;
-                          });
-                          widget.onSave(true);
-                        } : null,
+                        onPressed: DateTime.now().isAfter(model.actualTo)
+                            ? () {
+                                setState(() {
+                                  _saving = true;
+                                });
+                                widget.onSave(true);
+                              }
+                            : null,
                         child: Text("Finalisieren"),
                       ),
                       RaisedButton(
@@ -215,7 +240,7 @@ class EvaluationFormState extends State<EvaluationForm> {
                           } else {
                             Scaffold.of(context).showSnackBar(SnackBar(
                                 content:
-                                Text('Bitte füllen Sie alle Felder aus.')));
+                                    Text('Bitte füllen Sie alle Felder aus.')));
                           }
                         },
                         child: Text('Speichern'),

@@ -4,6 +4,7 @@ import 'package:blaulichtplaner_app/assignment/assignment_view.dart';
 import 'package:blaulichtplaner_app/registration_widget.dart';
 import 'package:blaulichtplaner_app/utils/user_manager.dart';
 import 'package:blaulichtplaner_app/welcome_widget.dart';
+import 'package:blaulichtplaner_app/about_widget.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -36,6 +37,51 @@ class LaunchScreen extends StatefulWidget {
 
   @override
   LaunchScreenState createState() => LaunchScreenState();
+}
+
+class DrawerWidget extends StatelessWidget {
+  final FirebaseUser user;
+  final Function logoutCallback;
+  final Function invitationCallback;
+  DrawerWidget(
+      {Key key,
+      @required this.user,
+      @required this.logoutCallback,
+      @required this.invitationCallback})
+      : super(key: key);
+
+  @override
+  build(BuildContext context) {
+    return Drawer(
+      child: ListView(
+        children: <Widget>[
+          ListTile(
+            leading: CircleAvatar(backgroundImage: NetworkImage(user.photoUrl)),
+            title: Text(user.displayName),
+          ),
+          ListTile(
+            leading: Icon(Icons.insert_link),
+            title: Text("Einladung annehmen"),
+            onTap: invitationCallback,
+          ),
+          ListTile(
+            leading: Icon(Icons.exit_to_app),
+            title: Text("Logout"),
+            onTap: logoutCallback,
+          ),
+          Divider(),
+          ListTile(
+            leading: Icon(Icons.info_outline),
+            title: Text("Über die App"),
+            onTap: () {
+              Navigator.push(context,
+                  MaterialPageRoute(builder: (context) => AboutScreen()));
+            },
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 class LaunchScreenState extends State<LaunchScreen> {
@@ -213,27 +259,14 @@ class LaunchScreenState extends State<LaunchScreen> {
             title: Text(_createTitle()),
             actions: _createAppBarActions(),
           ),
-          drawer: Drawer(
-            child: ListView(
-              children: <Widget>[
-                ListTile(
-                  leading: CircleAvatar(backgroundImage: NetworkImage(_user.photoUrl)),
-                  title: Text(_user.displayName),
-                ),
-                ListTile(
-                  leading: Icon(Icons.insert_link),
-                  title: Text("Einladung annehmen"),
-                  onTap: () {
-                    acceptInvite(context);
-                  },
-                ),
-                ListTile(
-                  leading: Icon(Icons.exit_to_app),
-                  title: Text("Logout"),
-                  onTap: logout,
-                )
-              ],
-            ),
+          drawer: DrawerWidget(
+            user: _user,
+            invitationCallback: () {
+              acceptInvite(context);
+            },
+            logoutCallback: () {
+              logout();
+            },
           ),
           body: _createBody(),
           bottomNavigationBar: BottomNavigationBar(

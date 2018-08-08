@@ -8,20 +8,48 @@ abstract class AsyncHttpRequest<T> {
 
   AsyncHttpRequest(this._client, this._requestUrl);
 
-  Map<String, Object> _convertData(T data);
+  Map<String, dynamic> _convertData(T data);
 
-  performPutRequest(String uid, String parentRef, String locationRef, T data) async {
+  performPutRequest(
+      String uid, String parentRef, String locationRef, T data) async {
     if (uid != null) {
       var dataMap = <String, dynamic>{"parentRef": parentRef};
       if (data != null) {
         dataMap["data"] = _convertData(data);
       }
-      final headers = {"Authorization": uid, "Content-Type": "application/json"};
+      final headers = {
+        "Authorization": uid,
+        "Content-Type": "application/json"
+      };
       final url = _requestUrl + "/" + Uri.encodeComponent(locationRef);
       print("request: $url");
-      final response = await _client.put(url,
-          headers: headers, body: json.encode(dataMap));
-      if (response.statusCode != 200) {
+      final response =
+          await _client.put(url, headers: headers, body: json.encode(dataMap));
+      if (response.statusCode >= 200 || response.statusCode < 299) {
+        throw Exception("Error ${response.statusCode}");
+      } else {
+        return true;
+      }
+    } else {
+      throw Exception("User not logged in");
+    }
+  }
+  performPostRequest(
+      String uid, String parentRef, String locationRef, T data) async {
+    if (uid != null) {
+      var dataMap = <String, dynamic>{"parentRef": parentRef};
+      if (data != null) {
+        dataMap["data"] = _convertData(data);
+      }
+      final headers = {
+        "Authorization": uid,
+        "Content-Type": "application/json"
+      };
+      final url = _requestUrl + "/" + Uri.encodeComponent(locationRef);
+      print("request: $url");
+      final response =
+          await _client.post(url, headers: headers, body: json.encode(dataMap));
+      if (response.statusCode >= 200 || response.statusCode < 299) {
         throw Exception("Error ${response.statusCode}");
       } else {
         return true;
@@ -48,10 +76,10 @@ class Invitation {
   }
 }
 
-
 class InvitationRequest extends AsyncHttpRequest<Invitation> {
   InvitationRequest(Client client)
-      : super(client, 'https://us-central1-blaulichtplaner.cloudfunctions.net/invitation');
+      : super(client,
+            'https://us-central1-blaulichtplaner.cloudfunctions.net');
 
   @override
   Map<String, Object> _convertData(Invitation data) {
@@ -59,4 +87,13 @@ class InvitationRequest extends AsyncHttpRequest<Invitation> {
   }
 }
 
+class RegistrationRequest extends AsyncHttpRequest<Map<String, dynamic>> {
+  RegistrationRequest(Client client)
+      : super(client,
+            'https://us-central1-blaulichtplaner.cloudfunctions.net');
 
+  @override
+  Map<String, dynamic> _convertData(Map<String, dynamic> data) {
+    return data;
+  }
+}

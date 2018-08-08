@@ -2,6 +2,7 @@ import 'package:async_loader/async_loader.dart';
 import 'package:blaulichtplaner_app/api_service.dart';
 import 'package:blaulichtplaner_app/bid/shift_bids_view.dart';
 import 'package:blaulichtplaner_app/assignment/assignment_view.dart';
+import 'package:blaulichtplaner_app/registration_widget.dart';
 import 'package:blaulichtplaner_app/utils/user_manager.dart';
 import 'package:blaulichtplaner_app/welcome_widget.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -80,13 +81,13 @@ class LaunchScreenState extends State<LaunchScreen> {
   }
 
   void _updateUserData(FirebaseUser user) async {
+    userManager.clearRoles();
     if (user != null) {
       final docQuery = await Firestore.instance
           .collection("users/${user.uid}/roles")
           .getDocuments();
+
       userManager.initWithDocuments(user, docQuery.documents);
-    } else {
-      userManager.clearRoles();
     }
 
     setState(() {
@@ -148,6 +149,7 @@ class LaunchScreenState extends State<LaunchScreen> {
         renderSuccess: ({data}) {},
       );*/
     }
+    _updateUserData(_user);
     Navigator.pop(context);
   }
 
@@ -219,6 +221,7 @@ class LaunchScreenState extends State<LaunchScreen> {
       if (_user == null) {
         return LoginScreen();
       } else {
+        //return RegistrationScreen(user: _user);
         return Scaffold(
           appBar: AppBar(
             title: Text(_createTitle()),

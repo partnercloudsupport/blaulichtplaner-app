@@ -9,7 +9,7 @@ class BidModel {
   String remarks;
 }
 
-typedef void SaveBid(BidModel bidModel);
+typedef void SaveBid(BidModel bidModel, BuildContext context);
 
 class BidForm extends StatefulWidget {
   final BidModel bidModel;
@@ -146,7 +146,7 @@ class BidFormState extends State<BidForm> {
                     child: RaisedButton(
                       onPressed: () {
                         if (_formKey.currentState.validate()) {
-                          widget.saveBid(bidModel);
+                          widget.saveBid(bidModel, context);
                         } else {
                           Scaffold.of(context).showSnackBar(SnackBar(
                               content:

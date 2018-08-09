@@ -40,8 +40,6 @@ class LaunchScreen extends StatefulWidget {
   LaunchScreenState createState() => LaunchScreenState();
 }
 
-enum FilterOptions { withoutBid, withBid, notInterested }
-
 class DrawerWidget extends StatelessWidget {
   final FirebaseUser user;
   final Function logoutCallback;
@@ -95,7 +93,7 @@ class LaunchScreenState extends State<LaunchScreen> {
   int selectedTab = 0;
   bool upcomingShifts = true;
   String currentTitle = "Blaulichtplaner";
-  FilterOptions _selectedFilterOption = FilterOptions.notInterested;
+  FilterOptions _selectedFilterOption = FilterOptions.withoutBid;
 
   final UserManager userManager = UserManager.get();
 
@@ -191,9 +189,9 @@ class LaunchScreenState extends State<LaunchScreen> {
         return ShiftplanView();
       case 2:
         return ShiftBidsView(
-          workAreaRoles: userManager.rolesForType("workArea"),
-          employeeRoles: userManager.rolesForType("employee"),
-        );
+            workAreaRoles: userManager.rolesForType("workArea"),
+            employeeRoles: userManager.rolesForType("employee"),
+            filter: _selectedFilterOption);
       default:
         return Text("unkown tab id");
     }
@@ -214,6 +212,11 @@ class LaunchScreenState extends State<LaunchScreen> {
       case 2:
         return <Widget>[
           PopupMenuButton(
+            onSelected: (FilterOptions val) {
+              setState(() {
+                _selectedFilterOption = val;
+              });
+            },
             child: Padding(
                 padding: EdgeInsets.only(left: 16.0, right: 16.0),
                 child: Icon(Icons.filter_list)),
@@ -232,7 +235,7 @@ class LaunchScreenState extends State<LaunchScreen> {
                         children: <Widget>[
                           Radio(
                             onChanged: (val) {
-                              _selectedFilterOption = val;
+                              _selectedFilterOption ??= val;
                             },
                             groupValue: _selectedFilterOption,
                             value: FilterOptions.withoutBid,
@@ -247,7 +250,7 @@ class LaunchScreenState extends State<LaunchScreen> {
                         children: <Widget>[
                           Radio(
                             onChanged: (val) {
-                              _selectedFilterOption = val;
+                              _selectedFilterOption ??= val;
                             },
                             groupValue: _selectedFilterOption,
                             value: FilterOptions.withBid,
@@ -262,7 +265,7 @@ class LaunchScreenState extends State<LaunchScreen> {
                         children: <Widget>[
                           Radio(
                             onChanged: (val) {
-                              _selectedFilterOption = val;
+                              _selectedFilterOption ??= val;
                             },
                             groupValue: _selectedFilterOption,
                             value: FilterOptions.notInterested,
@@ -279,6 +282,19 @@ class LaunchScreenState extends State<LaunchScreen> {
     }
   }
 
+  String _createShiftBidTitle() {
+    switch (_selectedFilterOption) {
+      case FilterOptions.withoutBid:
+        return "ohne Bewerbung";
+      case FilterOptions.withBid:
+        return "beworben";
+      case FilterOptions.notInterested:
+        return "abgelehnt";
+      default:
+        return "abgelehnt";
+    }
+  }
+
   String _createTitle() {
     switch (selectedTab) {
       case 0:
@@ -291,7 +307,7 @@ class LaunchScreenState extends State<LaunchScreen> {
         }
       case 2:
         {
-          return "Offene Dienste";
+          return "Offene Dienste - ${_createShiftBidTitle()}";
         }
     }
     return "Blaulichtplaner";

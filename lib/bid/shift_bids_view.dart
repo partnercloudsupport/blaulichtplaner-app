@@ -1,9 +1,8 @@
 import 'dart:async';
 
 import 'package:blaulichtplaner_app/bid/bid_editor.dart';
-import 'package:blaulichtplaner_app/bid/bid_service.dart';
-import 'package:blaulichtplaner_app/bid/rejection.dart';
-import 'package:blaulichtplaner_app/bid/shift_bids.dart';
+import 'package:blaulichtplaner_app/bid/vote.dart';
+import 'package:blaulichtplaner_app/bid/shift_vote.dart';
 import 'package:blaulichtplaner_app/utils/user_manager.dart';
 import 'package:blaulichtplaner_app/utils/utils.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -11,12 +10,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:intl/intl.dart';
 
+enum FilterOptions { withoutBid, withBid, notInterested }
+
 class ShiftBidsView extends StatefulWidget {
   final List<Role> workAreaRoles;
   final List<Role> employeeRoles;
+  final FilterOptions filter;
 
   ShiftBidsView(
-      {Key key, @required this.workAreaRoles, @required this.employeeRoles});
+      {Key key,
+      @required this.workAreaRoles,
+      @required this.employeeRoles,
+      @required this.filter});
 
   bool hasWorkAreaRoles() {
     return workAreaRoles != null && workAreaRoles.isNotEmpty;
@@ -30,7 +35,7 @@ class ShiftBidsView extends StatefulWidget {
 
 class ShiftBidsViewState extends State<ShiftBidsView> {
   final List<StreamSubscription> subs = [];
-  final ShiftBidHolder _shiftBidHolder = ShiftBidHolder();
+  final ShiftVoteHolder _shiftVoteHolder = ShiftVoteHolder();
 
   @override
   void initState() {
@@ -53,13 +58,12 @@ class ShiftBidsViewState extends State<ShiftBidsView> {
         subs.add(queryStream.listen((snapshot) {
           setState(() {
             for (final doc in snapshot.documentChanges) {
-              Shift shift = Shift.fromSnapshot(doc.document);
               if (doc.type == DocumentChangeType.added) {
-                _shiftBidHolder.addShift(shift);
+                _shiftVoteHolder.addShift(Shift.fromSnapshot(doc.document));
               } else if (doc.type == DocumentChangeType.modified) {
-                _shiftBidHolder.modifyShift(shift);
+                _shiftVoteHolder.modifyShift(Shift.fromSnapshot(doc.document));
               } else if (doc.type == DocumentChangeType.removed) {
-                _shiftBidHolder.removeShift(shift);
+                _shiftVoteHolder.removeShift(Shift.fromSnapshot(doc.document));
               }
             }
           });
@@ -81,11 +85,11 @@ class ShiftBidsViewState extends State<ShiftBidsView> {
           setState(() {
             for (final doc in snapshot.documentChanges) {
               if (doc.type == DocumentChangeType.added) {
-                _shiftBidHolder.addBid(Bid.fromSnapshot(doc.document));
+                _shiftVoteHolder.addBid(Bid.fromSnapshot(doc.document));
               } else if (doc.type == DocumentChangeType.modified) {
-                // TODO
+                _shiftVoteHolder.modifyBid(Bid.fromSnapshot(doc.document));
               } else if (doc.type == DocumentChangeType.removed) {
-                _shiftBidHolder.removeBid(Bid.fromSnapshot(doc.document));
+                _shiftVoteHolder.removeBid(Bid.fromSnapshot(doc.document));
               }
             }
           });
@@ -108,9 +112,11 @@ class ShiftBidsViewState extends State<ShiftBidsView> {
             for (final doc in snapshot.documentChanges) {
               Rejection rejection = Rejection.fromSnapshot(doc.document);
               if (doc.type == DocumentChangeType.added) {
-                _shiftBidHolder.addRejection(rejection);
+                _shiftVoteHolder.addRejection(rejection);
               } else if (doc.type == DocumentChangeType.modified) {
+                _shiftVoteHolder.modifyRejection(rejection);
               } else if (doc.type == DocumentChangeType.removed) {
+                _shiftVoteHolder.removeRejection(rejection);
               }
             }
           });
@@ -126,9 +132,10 @@ class ShiftBidsViewState extends State<ShiftBidsView> {
       sub.cancel();
     }
     subs.clear();
-    _shiftBidHolder.clear();
+    _shiftVoteHolder.clear();
     _initWorkAreaShifts();
     _initOwnBids();
+    _initOwnRejections();
   }
 
   @override
@@ -167,13 +174,14 @@ class ShiftBidsViewState extends State<ShiftBidsView> {
   }
 
   Widget _listElementBuilder(BuildContext context, int index) {
-    ShiftBid shiftBid = _shiftBidHolder[index];
+    ShiftVote shiftVote = _shiftVoteHolder.filterShiftVotes(widget.filter)[index];
+
     final dateFormatter = DateFormat.EEEE("de_DE").add_yMd();
     final timeFormatter = DateFormat.Hm("de_DE");
 
-    String dateTimeLabel = dateFormatter.format(shiftBid.from);
+    String dateTimeLabel = dateFormatter.format(shiftVote.from);
 
-    final shiftDuration = shiftBid.to.difference(shiftBid.from);
+    final shiftDuration = shiftVote.to.difference(shiftVote.from);
     int shiftHours = shiftDuration.inHours;
     final minutesDuration = shiftDuration - Duration(hours: shiftHours);
     int shiftMinutes = minutesDuration.inMinutes;
@@ -182,19 +190,19 @@ class ShiftBidsViewState extends State<ShiftBidsView> {
         "h" +
         (shiftMinutes > 0 ? (" " + shiftMinutes.toString() + "m") : "");
 
-    String timeTimeLabel = timeFormatter.format(shiftBid.from) +
+    String timeTimeLabel = timeFormatter.format(shiftVote.from) +
         " - " +
-        timeFormatter.format(shiftBid.to) +
+        timeFormatter.format(shiftVote.to) +
         " (" +
         shiftDurationLabel +
         ")";
 
     List<FlatButton> buttons = [];
-    if (shiftBid.hasBid()) {
+    if (shiftVote.hasBid()) {
       buttons.add(FlatButton(
         child: Text('Bewerbung löschen'),
         onPressed: () {
-          BidService().deleteBid(shiftBid.bid);
+          BidService().delete(shiftVote.bid);
         },
       ));
       buttons.add(FlatButton(
@@ -202,7 +210,7 @@ class ShiftBidsViewState extends State<ShiftBidsView> {
         onPressed: () {
           Navigator.push(context, MaterialPageRoute(builder: (context) {
             return BidEditor(
-              shiftBid: shiftBid,
+              shiftVote: shiftVote,
             );
           }));
         },
@@ -214,22 +222,35 @@ class ShiftBidsViewState extends State<ShiftBidsView> {
         onPressed: () {
           final role = UserManager
               .get()
-              .getRoleForTypeAndReference("employee", shiftBid.shiftplanRef);
+              .getRoleForTypeAndReference("employee", shiftVote.shiftplanRef);
           if (role != null) {
             Rejection rejection =
-                Rejection.fromShift(shiftBid.shift, role.reference);
-            rejectShift(rejection);
+                Rejection.fromShift(shiftVote.shift, role.reference);
+            RejectionService().delete(rejection);
+          } else {
+            Scaffold.of(context).showSnackBar(SnackBar(
+                  content: Text('Sie können sich als Manager nicht bewerben.'),
+                ));
           }
         },
       ));
       buttons.add(FlatButton(
         child: Text('Bewerben'),
         onPressed: () {
-          Navigator.push(context, MaterialPageRoute(builder: (context) {
-            return BidEditor(
-              shiftBid: shiftBid,
-            );
-          }));
+          final role = UserManager
+              .get()
+              .getRoleForTypeAndReference("employee", shiftVote.shiftplanRef);
+          if (role != null) {
+            Navigator.push(context, MaterialPageRoute(builder: (context) {
+              return BidEditor(
+                shiftVote: shiftVote,
+              );
+            }));
+          } else {
+            Scaffold.of(context).showSnackBar(SnackBar(
+                  content: Text('Sie können sich als Manager nicht bewerben.'),
+                ));
+          }
         },
       ));
     }
@@ -239,11 +260,11 @@ class ShiftBidsViewState extends State<ShiftBidsView> {
         padding: EdgeInsets.only(left: 16.0, right: 16.0, top: 8.0),
         child: Row(
           children: <Widget>[
-            Expanded(child: Text(shiftBid.workAreaLabel)),
+            Expanded(child: Text(shiftVote.workAreaLabel)),
             Expanded(
               child: Align(
                   alignment: Alignment.centerRight,
-                  child: Text(shiftBid.locationLabel)),
+                  child: Text(shiftVote.locationLabel)),
             )
           ],
         ),
@@ -256,12 +277,12 @@ class ShiftBidsViewState extends State<ShiftBidsView> {
       )
     ];
 
-    if (shiftBid.hasShift() && isNotEmpty(shiftBid.shift.publicNote)) {
-      rows.add(createInfoBox(shiftBid.shift.publicNote, Icons.assignment));
+    if (shiftVote.hasShift() && isNotEmpty(shiftVote.shift.publicNote)) {
+      rows.add(createInfoBox(shiftVote.shift.publicNote, Icons.assignment));
     }
 
-    if (shiftBid.hasBid() && isNotEmpty(shiftBid.bid.remarks)) {
-      rows.add(createInfoBox(shiftBid.bid.remarks, Icons.speaker_notes));
+    if (shiftVote.hasBid() && isNotEmpty(shiftVote.bid.remarks)) {
+      rows.add(createInfoBox(shiftVote.bid.remarks, Icons.speaker_notes));
     }
 
     rows.add(ButtonTheme.bar(
@@ -283,7 +304,7 @@ class ShiftBidsViewState extends State<ShiftBidsView> {
   @override
   Widget build(BuildContext context) {
     if (widget.hasWorkAreaRoles()) {
-      if (_shiftBidHolder.isEmpty) {
+      if (_shiftVoteHolder.isEmpty) {
         return Center(
           child: Column(
             children: <Widget>[Text("Keine offene Schichten verfügbar")],
@@ -292,7 +313,7 @@ class ShiftBidsViewState extends State<ShiftBidsView> {
         );
       } else {
         return ListView.builder(
-            itemCount: _shiftBidHolder.length,
+            itemCount: _shiftVoteHolder.filterShiftVotes(widget.filter).length,
             itemBuilder: _listElementBuilder);
       }
     } else {

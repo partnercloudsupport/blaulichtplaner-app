@@ -1,15 +1,15 @@
 import 'package:blaulichtplaner_app/bid/bid_form.dart';
-import 'package:blaulichtplaner_app/bid/bid_service.dart';
-import 'package:blaulichtplaner_app/bid/shift_bids.dart';
+import 'package:blaulichtplaner_app/bid/vote.dart';
+import 'package:blaulichtplaner_app/bid/shift_vote.dart';
 import 'package:blaulichtplaner_app/utils/user_manager.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 
 class BidEditor extends StatefulWidget {
-  final ShiftBid shiftBid;
+  final ShiftVote shiftVote;
   final bool fixedDates;
 
-  const BidEditor({Key key, @required this.shiftBid, this.fixedDates = true})
+  const BidEditor({Key key, @required this.shiftVote, this.fixedDates = true})
       : super(key: key);
 
   @override
@@ -24,11 +24,11 @@ class BidEditorState extends State<BidEditor> {
   @override
   void initState() {
     super.initState();
-    final shiftBid = widget.shiftBid;
-    bidModel.from = shiftBid.from;
-    bidModel.to = shiftBid.to;
-    if (shiftBid.bid != null) {
-      final bid = shiftBid.bid;
+    final shiftVote = widget.shiftVote;
+    bidModel.from = shiftVote.from;
+    bidModel.to = shiftVote.to;
+    if (shiftVote.bid != null) {
+      final bid = shiftVote.bid;
       bidModel.remarks = bid.remarks;
       bidModel.minHours = bid.minHours;
       bidModel.maxHours = bid.maxHours;
@@ -42,30 +42,38 @@ class BidEditorState extends State<BidEditor> {
         body: SingleChildScrollView(
             child: BidForm(
           bidModel: bidModel,
-          saveBid: (bidModel) {
-            Bid bid = widget.shiftBid.hasBid() ? widget.shiftBid.bid : Bid();
+          saveBid: (bidModel, ctx) {
+            Bid bid = widget.shiftVote.hasBid() ? widget.shiftVote.bid : Bid();
             bid.from = bidModel.from;
             bid.to = bidModel.to;
             bid.remarks = bidModel.remarks;
             bid.minHours = bidModel.minHours;
             bid.maxHours = bidModel.maxHours;
 
-            if (widget.shiftBid.hasShift()) {
-              Shift shift = widget.shiftBid.shift;
+            if (widget.shiftVote.hasShift()) {
+              Shift shift = widget.shiftVote.shift;
               bid.shiftRef = shift.shiftRef;
             }
 
-            bid.shiftplanRef = widget.shiftBid.shiftplanRef;
+            bid.shiftplanRef = widget.shiftVote.shiftplanRef;
 
-            final role = UserManager.get().getRoleForTypeAndReference(
-                "employee", widget.shiftBid.shiftplanRef);
+            Role role = UserManager.get().getRoleForTypeAndReference(
+                "employee", widget.shiftVote.shiftplanRef);
+
+            if (role == null) {
+              Scaffold.of(ctx).showSnackBar(SnackBar(
+                    content:
+                        Text('Sie können sich als Manager nicht bewerben.'),
+                  ));
+            }
 
             bid.employeeRef = role.reference;
-            bid.employeeLabel = UserManager.get().user ?? UserManager.get().user.displayName; // TODO
+            bid.employeeLabel =
+                UserManager.get().user ?? UserManager.get().user.displayName;
 
             BidService bidService = BidService();
-            bidService.saveBid(bid).then((ref) {
-              Navigator.pop(context);
+            bidService.save(bid).then((ref) {
+              Navigator.pop(ctx);
             });
           },
         )));

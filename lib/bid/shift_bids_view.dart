@@ -16,12 +16,14 @@ class ShiftBidsView extends StatefulWidget {
   final List<Role> workAreaRoles;
   final List<Role> employeeRoles;
   final FilterOptions filter;
+  final DateTime selectedDate;
 
   ShiftBidsView(
       {Key key,
       @required this.workAreaRoles,
       @required this.employeeRoles,
-      @required this.filter});
+      @required this.filter,
+      this.selectedDate});
 
   bool hasWorkAreaRoles() {
     return workAreaRoles != null && workAreaRoles.isNotEmpty;
@@ -174,7 +176,7 @@ class ShiftBidsViewState extends State<ShiftBidsView> {
   }
 
   Widget _listElementBuilder(BuildContext context, int index) {
-    ShiftVote shiftVote = _shiftVoteHolder.filterShiftVotes(widget.filter)[index];
+    ShiftVote shiftVote = _shiftVoteHolder.filterShiftVotes(widget.filter, widget.selectedDate)[index];
 
     final dateFormatter = DateFormat.EEEE("de_DE").add_yMd();
     final timeFormatter = DateFormat.Hm("de_DE");
@@ -313,7 +315,7 @@ class ShiftBidsViewState extends State<ShiftBidsView> {
         );
       } else {
         return ListView.builder(
-            itemCount: _shiftVoteHolder.filterShiftVotes(widget.filter).length,
+            itemCount: _shiftVoteHolder.filterShiftVotes(widget.filter, widget.selectedDate).length,
             itemBuilder: _listElementBuilder);
       }
     } else {

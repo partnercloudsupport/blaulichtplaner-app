@@ -46,9 +46,23 @@ class BidEditorState extends State<BidEditor> {
             Bid bid = widget.shiftVote.hasBid() ? widget.shiftVote.bid : Bid();
             bid.from = bidModel.from;
             bid.to = bidModel.to;
+            if (bid.to.isBefore(bid.from)) {
+              Scaffold.of(ctx).showSnackBar(SnackBar(
+                    content: Text(
+                        'End- sollte vor Startzeitpunkt liegen.'),
+                  ));
+              return;
+            }
             bid.remarks = bidModel.remarks;
             bid.minHours = bidModel.minHours;
             bid.maxHours = bidModel.maxHours;
+            if (bid.minHours > bid.maxHours) {
+              Scaffold.of(ctx).showSnackBar(SnackBar(
+                    content: Text(
+                        'Maximaldauer sollte über der Minimaldauer liegen.'),
+                  ));
+              return;
+            }
 
             if (widget.shiftVote.hasShift()) {
               Shift shift = widget.shiftVote.shift;
@@ -65,6 +79,7 @@ class BidEditorState extends State<BidEditor> {
                     content:
                         Text('Sie können sich als Manager nicht bewerben.'),
                   ));
+              return;
             }
 
             bid.employeeRef = role.reference;

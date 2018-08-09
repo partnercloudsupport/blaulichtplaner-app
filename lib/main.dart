@@ -2,6 +2,7 @@ import 'package:blaulichtplaner_app/api_service.dart';
 import 'package:blaulichtplaner_app/bid/shift_bids_view.dart';
 import 'package:blaulichtplaner_app/assignment/assignment_view.dart';
 import 'package:blaulichtplaner_app/registration_widget.dart';
+import 'package:blaulichtplaner_app/settings_widget.dart';
 import 'package:blaulichtplaner_app/shiftplan/shiftplan_view.dart';
 import 'package:blaulichtplaner_app/utils/user_manager.dart';
 import 'package:blaulichtplaner_app/welcome_widget.dart';
@@ -12,6 +13,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:http/http.dart';
 import 'package:intl/date_symbol_data_local.dart';
+import 'package:intl/intl.dart';
 
 void main() {
   // debugPaintSizeEnabled = true;
@@ -79,6 +81,14 @@ class DrawerWidget extends StatelessWidget {
                   MaterialPageRoute(builder: (context) => AboutScreen()));
             },
           ),
+          ListTile(
+            leading: Icon(Icons.settings),
+            title: Text("Einstellungen"),
+            onTap: () {
+              Navigator.push(context,
+                  MaterialPageRoute(builder: (context) => SettingsScreen()));
+            },
+          ),
         ],
       ),
     );
@@ -94,6 +104,8 @@ class LaunchScreenState extends State<LaunchScreen> {
   bool upcomingShifts = true;
   String currentTitle = "Blaulichtplaner";
   FilterOptions _selectedFilterOption = FilterOptions.withoutBid;
+  bool _selectDate = false;
+  DateTime _selectedDate = DateTime.now();
 
   final UserManager userManager = UserManager.get();
 
@@ -191,7 +203,8 @@ class LaunchScreenState extends State<LaunchScreen> {
         return ShiftBidsView(
             workAreaRoles: userManager.rolesForType("workArea"),
             employeeRoles: userManager.rolesForType("employee"),
-            filter: _selectedFilterOption);
+            filter: _selectedFilterOption,
+            selectedDate: _selectDate?_selectedDate:null,);
       default:
         return Text("unkown tab id");
     }
@@ -211,6 +224,14 @@ class LaunchScreenState extends State<LaunchScreen> {
         ];
       case 2:
         return <Widget>[
+          IconButton(
+            icon: Icon(Icons.today),
+            onPressed: () {
+              setState(() {
+                _selectDate = !_selectDate;
+              });
+            },
+          ),
           PopupMenuButton(
             onSelected: (FilterOptions val) {
               setState(() {
@@ -313,11 +334,51 @@ class LaunchScreenState extends State<LaunchScreen> {
     return "Blaulichtplaner";
   }
 
+  Widget _createDateNavigation() {
+    if (_selectDate && selectedTab == 2) {
+      return PreferredSize(
+          preferredSize: const Size.fromHeight(48.0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: <Widget>[
+              IconButton(
+                icon: Icon(Icons.arrow_back),
+                onPressed: () {
+                  setState(() {
+                    _selectedDate = _selectedDate.subtract(Duration(days: 1));
+                  });
+                },
+                color: Colors.white,
+              ),
+              FlatButton(
+                child: Text(
+                  DateFormat.yMMMd("de_DE").format(_selectedDate),
+                  style: TextStyle(color: Colors.white),
+                ),
+                onPressed: () {},
+              ),
+              IconButton(
+                  icon: Icon(Icons.arrow_forward),
+                  onPressed: () {
+                    setState(() {
+                      _selectedDate = _selectedDate.add(Duration(days: 1));
+                    });
+                  },
+                  color: Colors.white)
+            ],
+          ));
+    } else {
+      return null;
+    }
+  }
+
   Widget _buildHomeScreen(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text(_createTitle()),
         actions: _createAppBarActions(),
+        bottom: _createDateNavigation(),
       ),
       drawer: DrawerWidget(
         user: _user,

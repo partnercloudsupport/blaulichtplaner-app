@@ -174,19 +174,35 @@ class ShiftVoteHolder {
         orElse: () => null);
   }
 
-  List<ShiftVote> filterShiftVotes(FilterOptions option) {
+  Function _filterDate(DateTime selectedDate) {
+    return (ShiftVote shiftVote) {
+      if (selectedDate != null) {
+        return (shiftVote.shift.from.day == selectedDate.day) &&
+            (shiftVote.shift.from.month == selectedDate.month) &&
+            (shiftVote.shift.from.year == selectedDate.year);
+      } else {
+        return true;
+      }
+    };
+  }
+
+  List<ShiftVote> filterShiftVotes(
+      FilterOptions option, DateTime selectedDate) {
     switch (option) {
       case FilterOptions.withoutBid:
         return _shiftVotes
             .where((ShiftVote shiftVote) => !shiftVote.hasVote())
+            .where(_filterDate(selectedDate))
             .toList();
       case FilterOptions.withBid:
         return _shiftVotes
             .where((ShiftVote shiftVote) => shiftVote.hasBid())
+            .where(_filterDate(selectedDate))
             .toList();
       case FilterOptions.notInterested:
         return _shiftVotes
             .where((ShiftVote shiftVote) => shiftVote.hasRejection())
+            .where(_filterDate(selectedDate))
             .toList();
       default:
         return null;

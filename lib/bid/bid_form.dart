@@ -146,6 +146,7 @@ class BidFormState extends State<BidForm> {
                     child: RaisedButton(
                       onPressed: () {
                         if (_formKey.currentState.validate()) {
+                          print("saveBid");
                           widget.saveBid(bidModel, context);
                         } else {
                           Scaffold.of(context).showSnackBar(SnackBar(

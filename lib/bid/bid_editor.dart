@@ -48,8 +48,7 @@ class BidEditorState extends State<BidEditor> {
             bid.to = bidModel.to;
             if (bid.to.isBefore(bid.from)) {
               Scaffold.of(ctx).showSnackBar(SnackBar(
-                    content: Text(
-                        'End- sollte vor Startzeitpunkt liegen.'),
+                    content: Text('End- sollte vor Startzeitpunkt liegen.'),
                   ));
               return;
             }
@@ -83,8 +82,9 @@ class BidEditorState extends State<BidEditor> {
             }
 
             bid.employeeRef = role.reference;
-            bid.employeeLabel =
-                UserManager.get().user ?? UserManager.get().user.displayName;
+            bid.employeeLabel = UserManager.get().user != null
+                ? UserManager.get().user.displayName
+                : "Kein Label";
 
             BidService bidService = BidService();
             bidService.save(bid).then((ref) {

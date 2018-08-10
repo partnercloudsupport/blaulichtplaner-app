@@ -58,9 +58,8 @@ class ShiftVote {
 
   bool hasShift() => shift != null;
 
-  bool hasBid() => vote ?? (vote is Bid);
-
-  bool hasRejection() => vote ?? (vote is Rejection);
+  bool hasBid() => vote != null ? (vote is Bid) : false;
+  bool hasRejection() => vote != null ? (vote is Rejection) : false;
 
   bool hasVote() => vote != null;
 

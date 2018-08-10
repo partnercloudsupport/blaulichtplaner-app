@@ -256,7 +256,6 @@ class LaunchScreenState extends State<LaunchScreen> {
                         children: <Widget>[
                           Radio(
                             onChanged: (val) {
-                              _selectedFilterOption ??= val;
                             },
                             groupValue: _selectedFilterOption,
                             value: FilterOptions.withoutBid,
@@ -271,7 +270,6 @@ class LaunchScreenState extends State<LaunchScreen> {
                         children: <Widget>[
                           Radio(
                             onChanged: (val) {
-                              _selectedFilterOption ??= val;
                             },
                             groupValue: _selectedFilterOption,
                             value: FilterOptions.withBid,
@@ -286,7 +284,6 @@ class LaunchScreenState extends State<LaunchScreen> {
                         children: <Widget>[
                           Radio(
                             onChanged: (val) {
-                              _selectedFilterOption ??= val;
                             },
                             groupValue: _selectedFilterOption,
                             value: FilterOptions.notInterested,
@@ -306,13 +303,11 @@ class LaunchScreenState extends State<LaunchScreen> {
   String _createShiftBidTitle() {
     switch (_selectedFilterOption) {
       case FilterOptions.withoutBid:
-        return "ohne Bewerbung";
+        return "Offene Dienste";
       case FilterOptions.withBid:
-        return "beworben";
-      case FilterOptions.notInterested:
-        return "abgelehnt";
-      default:
-        return "abgelehnt";
+        return "Beworbene Diente";
+      case FilterOptions.notInterested: default:
+        return "Abgelehnte Dienste";
     }
   }
 
@@ -328,7 +323,7 @@ class LaunchScreenState extends State<LaunchScreen> {
         }
       case 2:
         {
-          return "Offene Dienste - ${_createShiftBidTitle()}";
+          return _createShiftBidTitle();
         }
     }
     return "Blaulichtplaner";

@@ -5,6 +5,7 @@ import 'package:blaulichtplaner_app/bid/vote.dart';
 import 'package:blaulichtplaner_app/bid/shift_vote.dart';
 import 'package:blaulichtplaner_app/utils/user_manager.dart';
 import 'package:blaulichtplaner_app/utils/utils.dart';
+import 'package:blaulichtplaner_app/widgets/loader.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
@@ -38,6 +39,7 @@ class ShiftBidsView extends StatefulWidget {
 class ShiftBidsViewState extends State<ShiftBidsView> {
   final List<StreamSubscription> subs = [];
   final ShiftVoteHolder _shiftVoteHolder = ShiftVoteHolder();
+  bool _initialized = false;
 
   @override
   void initState() {
@@ -45,6 +47,9 @@ class ShiftBidsViewState extends State<ShiftBidsView> {
     _initOwnRejections();
     _initWorkAreaShifts();
     _initOwnBids();
+    setState(() {
+      _initialized = true;
+    });
   }
 
   void _initWorkAreaShifts() {
@@ -176,7 +181,8 @@ class ShiftBidsViewState extends State<ShiftBidsView> {
   }
 
   Widget _listElementBuilder(BuildContext context, int index) {
-    ShiftVote shiftVote = _shiftVoteHolder.filterShiftVotes(widget.filter, widget.selectedDate)[index];
+    ShiftVote shiftVote = _shiftVoteHolder.filterShiftVotes(
+        widget.filter, widget.selectedDate)[index];
 
     final dateFormatter = DateFormat.EEEE("de_DE").add_yMd();
     final timeFormatter = DateFormat.Hm("de_DE");
@@ -203,8 +209,12 @@ class ShiftBidsViewState extends State<ShiftBidsView> {
     if (shiftVote.hasBid()) {
       buttons.add(FlatButton(
         child: Text('Bewerbung löschen'),
-        onPressed: () {
-          BidService().delete(shiftVote.bid);
+        onPressed: () async {
+          try {
+            await BidService().delete(shiftVote.bid);
+          } catch (e) {
+            print(e);
+          }
         },
       ));
       buttons.add(FlatButton(
@@ -215,6 +225,17 @@ class ShiftBidsViewState extends State<ShiftBidsView> {
               shiftVote: shiftVote,
             );
           }));
+        },
+      ));
+    } else if (shiftVote.hasRejection()) {
+      buttons.add(FlatButton(
+        child: Text('Ablehnung löschen'),
+        onPressed: () async {
+          try {
+            await RejectionService().delete(shiftVote.rejection);
+          } catch (e) {
+            print(e);
+          }
         },
       ));
     } else {
@@ -228,7 +249,7 @@ class ShiftBidsViewState extends State<ShiftBidsView> {
           if (role != null) {
             Rejection rejection =
                 Rejection.fromShift(shiftVote.shift, role.reference);
-            RejectionService().delete(rejection);
+            RejectionService().save(rejection);
           } else {
             Scaffold.of(context).showSnackBar(SnackBar(
                   content: Text('Sie können sich als Manager nicht bewerben.'),
@@ -306,18 +327,21 @@ class ShiftBidsViewState extends State<ShiftBidsView> {
   @override
   Widget build(BuildContext context) {
     if (widget.hasWorkAreaRoles()) {
-      if (_shiftVoteHolder.isEmpty) {
-        return Center(
-          child: Column(
-            children: <Widget>[Text("Keine offene Schichten verfügbar")],
-            mainAxisAlignment: MainAxisAlignment.center,
-          ),
-        );
-      } else {
-        return ListView.builder(
-            itemCount: _shiftVoteHolder.filterShiftVotes(widget.filter, widget.selectedDate).length,
-            itemBuilder: _listElementBuilder);
-      }
+      return LoaderBodyWidget(
+        child: (_shiftVoteHolder.isEmpty)
+            ? Center(
+                child: Column(
+                  children: <Widget>[Text("Keine offene Schichten verfügbar")],
+                  mainAxisAlignment: MainAxisAlignment.center,
+                ),
+              )
+            : ListView.builder(
+                itemCount: _shiftVoteHolder
+                    .filterShiftVotes(widget.filter, widget.selectedDate)
+                    .length,
+                itemBuilder: _listElementBuilder),
+        loading: !_initialized,
+      );
     } else {
       return Center(
         child: Column(

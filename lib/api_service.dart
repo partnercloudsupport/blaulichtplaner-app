@@ -81,7 +81,7 @@ class Invitation {
 class InvitationRequest extends AsyncHttpRequest<Invitation> {
   InvitationRequest(Client client)
       : super(client,
-            'https://us-central1-blaulichtplaner.cloudfunctions.net');
+            'https://us-central1-blaulichtplaner.cloudfunctions.net/invitation');
 
   @override
   Map<String, Object> _convertData(Invitation data) {

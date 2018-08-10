@@ -74,13 +74,18 @@ class DrawerWidget extends StatelessWidget {
             leading: Icon(Icons.location_on),
             title: Text("Zugeordnete Standorte"),
             onTap: () {
+              Navigator.pop(context);
+
               Navigator.push(context,
                   MaterialPageRoute(builder: (context) => RolesScreen()));
             },
-          ),ListTile(
+          ),
+          ListTile(
             leading: Icon(Icons.settings),
             title: Text("Einstellungen"),
             onTap: () {
+              Navigator.pop(context);
+
               Navigator.push(context,
                   MaterialPageRoute(builder: (context) => SettingsScreen()));
             },
@@ -90,6 +95,7 @@ class DrawerWidget extends StatelessWidget {
             leading: Icon(Icons.info_outline),
             title: Text("Über die App"),
             onTap: () {
+              Navigator.pop(context);
               Navigator.push(context,
                   MaterialPageRoute(builder: (context) => AboutScreen()));
             },

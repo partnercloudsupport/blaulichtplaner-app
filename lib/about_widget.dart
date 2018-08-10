@@ -5,13 +5,7 @@ class AboutScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Row(children: <Widget>[
-          Padding(
-            child: Icon(Icons.info_outline),
-            padding: EdgeInsets.only(right: 8.0),
-          ),
-          Text("Über die App")
-        ]),
+        title: Text("Über die App"),
       ),
       body: SingleChildScrollView(child: Center(child: Text('Hi'))),
     );

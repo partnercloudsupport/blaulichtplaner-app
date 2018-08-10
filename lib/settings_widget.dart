@@ -7,13 +7,7 @@ class SettingsScreen extends StatelessWidget {
         length: 2,
         child: Scaffold(
             appBar: AppBar(
-              title: Row(children: <Widget>[
-                Padding(
-                  child: Icon(Icons.settings),
-                  padding: EdgeInsets.only(right: 8.0),
-                ),
-                Text("Einstellungen")
-              ]),
+              title: Text("Einstellungen"),
               bottom: TabBar(
                 tabs: <Widget>[
                   Tab(

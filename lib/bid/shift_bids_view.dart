@@ -5,7 +5,6 @@ import 'package:blaulichtplaner_app/bid/vote.dart';
 import 'package:blaulichtplaner_app/bid/shift_vote.dart';
 import 'package:blaulichtplaner_app/utils/user_manager.dart';
 import 'package:blaulichtplaner_app/utils/utils.dart';
-import 'package:blaulichtplaner_app/widgets/loader.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
@@ -134,6 +133,7 @@ class ShiftBidsViewState extends State<ShiftBidsView> {
 
   @override
   void didUpdateWidget(ShiftBidsView oldWidget) {
+      _initialized = false;
     super.didUpdateWidget(oldWidget);
     for (final sub in subs) {
       sub.cancel();
@@ -143,6 +143,7 @@ class ShiftBidsViewState extends State<ShiftBidsView> {
     _initWorkAreaShifts();
     _initOwnBids();
     _initOwnRejections();
+      _initialized = true;
   }
 
   @override
@@ -327,21 +328,28 @@ class ShiftBidsViewState extends State<ShiftBidsView> {
   @override
   Widget build(BuildContext context) {
     if (widget.hasWorkAreaRoles()) {
-      return LoaderBodyWidget(
-        child: (_shiftVoteHolder.isEmpty)
-            ? Center(
-                child: Column(
-                  children: <Widget>[Text("Keine offene Schichten verfügbar")],
-                  mainAxisAlignment: MainAxisAlignment.center,
-                ),
-              )
-            : ListView.builder(
-                itemCount: _shiftVoteHolder
-                    .filterShiftVotes(widget.filter, widget.selectedDate)
-                    .length,
-                itemBuilder: _listElementBuilder),
-        loading: !_initialized,
-      );
+      if ((_shiftVoteHolder
+          .filterShiftVotes(widget.filter, widget.selectedDate)
+          .isEmpty)) {
+        return Container(
+            color: Colors.white,
+            child: Center(
+              child: Column(
+                children: <Widget>[
+                  _initialized
+                      ? Text('Keine Items')
+                      : CircularProgressIndicator()
+                ],
+                mainAxisAlignment: MainAxisAlignment.center,
+              ),
+            ));
+      } else {
+        return ListView.builder(
+            itemCount: _shiftVoteHolder
+                .filterShiftVotes(widget.filter, widget.selectedDate)
+                .length,
+            itemBuilder: _listElementBuilder);
+      }
     } else {
       return Center(
         child: Column(

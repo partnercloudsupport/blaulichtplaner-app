@@ -2,15 +2,24 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 class Role {
-  final String type;
-  final String role;
-  final DocumentReference reference;
-  final String label;
+  String type;
+  String role;
+  DocumentReference reference;
+  String label;
 
   Role(this.type, this.role, this.reference, this.label);
 
+  Role.fromSnapshot(Map<String, dynamic> data) {
+    type = data["type"];
+    role = data["role"];
+    reference = data["reference"];
+    label = data["label"] ?? (data["locationName"] ?? (data["employeeName"] ?? data["workAreaName"]));
+    created = data["created"];
+  }
+
   String companyId;
   String locationId;
+  DateTime created;
 }
 
 class UserManager {

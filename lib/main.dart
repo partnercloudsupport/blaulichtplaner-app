@@ -2,6 +2,7 @@ import 'package:blaulichtplaner_app/api_service.dart';
 import 'package:blaulichtplaner_app/bid/shift_bids_view.dart';
 import 'package:blaulichtplaner_app/assignment/assignment_view.dart';
 import 'package:blaulichtplaner_app/registration_widget.dart';
+import 'package:blaulichtplaner_app/roles_widget.dart';
 import 'package:blaulichtplaner_app/settings_widget.dart';
 import 'package:blaulichtplaner_app/shiftplan/shiftplan_view.dart';
 import 'package:blaulichtplaner_app/utils/user_manager.dart';
@@ -31,6 +32,8 @@ class ShiftplanApp extends StatelessWidget {
         primarySwatch: Colors.blue,
       ),
       home: LaunchScreen(),
+      debugShowMaterialGrid: false,
+      debugShowCheckedModeBanner: false,
     );
   }
 }
@@ -68,9 +71,19 @@ class DrawerWidget extends StatelessWidget {
             onTap: invitationCallback,
           ),
           ListTile(
-            leading: Icon(Icons.exit_to_app),
-            title: Text("Logout"),
-            onTap: logoutCallback,
+            leading: Icon(Icons.location_on),
+            title: Text("Zugeordnete Standorte"),
+            onTap: () {
+              Navigator.push(context,
+                  MaterialPageRoute(builder: (context) => RolesScreen()));
+            },
+          ),ListTile(
+            leading: Icon(Icons.settings),
+            title: Text("Einstellungen"),
+            onTap: () {
+              Navigator.push(context,
+                  MaterialPageRoute(builder: (context) => SettingsScreen()));
+            },
           ),
           Divider(),
           ListTile(
@@ -82,12 +95,9 @@ class DrawerWidget extends StatelessWidget {
             },
           ),
           ListTile(
-            leading: Icon(Icons.settings),
-            title: Text("Einstellungen"),
-            onTap: () {
-              Navigator.push(context,
-                  MaterialPageRoute(builder: (context) => SettingsScreen()));
-            },
+            leading: Icon(Icons.exit_to_app),
+            title: Text("Logout"),
+            onTap: logoutCallback,
           ),
         ],
       ),
@@ -201,10 +211,11 @@ class LaunchScreenState extends State<LaunchScreen> {
         return ShiftplanView();
       case 2:
         return ShiftBidsView(
-            workAreaRoles: userManager.rolesForType("workArea"),
-            employeeRoles: userManager.rolesForType("employee"),
-            filter: _selectedFilterOption,
-            selectedDate: _selectDate?_selectedDate:null,);
+          workAreaRoles: userManager.rolesForType("workArea"),
+          employeeRoles: userManager.rolesForType("employee"),
+          filter: _selectedFilterOption,
+          selectedDate: _selectDate ? _selectedDate : null,
+        );
       default:
         return Text("unkown tab id");
     }
@@ -255,8 +266,7 @@ class LaunchScreenState extends State<LaunchScreen> {
                       child: Row(
                         children: <Widget>[
                           Radio(
-                            onChanged: (val) {
-                            },
+                            onChanged: (val) {},
                             groupValue: _selectedFilterOption,
                             value: FilterOptions.withoutBid,
                           ),
@@ -269,8 +279,7 @@ class LaunchScreenState extends State<LaunchScreen> {
                       child: Row(
                         children: <Widget>[
                           Radio(
-                            onChanged: (val) {
-                            },
+                            onChanged: (val) {},
                             groupValue: _selectedFilterOption,
                             value: FilterOptions.withBid,
                           ),
@@ -283,8 +292,7 @@ class LaunchScreenState extends State<LaunchScreen> {
                       child: Row(
                         children: <Widget>[
                           Radio(
-                            onChanged: (val) {
-                            },
+                            onChanged: (val) {},
                             groupValue: _selectedFilterOption,
                             value: FilterOptions.notInterested,
                           ),
@@ -306,7 +314,8 @@ class LaunchScreenState extends State<LaunchScreen> {
         return "Offene Dienste";
       case FilterOptions.withBid:
         return "Beworbene Diente";
-      case FilterOptions.notInterested: default:
+      case FilterOptions.notInterested:
+      default:
         return "Abgelehnte Dienste";
     }
   }

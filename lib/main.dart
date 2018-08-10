@@ -15,6 +15,7 @@ import 'package:flutter/rendering.dart';
 import 'package:http/http.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:intl/intl.dart';
+import 'dart:async';
 
 void main() {
   // debugPaintSizeEnabled = true;
@@ -121,13 +122,15 @@ class LaunchScreenState extends State<LaunchScreen> {
   String currentTitle = "Blaulichtplaner";
   FilterOptions _selectedFilterOption = FilterOptions.withoutBid;
   bool _selectDate = false;
-  DateTime _selectedDate = DateTime.now();
+  DateTime _initialDate;
+  DateTime _selectedDate;
 
   final UserManager userManager = UserManager.get();
 
   @override
   void initState() {
     super.initState();
+    _initialDate = _selectedDate = DateTime.now();
 
     _auth.onAuthStateChanged.listen((user) {
       print("onAuthStateChanged: $user");
@@ -354,11 +357,21 @@ class LaunchScreenState extends State<LaunchScreen> {
             children: <Widget>[
               IconButton(
                 icon: Icon(Icons.arrow_back),
-                onPressed: () {
-                  setState(() {
-                    _selectedDate = _selectedDate.subtract(Duration(days: 1));
-                  });
-                },
+                onPressed: (_selectedDate
+                            .subtract(Duration(days: 1))
+                            .compareTo(_initialDate) >=
+                        0)
+                    ? () {
+                        setState(() {
+                          _selectedDate = (_selectedDate
+                                      .subtract(Duration(days: 1))
+                                      .compareTo(_initialDate) >=
+                                  0)
+                              ? _initialDate
+                              : _selectedDate.subtract(Duration(days: 1));
+                        });
+                      }
+                    : null,
                 color: Colors.white,
               ),
               FlatButton(
@@ -366,7 +379,17 @@ class LaunchScreenState extends State<LaunchScreen> {
                   DateFormat.yMMMd("de_DE").format(_selectedDate),
                   style: TextStyle(color: Colors.white),
                 ),
-                onPressed: () {},
+                onPressed: () {
+                  showDatePicker(
+                      context: context,
+                      firstDate: _initialDate,
+                      lastDate: DateTime.now().add(Duration(days: 356)),
+                      initialDate: _selectedDate).then((DateTime date) {
+                    setState(() {
+                      _selectedDate = date;
+                    });
+                  });
+                },
               ),
               IconButton(
                   icon: Icon(Icons.arrow_forward),

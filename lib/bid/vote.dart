@@ -1,35 +1,55 @@
 import 'dart:async';
+import 'package:blaulichtplaner_app/utils/user_manager.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:blaulichtplaner_app/bid/shift_vote.dart';
 
 abstract class Vote {
+  bool isBid;
   DateTime from;
   DateTime to;
   DateTime created;
   DocumentReference shiftplanRef;
   DocumentReference shiftRef;
   DocumentReference employeeRef;
+  String employeeLabel;
   DocumentReference selfRef;
 }
 
-abstract class VoteService {
-  Future<DocumentReference> save(Vote vote);
-  Future<void> delete(Vote vote);
+class VoteService {
+  Future<DocumentReference> save(Vote vote) async {
+    final data = <String, dynamic>{};
+    data["isBid"] = vote.isBid;
+    data["from"] = vote.from;
+    data["to"] = vote.to;
+    data["shiftplanRef"] = vote.shiftplanRef;
+    data["shiftRef"] = vote.shiftRef;
+    data["employeeRef"] = vote.employeeRef;
+    data["employeeLabel"] = vote.employeeLabel;
+    if (vote.selfRef != null) {
+      await vote.selfRef.setData(data);
+      return vote.selfRef;
+    } else {
+      final collection = Firestore.instance.collection("shiftVotes");
+      final ref = await collection.add(data);
+      return ref;
+    }
+  }
+
+  Future<void> delete(Vote vote) {
+    return vote.selfRef.delete();
+  }
 }
 
 class Bid extends Vote {
-  int minHours = 0;
-  int maxHours = 0;
-  String remarks;
-  String employeeLabel;
-
+  bool isBid = true;
   Bid();
 
-  Bid.fromShift(Shift shift, DocumentReference employeeRef) {
+  Bid.fromShift(Shift shift, Role role) {
     created = DateTime.now();
     shiftplanRef = shift.shiftplanRef;
-    shiftplanRef = shift.shiftRef;
-    this.employeeRef = employeeRef;
+    shiftRef = shift.shiftRef;
+    employeeRef = role.reference;
+    employeeLabel = role.label;
     from = shift.from;
     to = shift.to;
   }
@@ -42,21 +62,20 @@ class Bid extends Vote {
     from = document.data["from"];
     to = document.data["to"];
     created = document.data["created"];
-    minHours = document.data["minHours"];
-    maxHours = document.data["maxHours"];
-    remarks = document.data["remarks"];
     employeeLabel = document.data["employeeLabel"];
   }
 }
 
 class Rejection extends Vote {
+  bool isBid = false;
   Rejection();
 
-  Rejection.fromShift(Shift shift, DocumentReference employeeRef) {
+  Rejection.fromShift(Shift shift, Role role) {
     created = DateTime.now();
     shiftplanRef = shift.shiftplanRef;
     shiftRef = shift.shiftRef;
-    this.employeeRef = employeeRef;
+    employeeRef = role.reference;
+    employeeLabel = role.label;
     from = shift.from;
     to = shift.to;
   }
@@ -69,52 +88,6 @@ class Rejection extends Vote {
     from = document.data["from"];
     to = document.data["to"];
     created = document.data["created"];
-  }
-}
-
-class BidService extends VoteService {
-  Future<DocumentReference> save(Vote vote) async {
-    Bid bid = vote as Bid;
-    final data = <String, dynamic>{};
-    data["from"] = bid.from;
-    data["to"] = bid.to;
-    data["minHours"] = bid.minHours;
-    data["maxHours"] = bid.maxHours;
-    data["remarks"] = bid.remarks;
-    data["shiftplanRef"] = bid.shiftplanRef;
-    data["shiftRef"] = bid.shiftRef;
-    data["employeeRef"] = bid.employeeRef;
-    data["employeeLabel"] = bid.employeeLabel;
-    if (bid.selfRef != null) {
-      await bid.selfRef.setData(data);
-      return bid.selfRef;
-    } else {
-      final collection = Firestore.instance.collection("bids");
-      final ref = await collection.add(data);
-      return ref;
-    }
-  }
-
-  Future<void> delete(Vote vote) {
-    return vote.selfRef.delete();
-  }
-}
-
-class RejectionService extends VoteService {
-  Future<DocumentReference> save(Vote vote) {
-    Rejection rejection = vote as Rejection;
-    Map<String, dynamic> data = {};
-    data["created"] = rejection.created;
-    data["shiftplanRef"] = rejection.shiftplanRef;
-    data["shiftRef"] = rejection.shiftRef;
-    data["from"] = rejection.from;
-    data["to"] = rejection.to;
-    data["employeeRef"] = rejection.employeeRef;
-
-    return Firestore.instance.collection("rejections").add(data);
-  }
-
-  Future<void> delete(Vote vote) {
-    return vote.selfRef.delete();
+    employeeLabel = document.data["employeeLabel"];
   }
 }

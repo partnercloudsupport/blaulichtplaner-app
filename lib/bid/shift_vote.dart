@@ -1,4 +1,4 @@
-import 'package:blaulichtplaner_app/bid/shift_bids_view.dart';
+import 'package:blaulichtplaner_app/bid/shift_votes_view.dart';
 import 'package:blaulichtplaner_app/bid/vote.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
@@ -108,6 +108,14 @@ class ShiftVoteHolder {
     }
   }
 
+  void addVoteFromSnapshot(DocumentSnapshot document) {
+    if (document.data["isBid"]) {
+      addBid(Bid.fromSnapshot(document));
+    } else {
+      addRejection(Rejection.fromSnapshot(document));
+    }
+  }
+
   void addShift(Shift shift) {
     final shiftVote = _findByShiftRef(shift.shiftRef);
     if (shiftVote == null) {
@@ -131,6 +139,14 @@ class ShiftVoteHolder {
     addRejection(rejection);
   }
 
+  void modifyVoteFromSnapshot(DocumentSnapshot document) {
+    if (document.data["isBid"]) {
+      modifyBid(Bid.fromSnapshot(document));
+    } else {
+      modifyRejection(Rejection.fromSnapshot(document));
+    }
+  }
+
   void removeBid(Bid bid) {
     final shiftVote = _findByBidRef(bid.selfRef);
     if (shiftVote != null) {
@@ -152,6 +168,13 @@ class ShiftVoteHolder {
     if (shiftVote != null) {
       shiftVote.vote = null;
       removeShiftVoteIfEmpty(shiftVote);
+    }
+  }
+  void removeVoteFromSnapshot(DocumentSnapshot document) {
+    if (document.data["isBid"]) {
+      removeBid(Bid.fromSnapshot(document));
+    } else {
+      removeRejection(Rejection.fromSnapshot(document));
     }
   }
 

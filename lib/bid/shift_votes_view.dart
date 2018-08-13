@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:blaulichtplaner_app/bid/bid_editor.dart';
 import 'package:blaulichtplaner_app/bid/vote.dart';
 import 'package:blaulichtplaner_app/bid/shift_vote.dart';
 import 'package:blaulichtplaner_app/utils/user_manager.dart';
@@ -43,9 +42,8 @@ class ShiftBidsViewState extends State<ShiftBidsView> {
   @override
   void initState() {
     super.initState();
-    _initOwnRejections();
+    _initOwnVotes();
     _initWorkAreaShifts();
-    _initOwnBids();
     setState(() {
       _initialized = true;
     });
@@ -78,12 +76,12 @@ class ShiftBidsViewState extends State<ShiftBidsView> {
     }
   }
 
-  void _initOwnBids() {
+  void _initOwnVotes() {
     final firestore = Firestore.instance;
     if (widget.employeeRoles != null && widget.employeeRoles.isNotEmpty) {
       for (final role in widget.employeeRoles) {
         final queryStream = firestore
-            .collection("bids")
+            .collection("shiftVotes")
             .where("employeeRef", isEqualTo: role.reference)
             .where("from", isGreaterThanOrEqualTo: DateTime.now())
             .snapshots();
@@ -91,38 +89,11 @@ class ShiftBidsViewState extends State<ShiftBidsView> {
           setState(() {
             for (final doc in snapshot.documentChanges) {
               if (doc.type == DocumentChangeType.added) {
-                _shiftVoteHolder.addBid(Bid.fromSnapshot(doc.document));
+                _shiftVoteHolder.addVoteFromSnapshot(doc.document);
               } else if (doc.type == DocumentChangeType.modified) {
-                _shiftVoteHolder.modifyBid(Bid.fromSnapshot(doc.document));
+                _shiftVoteHolder.modifyVoteFromSnapshot(doc.document);
               } else if (doc.type == DocumentChangeType.removed) {
-                _shiftVoteHolder.removeBid(Bid.fromSnapshot(doc.document));
-              }
-            }
-          });
-        }));
-      }
-    }
-  }
-
-  void _initOwnRejections() {
-    final firestore = Firestore.instance;
-    if (widget.employeeRoles != null && widget.employeeRoles.isNotEmpty) {
-      for (final role in widget.employeeRoles) {
-        final queryStream = firestore
-            .collection("rejections")
-            .where("employeeRef", isEqualTo: role.reference)
-            .where("from", isGreaterThanOrEqualTo: DateTime.now())
-            .snapshots();
-        subs.add(queryStream.listen((snapshot) {
-          setState(() {
-            for (final doc in snapshot.documentChanges) {
-              Rejection rejection = Rejection.fromSnapshot(doc.document);
-              if (doc.type == DocumentChangeType.added) {
-                _shiftVoteHolder.addRejection(rejection);
-              } else if (doc.type == DocumentChangeType.modified) {
-                _shiftVoteHolder.modifyRejection(rejection);
-              } else if (doc.type == DocumentChangeType.removed) {
-                _shiftVoteHolder.removeRejection(rejection);
+                _shiftVoteHolder.removeVoteFromSnapshot(doc.document);
               }
             }
           });
@@ -133,7 +104,7 @@ class ShiftBidsViewState extends State<ShiftBidsView> {
 
   @override
   void didUpdateWidget(ShiftBidsView oldWidget) {
-      _initialized = false;
+    _initialized = false;
     super.didUpdateWidget(oldWidget);
     for (final sub in subs) {
       sub.cancel();
@@ -141,9 +112,8 @@ class ShiftBidsViewState extends State<ShiftBidsView> {
     subs.clear();
     _shiftVoteHolder.clear();
     _initWorkAreaShifts();
-    _initOwnBids();
-    _initOwnRejections();
-      _initialized = true;
+    _initOwnVotes();
+    _initialized = true;
   }
 
   @override
@@ -212,20 +182,10 @@ class ShiftBidsViewState extends State<ShiftBidsView> {
         child: Text('Bewerbung löschen'),
         onPressed: () async {
           try {
-            await BidService().delete(shiftVote.bid);
+            await VoteService().delete(shiftVote.vote);
           } catch (e) {
             print(e);
           }
-        },
-      ));
-      buttons.add(FlatButton(
-        child: Text('Ändern'),
-        onPressed: () {
-          Navigator.push(context, MaterialPageRoute(builder: (context) {
-            return BidEditor(
-              shiftVote: shiftVote,
-            );
-          }));
         },
       ));
     } else if (shiftVote.hasRejection()) {
@@ -233,7 +193,7 @@ class ShiftBidsViewState extends State<ShiftBidsView> {
         child: Text('Ablehnung löschen'),
         onPressed: () async {
           try {
-            await RejectionService().delete(shiftVote.rejection);
+            await VoteService().delete(shiftVote.vote);
           } catch (e) {
             print(e);
           }
@@ -243,36 +203,32 @@ class ShiftBidsViewState extends State<ShiftBidsView> {
       buttons.add(FlatButton(
         textColor: Colors.red,
         child: Text('Ablehnen'),
-        onPressed: () {
+        onPressed: () async {
           final role = UserManager
               .get()
               .getRoleForTypeAndReference("employee", shiftVote.shiftplanRef);
           if (role != null) {
-            Rejection rejection =
-                Rejection.fromShift(shiftVote.shift, role.reference);
-            RejectionService().save(rejection);
+            print(await VoteService()
+                .save(Rejection.fromShift(shiftVote.shift, role)));
           } else {
             Scaffold.of(context).showSnackBar(SnackBar(
-                  content: Text('Sie können sich als Manager nicht bewerben.'),
+                  content: Text('Sie können sich nicht bewerben.'),
                 ));
           }
         },
       ));
       buttons.add(FlatButton(
         child: Text('Bewerben'),
-        onPressed: () {
+        onPressed: () async {
           final role = UserManager
               .get()
               .getRoleForTypeAndReference("employee", shiftVote.shiftplanRef);
           if (role != null) {
-            Navigator.push(context, MaterialPageRoute(builder: (context) {
-              return BidEditor(
-                shiftVote: shiftVote,
-              );
-            }));
+            print(
+                await VoteService().save(Bid.fromShift(shiftVote.shift, role)));
           } else {
             Scaffold.of(context).showSnackBar(SnackBar(
-                  content: Text('Sie können sich als Manager nicht bewerben.'),
+                  content: Text('Sie können sich nicht bewerben.'),
                 ));
           }
         },
@@ -303,10 +259,6 @@ class ShiftBidsViewState extends State<ShiftBidsView> {
 
     if (shiftVote.hasShift() && isNotEmpty(shiftVote.shift.publicNote)) {
       rows.add(createInfoBox(shiftVote.shift.publicNote, Icons.assignment));
-    }
-
-    if (shiftVote.hasBid() && isNotEmpty(shiftVote.bid.remarks)) {
-      rows.add(createInfoBox(shiftVote.bid.remarks, Icons.speaker_notes));
     }
 
     rows.add(ButtonTheme.bar(

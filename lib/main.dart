@@ -1,5 +1,5 @@
 import 'package:blaulichtplaner_app/api_service.dart';
-import 'package:blaulichtplaner_app/bid/shift_bids_view.dart';
+import 'package:blaulichtplaner_app/bid/shift_votes_view.dart';
 import 'package:blaulichtplaner_app/assignment/assignment_view.dart';
 import 'package:blaulichtplaner_app/registration_widget.dart';
 import 'package:blaulichtplaner_app/roles_widget.dart';
@@ -15,7 +15,6 @@ import 'package:flutter/rendering.dart';
 import 'package:http/http.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:intl/intl.dart';
-import 'dart:async';
 
 void main() {
   // debugPaintSizeEnabled = true;

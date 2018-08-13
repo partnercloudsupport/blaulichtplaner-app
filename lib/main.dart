@@ -1,5 +1,6 @@
 import 'package:blaulichtplaner_app/api_service.dart';
-import 'package:blaulichtplaner_app/bid/shift_votes_view.dart';
+import 'package:blaulichtplaner_app/location_votes/location_votes_view.dart';
+import 'package:blaulichtplaner_app/shift_vote/shift_votes_view.dart';
 import 'package:blaulichtplaner_app/assignment/assignment_view.dart';
 import 'package:blaulichtplaner_app/registration_widget.dart';
 import 'package:blaulichtplaner_app/roles_widget.dart';
@@ -78,6 +79,14 @@ class DrawerWidget extends StatelessWidget {
 
               Navigator.push(context,
                   MaterialPageRoute(builder: (context) => RolesScreen()));
+            },
+          ),
+          ListTile(
+            leading: Icon(Icons.timelapse),
+            title: Text("Zeiträume"),
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.push(context, MaterialPageRoute(builder: (context) => LocationVotesView()));
             },
           ),
           ListTile(
@@ -218,7 +227,7 @@ class LaunchScreenState extends State<LaunchScreen> {
       case 1:
         return ShiftplanView();
       case 2:
-        return ShiftBidsView(
+        return ShiftVotesView(
           workAreaRoles: userManager.rolesForType("workArea"),
           employeeRoles: userManager.rolesForType("employee"),
           filter: _selectedFilterOption,

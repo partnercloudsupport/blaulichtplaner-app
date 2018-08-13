@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:blaulichtplaner_app/utils/user_manager.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:blaulichtplaner_app/bid/shift_vote.dart';
+import 'package:blaulichtplaner_app/shift_vote/shift_vote.dart';
 
 abstract class Vote {
   bool isBid;

@@ -1,6 +1,4 @@
-import 'package:blaulichtplaner_app/location_votes/bid_form.dart';
-import 'package:blaulichtplaner_app/bid/vote.dart';
-import 'package:blaulichtplaner_app/bid/shift_vote.dart';
+import 'package:blaulichtplaner_app/location_votes/location_vote_form.dart';
 import 'package:blaulichtplaner_app/utils/user_manager.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';

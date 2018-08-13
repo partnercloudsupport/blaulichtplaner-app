@@ -1,5 +1,5 @@
-import 'package:blaulichtplaner_app/bid/shift_votes_view.dart';
-import 'package:blaulichtplaner_app/bid/vote.dart';
+import 'package:blaulichtplaner_app/shift_vote/shift_votes_view.dart';
+import 'package:blaulichtplaner_app/shift_vote/vote.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class ShiftVote {

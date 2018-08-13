@@ -39,7 +39,7 @@ class UserManager {
 
   Role _createRole(Map<String, dynamic> data) {
     Role role =
-        Role(data["type"], data["role"], data["reference"], data["label"]);
+        Role(data["type"], data["role"], data["reference"], data["label"] ?? (data["locationName"] ?? (data["employeeName"] ?? data["workAreaName"])));
     DocumentReference reference = data["reference"];
     String path = reference.path;
     final match = _companyLocationMatcher.firstMatch(path);

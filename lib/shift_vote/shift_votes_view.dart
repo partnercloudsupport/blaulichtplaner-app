@@ -1,7 +1,7 @@
 import 'dart:async';
 
-import 'package:blaulichtplaner_app/bid/vote.dart';
-import 'package:blaulichtplaner_app/bid/shift_vote.dart';
+import 'package:blaulichtplaner_app/shift_vote/vote.dart';
+import 'package:blaulichtplaner_app/shift_vote/shift_vote.dart';
 import 'package:blaulichtplaner_app/utils/user_manager.dart';
 import 'package:blaulichtplaner_app/utils/utils.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -11,13 +11,13 @@ import 'package:intl/intl.dart';
 
 enum FilterOptions { withoutBid, withBid, notInterested }
 
-class ShiftBidsView extends StatefulWidget {
+class ShiftVotesView extends StatefulWidget {
   final List<Role> workAreaRoles;
   final List<Role> employeeRoles;
   final FilterOptions filter;
   final DateTime selectedDate;
 
-  ShiftBidsView(
+  ShiftVotesView(
       {Key key,
       @required this.workAreaRoles,
       @required this.employeeRoles,
@@ -29,12 +29,12 @@ class ShiftBidsView extends StatefulWidget {
   }
 
   @override
-  ShiftBidsViewState createState() {
-    return ShiftBidsViewState();
+  ShiftVotesViewState createState() {
+    return ShiftVotesViewState();
   }
 }
 
-class ShiftBidsViewState extends State<ShiftBidsView> {
+class ShiftVotesViewState extends State<ShiftVotesView> {
   final List<StreamSubscription> subs = [];
   final ShiftVoteHolder _shiftVoteHolder = ShiftVoteHolder();
   bool _initialized = false;
@@ -103,7 +103,7 @@ class ShiftBidsViewState extends State<ShiftBidsView> {
   }
 
   @override
-  void didUpdateWidget(ShiftBidsView oldWidget) {
+  void didUpdateWidget(ShiftVotesView oldWidget) {
     _initialized = false;
     super.didUpdateWidget(oldWidget);
     for (final sub in subs) {

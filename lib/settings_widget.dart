@@ -21,12 +21,12 @@ class SettingsScreen extends StatelessWidget {
             ),
             body: TabBarView(
               children: <Widget>[
-                new SingleChildScrollView(
+                SingleChildScrollView(
                   child: Center(
                     child: Text('Hi'),
                   ),
                 ),
-                new SingleChildScrollView(
+                SingleChildScrollView(
                   child: Center(
                     child: Text('Hi'),
                   ),

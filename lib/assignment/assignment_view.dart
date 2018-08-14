@@ -67,14 +67,12 @@ class AssignmentViewState extends State<AssignmentView> {
                     .add(Loadable(Assignment.fromSnapshot(doc.document)));
               } else if (doc.type == DocumentChangeType.modified) {
                 _assignments.removeWhere(
-                        (assignment) =>
-                    assignment.data.selfRef == assignmentRef);
+                    (assignment) => assignment.data.selfRef == assignmentRef);
                 _assignments
                     .add(Loadable(Assignment.fromSnapshot(doc.document)));
               } else if (doc.type == DocumentChangeType.removed) {
                 _assignments.removeWhere(
-                        (assignment) =>
-                    assignment.data.selfRef == assignmentRef);
+                    (assignment) => assignment.data.selfRef == assignmentRef);
               }
             }
             _assignments.sort((s1, s2) => s1.data.from.compareTo(s2.data.from));
@@ -160,32 +158,76 @@ class AssignmentViewState extends State<AssignmentView> {
               children: <Widget>[
                 FlatButton(
                   child: Text('Finalisieren'),
-                  onPressed: DateTime.now().isAfter(assignment.to) ? () {
-                    setState(() {
-                      loadableAssignment.loading = true;
-                    });
-                    AssignmentService.finishAssignment(assignment);
-                  } : null,
+                  onPressed: DateTime.now().isAfter(assignment.to)
+                      ? () {
+                          setState(() {
+                            loadableAssignment.loading = true;
+                          });
+                          AssignmentService.finishAssignment(assignment);
+                        }
+                      : null,
                 ),
                 FlatButton(
                   child: Text('Auswertung'),
                   onPressed: () {
                     Navigator.push(context,
                         MaterialPageRoute(builder: (context) {
-                          return EvaluationEditor(
-                            assignment: assignment,
-                          );
-                        }));
+                      return EvaluationEditor(
+                        assignment: assignment,
+                      );
+                    }));
                   },
                 ),
               ],
             ),
           )));
     }
+    Widget card = Card(
+        child: Column(mainAxisSize: MainAxisSize.max, children: cardChildren),
+      );
+    Widget timeDiff = _timeDiffBuilder(index);
+    if (timeDiff != null) {
+      return Column(children: <Widget>[timeDiff, card],mainAxisAlignment: MainAxisAlignment.center,);
+    } else {
+      return card;
+    }
+  }
 
-    return Card(
-      child: Column(mainAxisSize: MainAxisSize.max, children: cardChildren),
-    );
+  _timeDiffBuilder(int index) {
+    if (index == 0) {
+      return null;
+    }
+    DateTime from = _assignments[index - 1].data.to;
+    DateTime to = _assignments[index].data.from;
+    Duration diff = to.difference(from);
+    if (diff.inMinutes > 0) {
+      String label = "";
+      if (diff.inHours > 1) {
+        if (diff.inDays > 1) {
+          label = '${diff.inHours} Tage frei';
+        } else {
+          label = '${diff.inHours} Stunden frei';
+        }
+      } else {
+        label = '${diff.inMinutes} Minuten frei';
+      }
+      return Container(
+        alignment: Alignment.center,
+        padding: EdgeInsets.only(top: 4.0, bottom: 4.0),
+        child: Chip(
+          backgroundColor: Colors.white,
+          shape: RoundedRectangleBorder(
+              side: BorderSide(
+                  color: Colors.black.withAlpha(0x1f),
+                  width: 1.0,
+                  style: BorderStyle.solid),
+              borderRadius: BorderRadius.circular(28.0)),
+          label: Text(label),
+        ),
+      );
+    } else {
+      return null;
+    }
   }
 
   @override
@@ -211,7 +253,9 @@ class AssignmentViewState extends State<AssignmentView> {
           );
         } else {
           return ListView.builder(
-              itemCount: _assignments.length, itemBuilder: _assignmentBuilder);
+            itemBuilder: _assignmentBuilder,
+            itemCount: _assignments.length,
+          );
         }
       } else {
         return Container(

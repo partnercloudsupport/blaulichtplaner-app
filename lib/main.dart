@@ -86,7 +86,8 @@ class DrawerWidget extends StatelessWidget {
             title: Text("Zeiträume"),
             onTap: () {
               Navigator.pop(context);
-              Navigator.push(context, MaterialPageRoute(builder: (context) => LocationVotesView()));
+              Navigator.push(context,
+                  MaterialPageRoute(builder: (context) => LocationVotesView()));
             },
           ),
           ListTile(
@@ -283,7 +284,11 @@ class LaunchScreenState extends State<LaunchScreen> {
                       child: Row(
                         children: <Widget>[
                           Radio(
-                            onChanged: (val) {},
+                            onChanged: (val) {
+                              setState(() {
+                                _selectedFilterOption = val;
+                              });
+                            },
                             groupValue: _selectedFilterOption,
                             value: FilterOptions.withoutBid,
                           ),
@@ -296,7 +301,11 @@ class LaunchScreenState extends State<LaunchScreen> {
                       child: Row(
                         children: <Widget>[
                           Radio(
-                            onChanged: (val) {},
+                            onChanged: (val) {
+                              setState(() {
+                                _selectedFilterOption = val;
+                              });
+                            },
                             groupValue: _selectedFilterOption,
                             value: FilterOptions.withBid,
                           ),
@@ -309,7 +318,11 @@ class LaunchScreenState extends State<LaunchScreen> {
                       child: Row(
                         children: <Widget>[
                           Radio(
-                            onChanged: (val) {},
+                            onChanged: (val) {
+                              setState(() {
+                                _selectedFilterOption = val;
+                              });
+                            },
                             groupValue: _selectedFilterOption,
                             value: FilterOptions.notInterested,
                           ),

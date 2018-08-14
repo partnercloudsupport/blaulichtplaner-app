@@ -6,15 +6,26 @@ class Role {
   String role;
   DocumentReference reference;
   String label;
+  String locationLabel;
+  DocumentReference locationRef;
+  String companyLabel;
+  DocumentReference companyRef;
 
-  Role(this.type, this.role, this.reference, this.label);
+  Role(this.type, this.role, this.reference, this.label, this.locationLabel,
+      this.locationRef, this.companyLabel, this.companyRef);
 
   Role.fromSnapshot(Map<String, dynamic> data) {
     type = data["type"];
     role = data["role"];
     reference = data["reference"];
-    label = data["label"] ?? (data["locationName"] ?? (data["employeeName"] ?? data["workAreaName"]));
+    label = data["label"] ??
+        (data["locationName"] ??
+            (data["employeeName"] ?? data["workAreaName"]));
     created = data["created"];
+    locationLabel = data["locationLabel"];
+    locationRef = data["locationRef"];
+    companyLabel = data["companyLabel"];
+    companyRef = data["companyRef"];
   }
 
   String companyId;
@@ -38,8 +49,17 @@ class UserManager {
   UserManager._();
 
   Role _createRole(Map<String, dynamic> data) {
-    Role role =
-        Role(data["type"], data["role"], data["reference"], data["label"] ?? (data["locationName"] ?? (data["employeeName"] ?? data["workAreaName"])));
+    Role role = Role(
+        data["type"],
+        data["role"],
+        data["reference"],
+        data["label"] ??
+            (data["locationName"] ??
+                (data["employeeName"] ?? data["workAreaName"])),
+        data["locationLabel"],
+        data["locationRef"],
+        data["companyLabel"],
+        data["companyRef"]);
     DocumentReference reference = data["reference"];
     String path = reference.path;
     final match = _companyLocationMatcher.firstMatch(path);

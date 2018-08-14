@@ -1,0 +1,49 @@
+(bidModel, ctx) {
+            Bid bid = widget.shiftVote.hasBid() ? widget.shiftVote.bid : Bid();
+            bid.from = bidModel.from;
+            bid.to = bidModel.to;
+            if (bid.to.isBefore(bid.from)) {
+              Scaffold.of(ctx).showSnackBar(SnackBar(
+                    content: Text('End- sollte vor Startzeitpunkt liegen.'),
+                  ));
+              return;
+            }
+            bid.remarks = bidModel.remarks;
+            bid.minHours = bidModel.minHours;
+            bid.maxHours = bidModel.maxHours;
+            if (bid.minHours > bid.maxHours) {
+              Scaffold.of(ctx).showSnackBar(SnackBar(
+                    content: Text(
+                        'Maximaldauer sollte über der Minimaldauer liegen.'),
+                  ));
+              return;
+            }
+
+            if (widget.shiftVote.hasShift()) {
+              Shift shift = widget.shiftVote.shift;
+              bid.shiftRef = shift.shiftRef;
+            }
+
+            bid.shiftplanRef = widget.shiftVote.shiftplanRef;
+
+            Role role = UserManager.get().getRoleForTypeAndReference(
+                "employee", widget.shiftVote.shiftplanRef);
+
+            if (role == null) {
+              Scaffold.of(ctx).showSnackBar(SnackBar(
+                    content:
+                        Text('Sie können sich als Manager nicht bewerben.'),
+                  ));
+              return;
+            }
+
+            bid.employeeRef = role.reference;
+            bid.employeeLabel = UserManager.get().user != null
+                ? UserManager.get().user.displayName
+                : "Kein Label";
+
+            BidService bidService = BidService();
+            bidService.save(bid).then((ref) {
+              Navigator.pop(ctx);
+            });
+          }

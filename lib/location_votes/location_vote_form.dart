@@ -1,34 +1,57 @@
+import 'package:blaulichtplaner_app/location_votes/location_vote.dart';
+import 'package:blaulichtplaner_app/utils/user_manager.dart';
 import 'package:blaulichtplaner_app/widgets/date_time_picker.dart';
+import 'package:blaulichtplaner_app/widgets/loader.dart';
 import 'package:flutter/material.dart';
 
-class BidModel {
-  DateTime from = DateTime.now();
-  DateTime to = DateTime.now();
-  int minHours = 0;
-  int maxHours = 0;
-  String remarks;
-}
+typedef void SaveLocationVote(BuildContext context, LocationVote locationVote);
 
-typedef void SaveBid(BidModel bidModel, BuildContext context);
+class LocationVoteForm extends StatefulWidget {
+  final LocationVote locationVote;
+  final SaveLocationVote saveLocationVote;
+  final List<Role> employeeRoles;
 
-class BidForm extends StatefulWidget {
-  final BidModel bidModel;
-  final SaveBid saveBid;
-
-  const BidForm({Key key, @required this.bidModel, @required this.saveBid})
-      : super(key: key);
+  const LocationVoteForm({
+    Key key,
+    @required this.locationVote,
+    @required this.saveLocationVote,
+    @required this.employeeRoles,
+  }) : super(key: key);
 
   @override
   State<StatefulWidget> createState() {
-    return BidFormState(bidModel);
+    return LocationVoteFormState();
   }
 }
 
-class BidFormState extends State<BidForm> {
+class LocationVoteFormState extends State<LocationVoteForm> {
   final _formKey = GlobalKey<FormState>();
-  final BidModel bidModel;
+  bool _loading = true;
+  List<Widget> _listTiles = <Widget>[];
+  Widget _buildLocationCheckbox(int index) {
+    return CheckboxListTile(
+      value: false,
+      title: Text(widget.employeeRoles[index].locationLabel ?? "hi"),
+      subtitle: Text(widget.employeeRoles[index].companyLabel ?? "hi"),
+      onChanged: (val) {},
+      controlAffinity: ListTileControlAffinity.leading,
+    );
+  }
 
-  BidFormState(this.bidModel);
+  _buildListTiles() {
+    for (int i = 0; i < widget.employeeRoles.length; i++) {
+      _listTiles.add(_buildLocationCheckbox(i));
+    }
+    setState(() {
+      _loading = false;
+    });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _buildListTiles();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -46,10 +69,10 @@ class BidFormState extends State<BidForm> {
                 ),
               ),
               DateTimePickerWidget(
-                dateTime: bidModel.from,
+                dateTime: widget.locationVote.from,
                 dateTimeChanged: (dateTime) {
                   setState(() {
-                    bidModel.from = dateTime;
+                    widget.locationVote.from = dateTime;
                   });
                 },
               ),
@@ -60,10 +83,10 @@ class BidFormState extends State<BidForm> {
                 ),
               ),
               DateTimePickerWidget(
-                  dateTime: bidModel.to,
+                  dateTime: widget.locationVote.to,
                   dateTimeChanged: (dateTime) {
                     setState(() {
-                      bidModel.to = dateTime;
+                      widget.locationVote.to = dateTime;
                     });
                   }),
               Padding(
@@ -76,7 +99,7 @@ class BidFormState extends State<BidForm> {
                 children: <Widget>[
                   Expanded(
                     child: DropdownButton(
-                        value: bidModel.minHours,
+                        value: widget.locationVote.minHours,
                         items: [
                           DropdownMenuItem(
                             child: Text("keine"),
@@ -97,13 +120,13 @@ class BidFormState extends State<BidForm> {
                         ],
                         onChanged: (value) {
                           setState(() {
-                            bidModel.minHours = value;
+                            widget.locationVote.minHours = value;
                           });
                         }),
                   ),
                   Expanded(
                     child: DropdownButton(
-                        value: bidModel.maxHours,
+                        value: widget.locationVote.maxHours,
                         items: [
                           DropdownMenuItem(
                             child: Text("keine"),
@@ -124,7 +147,7 @@ class BidFormState extends State<BidForm> {
                         ],
                         onChanged: (value) {
                           setState(() {
-                            bidModel.maxHours = value;
+                            widget.locationVote.maxHours = value;
                           });
                         }),
                   ),
@@ -133,10 +156,17 @@ class BidFormState extends State<BidForm> {
               TextField(
                 maxLines: 3,
                 decoration: InputDecoration(helperText: "Bemerkungen"),
-                controller: TextEditingController(text: bidModel.remarks),
+                controller:
+                    TextEditingController(text: widget.locationVote.remarks),
                 onChanged: (value) {
-                  bidModel.remarks = value;
+                  widget.locationVote.remarks = value;
                 },
+              ),
+              LoaderWidget(
+                loading: _loading,
+                child: ListBody(
+                  children: _listTiles,
+                ),
               ),
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,
@@ -147,7 +177,7 @@ class BidFormState extends State<BidForm> {
                       onPressed: () {
                         if (_formKey.currentState.validate()) {
                           print("saveBid");
-                          widget.saveBid(bidModel, context);
+                          widget.saveLocationVote(context, widget.locationVote);
                         } else {
                           Scaffold.of(context).showSnackBar(SnackBar(
                               content:

@@ -50,12 +50,14 @@ class DrawerWidget extends StatelessWidget {
   final FirebaseUser user;
   final Function logoutCallback;
   final Function invitationCallback;
-  DrawerWidget(
-      {Key key,
-      @required this.user,
-      @required this.logoutCallback,
-      @required this.invitationCallback})
-      : super(key: key);
+  final List<Role> employeeRoles;
+  DrawerWidget({
+    Key key,
+    @required this.user,
+    @required this.logoutCallback,
+    @required this.invitationCallback,
+    @required this.employeeRoles,
+  }) : super(key: key);
 
   @override
   build(BuildContext context) {
@@ -87,7 +89,7 @@ class DrawerWidget extends StatelessWidget {
             onTap: () {
               Navigator.pop(context);
               Navigator.push(context,
-                  MaterialPageRoute(builder: (context) => LocationVotesView()));
+                  MaterialPageRoute(builder: (context) => LocationVotesView(employeeRoles: employeeRoles)));
             },
           ),
           ListTile(
@@ -226,7 +228,9 @@ class LaunchScreenState extends State<LaunchScreen> {
             employeeRoles: userManager.rolesForType("employee"),
             upcomingShifts: upcomingShifts);
       case 1:
-        return ShiftplanView();
+        return ShiftplanView(
+          employeeRoles: userManager.rolesForType("employee"),
+        );
       case 2:
         return ShiftVotesView(
           workAreaRoles: userManager.rolesForType("workArea"),
@@ -442,6 +446,7 @@ class LaunchScreenState extends State<LaunchScreen> {
         logoutCallback: () {
           logout();
         },
+        employeeRoles: userManager.rolesForType("employee"),
       ),
       body: _createBody(),
       bottomNavigationBar: BottomNavigationBar(

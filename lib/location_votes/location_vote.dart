@@ -1,7 +1,8 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-
-class LocationVote{
-  bool isAssigned = false;
-  List<DocumentReference> employeeRefs;
-  List<DocumentReference> locationRefs;
+class LocationVote {
+  DateTime from = DateTime.now();
+  DateTime to = DateTime.now();
+  int minHours = 0;
+  int maxHours = 0;
+  String remarks;
+  List<Map<String, dynamic>> locations;
 }

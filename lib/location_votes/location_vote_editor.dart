@@ -17,7 +17,7 @@ class LocationVoteEditor extends StatefulWidget {
 }
 
 class LocationVoteEditorState extends State<LocationVoteEditor> {
-  final LocationVote locationVote = LocationVote();
+  final UserVote userVote = UserVote();
 
   @override
   void initState() {
@@ -29,10 +29,9 @@ class LocationVoteEditorState extends State<LocationVoteEditor> {
     return Scaffold(
       appBar: AppBar(title: Text("Dienstbewerbung")),
       body: SingleChildScrollView(
-              child: LocationVoteForm(
-          locationVote: locationVote,
-          saveLocationVote: (BuildContext context, LocationVote locationVote) {
-            print(locationVote);
+        child: LocationVoteForm(
+          userVote: userVote,
+          saveLocationVote: (BuildContext context, UserVote userVote) {
             Navigator.pop(context);
           },
           employeeRoles: widget.employeeRoles,

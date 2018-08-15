@@ -16,7 +16,7 @@ class RolesScreen extends StatefulWidget {
 
 class RolesScreenState extends State<RolesScreen> {
   bool _initialized = false;
-  List<Role> _roles = [];
+  List<Map<String, dynamic>> _roles = [];
   FirebaseUser user;
   @override
   void initState() {
@@ -43,27 +43,22 @@ class RolesScreenState extends State<RolesScreen> {
       Role role = Role.fromSnapshot(doc.data);
 
       if (role.type == "employee") {
-        List<String> parts = role.reference.path.split('/');
-        CollectionReference ref = Firestore.instance.collection('companies');
-        DocumentSnapshot company = await ref.document(parts[1]).get();
-        role.label = company.data["companyName"];
-        DocumentSnapshot location = await ref
-            .document(parts[1])
-            .collection('locations')
-            .document(parts[3])
-            .get();
-        role.role = location.data["locationName"];
-        _roles.add(role);
+        Map<String, dynamic> contents = {
+          "companyLabel": role.companyLabel ?? "Keine Firma",
+          "locationLabel": role.locationLabel ?? "Kein Standort",
+          "created": role.created ?? DateTime.now(),
+        };
+        _roles.add(contents);
       }
     }
   }
 
   Widget _tileBuilder(BuildContext context, int index) {
     return ListTile(
-      title: Text(_roles[index].label ?? "${_roles[index].reference.path}"),
-      subtitle: Text(_roles[index].role),
+      title: Text(_roles[index]["locationLabel"]),
+      subtitle: Text(_roles[index]["companyLabel"]),
       trailing: Text(
-          "Seit ${DateFormat.yMMM("de_DE").format(_roles[index].created)}"),
+          "Seit " + DateFormat.yMMM("de_DE").format(_roles[index]["created"])),
     );
   }
 

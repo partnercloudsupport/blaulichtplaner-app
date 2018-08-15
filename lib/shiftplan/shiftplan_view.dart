@@ -15,10 +15,6 @@ class ShiftplanView extends StatefulWidget {
 }
 
 class ShiftplanViewState extends State<ShiftplanView> {
-  _initShiftplans() {
-    
-  }
-
   @override
   Widget build(BuildContext context) {
     return Center(

@@ -407,7 +407,7 @@ class LaunchScreenState extends State<LaunchScreen> {
                 onPressed: () {
                   showDatePicker(
                       context: context,
-                      firstDate: _initialDate,
+                      firstDate: _initialDate.subtract(Duration(days:1)),
                       lastDate: DateTime.now().add(Duration(days: 356)),
                       initialDate: _selectedDate).then((DateTime date) {
                     setState(() {

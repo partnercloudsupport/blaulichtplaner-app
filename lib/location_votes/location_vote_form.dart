@@ -134,7 +134,7 @@ class LocationVoteFormState extends State<LocationVoteForm> {
                 fixedDates: false,
               ),
               Padding(
-                padding: EdgeInsets.only(top: 16.0, bottom: 16.0),
+                padding: EdgeInsets.only(top: 16.0, bottom: 8.0),
                 child: Row(
                   children: <Widget>[Text("Bis:")],
                 ),

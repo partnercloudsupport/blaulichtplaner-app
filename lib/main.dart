@@ -1,4 +1,6 @@
 import 'package:blaulichtplaner_app/api_service.dart';
+import 'package:blaulichtplaner_app/location_votes/location_vote.dart';
+import 'package:blaulichtplaner_app/location_votes/location_vote_editor.dart';
 import 'package:blaulichtplaner_app/location_votes/location_votes_view.dart';
 import 'package:blaulichtplaner_app/shift_vote/shift_votes_view.dart';
 import 'package:blaulichtplaner_app/assignment/assignment_view.dart';
@@ -81,15 +83,6 @@ class DrawerWidget extends StatelessWidget {
 
               Navigator.push(context,
                   MaterialPageRoute(builder: (context) => RolesScreen()));
-            },
-          ),
-          ListTile(
-            leading: Icon(Icons.timelapse),
-            title: Text("Zeiträume"),
-            onTap: () {
-              Navigator.pop(context);
-              Navigator.push(context,
-                  MaterialPageRoute(builder: (context) => LocationVotesView(employeeRoles: employeeRoles)));
             },
           ),
           ListTile(
@@ -228,7 +221,7 @@ class LaunchScreenState extends State<LaunchScreen> {
             employeeRoles: userManager.rolesForType("employee"),
             upcomingShifts: upcomingShifts);
       case 1:
-        return ShiftplanView(
+        return LocationVotesView(
           employeeRoles: userManager.rolesForType("employee"),
         );
       case 2:
@@ -255,6 +248,22 @@ class LaunchScreenState extends State<LaunchScreen> {
                 });
               })
         ];
+        break;
+      case 1:
+        return <Widget>[
+          IconButton(
+              icon: Icon(Icons.add),
+              onPressed: () {
+                Navigator.push(context,
+                    MaterialPageRoute(builder: (BuildContext context) {
+                  return LocationVoteEditor(
+                    employeeRoles: userManager.rolesForType("employee"),
+                    userVote: UserVote(),
+                  );
+                }));
+              })
+        ];
+        break;
       case 2:
         return <Widget>[
           IconButton(
@@ -272,7 +281,7 @@ class LaunchScreenState extends State<LaunchScreen> {
               });
             },
             child: Padding(
-                padding: EdgeInsets.only(left: 16.0, right: 16.0),
+                padding: EdgeInsets.only(left: 12.0, right: 12.0),
                 child: Icon(Icons.filter_list)),
             itemBuilder: (BuildContext context) =>
                 <PopupMenuEntry<FilterOptions>>[
@@ -337,6 +346,7 @@ class LaunchScreenState extends State<LaunchScreen> {
                 ],
           ),
         ];
+        break;
       default:
         return [];
     }
@@ -362,7 +372,7 @@ class LaunchScreenState extends State<LaunchScreen> {
         }
       case 1:
         {
-          return "Dienstpläne";
+          return "Zeiträume";
         }
       case 2:
         {
@@ -407,7 +417,7 @@ class LaunchScreenState extends State<LaunchScreen> {
                 onPressed: () {
                   showDatePicker(
                       context: context,
-                      firstDate: _initialDate.subtract(Duration(days:1)),
+                      firstDate: _initialDate.subtract(Duration(days: 1)),
                       lastDate: DateTime.now().add(Duration(days: 356)),
                       initialDate: _selectedDate).then((DateTime date) {
                     setState(() {
@@ -457,8 +467,8 @@ class LaunchScreenState extends State<LaunchScreen> {
             title: Text("Schichten"),
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.insert_invitation),
-            title: Text("Dienstpläne"),
+            icon: Icon(Icons.timelapse),
+            title: Text("Zeiträume"),
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.date_range),

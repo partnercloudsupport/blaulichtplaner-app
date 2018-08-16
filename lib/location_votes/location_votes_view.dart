@@ -133,32 +133,12 @@ class LocationVotesViewState extends State<LocationVotesView> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Zeiträume'),
+    return LoaderBodyWidget(
+      child: ListView.builder(
+        itemBuilder: _itemBuilder,
+        itemCount: _userVoteHolder.userVotes.length,
       ),
-      body: LoaderBodyWidget(
-        child: ListView.builder(
-          itemBuilder: _itemBuilder,
-          itemCount: _userVoteHolder.userVotes.length,
-        ),
-        loading: !_initialized,
-      ),
-      floatingActionButton: FloatingActionButton.extended(
-          icon: Icon(
-            Icons.add,
-          ),
-          label: Text('Bewerben'),
-          onPressed: () {
-            Navigator.push(context,
-                MaterialPageRoute(builder: (BuildContext context) {
-              return LocationVoteEditor(
-                employeeRoles: widget.employeeRoles,
-                userVote: UserVote(),
-              );
-            }));
-          }),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+      loading: !_initialized,
     );
   }
 }

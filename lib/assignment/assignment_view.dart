@@ -204,7 +204,7 @@ class AssignmentViewState extends State<AssignmentView> {
       String label = "";
       if (diff.inHours > 1) {
         if (diff.inDays > 1) {
-          label = '${diff.inHours} Tage frei';
+          label = '${diff.inDays} Tage frei';
         } else {
           label = '${diff.inHours} Stunden frei';
         }

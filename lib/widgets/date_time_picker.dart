@@ -99,16 +99,17 @@ class DateTimePickerWidget extends StatelessWidget {
         int overtimeHours = overtimeDuration.inHours;
         final minutesDuration =
             overtimeDuration - Duration(hours: overtimeHours);
-        int overtimeMinutes = (minutesDuration.inMinutes <0) ? -minutesDuration.inMinutes : minutesDuration.inMinutes;
+        int overtimeMinutes = (minutesDuration.inMinutes < 0)
+            ? -minutesDuration.inMinutes
+            : minutesDuration.inMinutes;
 
-        overtimeDurationLabel =
-            ((overtimeDuration.inMilliseconds > 0) ? "(+" : "(") +
-                overtimeHours.toString() +
-                "h" +
-                (overtimeMinutes > 0
-                    ? (overtimeMinutes.toString() + "m")
-                    : "") +
-                ")";
+        overtimeDurationLabel = ((overtimeDuration.inMilliseconds > 0)
+                ? "(+"
+                : "(") +
+            overtimeHours.toString() +
+            "h" +
+            (overtimeMinutes > 0 ? (overtimeMinutes.toString() + "m") : "") +
+            ")";
       }
     }
 
@@ -123,6 +124,69 @@ class DateTimePickerWidget extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: rowChildren,
+    );
+  }
+}
+
+class DatePickerWidget extends StatelessWidget {
+  final DateTime dateTime;
+  final DateTime originalDateTime;
+  final bool fixedDates;
+  final DateTimeChanged dateTimeChanged;
+  final String label;
+
+  DatePickerWidget({
+    Key key,
+    @required this.dateTime,
+    @required this.dateTimeChanged,
+    this.fixedDates = true,
+    this.originalDateTime,
+    this.label = "",
+  }) : super(key: key);
+
+  GestureTapCallback _createFromDateTapHandler(BuildContext context) {
+    return () async {
+      if (fixedDates) {
+        Scaffold.of(context).showSnackBar(SnackBar(
+            duration: Duration(seconds: 3),
+            content: Text("Bei vorgegebenen Schichten können "
+                "die Start- und Enddaten nicht geändert werden.")));
+      } else {
+        final newValue = await showDatePicker(
+            context: context,
+            initialDate: dateTime,
+            firstDate: dateTime.subtract(Duration(days: 356)),
+            lastDate: dateTime.add(Duration(days: 356)));
+        if (newValue != null) {
+          dateTimeChanged(dateTimeWithDateFrom(dateTime, newValue));
+        }
+      }
+    };
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    List<Widget> children = List();
+
+    if (label.length > 0) {
+      children.add(Text(label));
+    }
+    children.add(
+      GestureDetector(
+        child: Padding(
+          padding: EdgeInsets.only(right: 8.0),
+          child: Text(
+            DateFormat.yMd("de_DE").format(dateTime),
+            style: TextStyle(fontSize: 18.0),
+          ),
+        ),
+        onTap: _createFromDateTapHandler(context),
+      ),
+    );
+
+    return Column(
+      children: children,
+      crossAxisAlignment: CrossAxisAlignment.start,
     );
   }
 }

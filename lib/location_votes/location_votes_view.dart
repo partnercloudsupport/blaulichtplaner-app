@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:blaulichtplaner_app/location_votes/location_vote.dart';
 import 'package:blaulichtplaner_app/location_votes/location_vote_editor.dart';
+import 'package:blaulichtplaner_app/location_votes/location_vote_service.dart';
 import 'package:blaulichtplaner_app/utils/user_manager.dart';
 import 'package:blaulichtplaner_app/widgets/loader.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -20,46 +21,42 @@ class LocationVotesView extends StatefulWidget {
 
 class LocationVotesViewState extends State<LocationVotesView> {
   bool _initialized = false;
-  //StreamSubscription _subscription;
-  List<UserVote> userVotes;
+  UserVoteHolder _userVoteHolder;
+  StreamSubscription _subscription;
 
   @override
   void initState() {
     super.initState();
-    userVotes = List();
-    UserVote vote = UserVote()
-      ..from = DateTime.now()
-      ..to = DateTime.now().add(Duration(days: 40))
-      ..minHours = 12
-      ..maxHours = 24
-      ..remarks = "Blub";
-    userVotes.add(vote);
+    _initLocationVotes();
+    _userVoteHolder = UserVoteHolder();
     setState(() {
       _initialized = true;
     });
   }
 
-/*
+  @override
+  void dispose() {
+    super.dispose();
+    _subscription.cancel();
+  }
+
   void _initLocationVotes() {
-    final firestore = Firestore.instance;
     final FirebaseUser user = UserManager.get().user;
 
-    final queryStream = firestore
+    Stream<QuerySnapshot> stream = Firestore.instance
         .collection('users')
         .document(user.uid)
-        .collection('collectionPath')
+        .collection('votes')
         .snapshots();
-    _subscription = queryStream.listen((snapshot) {
+    _subscription = stream.listen((snapshot) {
       setState(() {
-   
-       
         for (final doc in snapshot.documentChanges) {
           if (doc.type == DocumentChangeType.added) {
-            userVotes.add(UserVote.fromSnapshot(doc.document));
+            _userVoteHolder.add(UserVote.fromSnapshot(doc.document));
           } else if (doc.type == DocumentChangeType.modified) {
-            userVotes.add(UserVote.fromSnapshot(doc.document));
+            _userVoteHolder.modify(UserVote.fromSnapshot(doc.document));
           } else if (doc.type == DocumentChangeType.removed) {
-            userVotes.add(UserVote.fromSnapshot(doc.document));
+            _userVoteHolder.remove(UserVote.fromSnapshot(doc.document));
           }
         }
       });
@@ -67,18 +64,70 @@ class LocationVotesViewState extends State<LocationVotesView> {
     setState(() {
       _initialized = true;
     });
-  }*/
-  Widget _itemBuilder(BuildContext context, int index) {
-    String from = DateFormat.yMMMd("de_DE").format(userVotes[index].from);
-    String to = DateFormat.yMMMd("de_DE").format(userVotes[index].to);
-    String fromToLabel = "Zeitraum $from bis $to";
-    int minHours = userVotes[index].minHours;
-    int maxHours = userVotes[index].maxHours;
-    String hoursLabel = "min. $minHours Stunden - max. $maxHours Stunden";
+  }
 
+  Widget _createLocationTile(UserVoteLocationItem location) {
     return ListTile(
-      title: Text(fromToLabel),
-      subtitle: Text(hoursLabel),
+      title: Text(location.locationLabel),
+    );
+  }
+
+  Widget _itemBuilder(BuildContext context, int index) {
+    UserVote userVote = _userVoteHolder.userVotes[index];
+    String from = DateFormat.yMd("de_DE").format(userVote.from);
+    String to = DateFormat.yMd("de_DE").format(userVote.to);
+    String fromToLabel = "Zeitraum $from bis $to";
+    int minHours = userVote.minHours;
+    int maxHours = userVote.maxHours;
+    String hoursLabel = "min. $minHours Stunden - max. $maxHours Stunden";
+    List<Widget> rows = <Widget>[
+      ListTile(
+        title: Text(fromToLabel),
+        subtitle: Text(hoursLabel),
+      ),
+      ExpansionTile(
+        title: Text('Standorte'),
+        children: userVote.locations.map(_createLocationTile).toList(),
+      ),
+      ButtonTheme.bar(
+        child: ButtonBar(
+          children: <Widget>[
+            FlatButton(
+              child: Text(
+                'Löschen',
+              ),
+              onPressed: () async {
+                userVote.databaseOperation = DatabaseOperation.deleteData;
+                await UserVoteService().save(userVote);
+              },
+              textColor: Colors.red,
+            ),
+            FlatButton(
+              child: Text('Bearbeiten'),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (BuildContext context) => LocationVoteEditor(
+                          employeeRoles: widget.employeeRoles,
+                          userVote: userVote,
+                        ),
+                  ),
+                );
+              },
+              textColor: Colors.blue,
+            ),
+          ],
+        ),
+      ),
+    ];
+
+    return Card(
+      child: Column(
+        mainAxisSize: MainAxisSize.max,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: rows,
+      ),
     );
   }
 
@@ -91,7 +140,7 @@ class LocationVotesViewState extends State<LocationVotesView> {
       body: LoaderBodyWidget(
         child: ListView.builder(
           itemBuilder: _itemBuilder,
-          itemCount: userVotes.length,
+          itemCount: _userVoteHolder.userVotes.length,
         ),
         loading: !_initialized,
       ),
@@ -105,6 +154,7 @@ class LocationVotesViewState extends State<LocationVotesView> {
                 MaterialPageRoute(builder: (BuildContext context) {
               return LocationVoteEditor(
                 employeeRoles: widget.employeeRoles,
+                userVote: UserVote(),
               );
             }));
           }),

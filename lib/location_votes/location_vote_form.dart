@@ -72,25 +72,20 @@ class LocationVoteFormState extends State<LocationVoteForm> {
   LocationVoteFormState(this.employeeRoles, this.userVote);
 
   Widget _buildLocationCheckbox(int index) {
+    Role employeeRole = employeeRoles[index];
     return LocationTile(
-      locationLabel: employeeRoles[index].locationLabel ?? "Kein Standort",
-      companyLabel: employeeRoles[index].companyLabel ?? "Keine Firma",
+      locationLabel: employeeRole.locationLabel ?? "Kein Standort",
+      companyLabel: employeeRole.companyLabel ?? "Keine Firma",
       onChanged: (bool value) {
         print(value);
-        if (employeeRoles[index].locationLabel != null &&
-            employeeRoles[index].locationRef != null) {
-          UserVoteLocationItem location = UserVoteLocationItem(
-            employeeRoles[index].locationLabel,
-            employeeRoles[index].locationRef,
-            employeeRoles[index].reference,
-            DatabaseOperation.setData,
-          );
-          if (userVote.locations.contains(location)) {
-            print('hi');
-            userVote.locations.remove(location);
-          }
-          if (value && !userVote.locations.contains(location)) {
-            userVote.locations.add(location);
+        if (employeeRole.locationLabel != null &&
+            employeeRole.locationRef != null) {
+          if (value) {
+            userVote.addLocation(employeeRole.reference,
+                employeeRole.locationRef, employeeRole.locationLabel);
+          } else {
+            userVote.deleteLocation(employeeRole.reference,
+                employeeRole.locationRef, employeeRole.locationLabel);
           }
         } else {
           print('locationRef and locationLabel not defined');
@@ -136,6 +131,7 @@ class LocationVoteFormState extends State<LocationVoteForm> {
                     userVote.from = dateTime;
                   });
                 },
+                fixedDates: false,
               ),
               Padding(
                 padding: EdgeInsets.only(top: 16.0, bottom: 16.0),
@@ -149,7 +145,8 @@ class LocationVoteFormState extends State<LocationVoteForm> {
                     setState(() {
                       userVote.to = dateTime;
                     });
-                  }),
+                  },
+                  fixedDates: false,),
               Padding(
                 padding: EdgeInsets.only(top: 16.0),
                 child: Row(

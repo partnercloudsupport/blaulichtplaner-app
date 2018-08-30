@@ -215,27 +215,31 @@ class ShiftVoteHolder {
     List<ShiftVote> filteredShiftVotes = <ShiftVote>[];
     switch (option) {
       case FilterOptions.withoutBid:
-        filteredShiftVotes =
-            _shiftVotes.where((ShiftVote shiftVote) => !shiftVote.hasVote()).toList();
+        filteredShiftVotes = _shiftVotes
+            .where((ShiftVote shiftVote) =>
+                !shiftVote.hasVote() && shiftVote.shift.status == 'public')
+            .toList();
         break;
       case FilterOptions.withBid:
-        filteredShiftVotes =
-            _shiftVotes.where((ShiftVote shiftVote) => shiftVote.hasBid()).toList();
+        filteredShiftVotes = _shiftVotes
+            .where((ShiftVote shiftVote) => shiftVote.hasBid())
+            .toList();
         break;
       case FilterOptions.notInterested:
         filteredShiftVotes = _shiftVotes
-            .where((ShiftVote shiftVote) => shiftVote.hasRejection()).toList();
+            .where((ShiftVote shiftVote) => shiftVote.hasRejection())
+            .toList();
         break;
       default:
         return null;
         break;
     }
     return filteredShiftVotes
-        .where(_filterDate(selectedDate))
         .where((ShiftVote shiftVote) =>
             UserManager.get().getRoleForTypeAndReference(
                 "employee", shiftVote.shiftplanRef) !=
             null)
+        .where(_filterDate(selectedDate))
         .toList();
   }
 
@@ -256,6 +260,7 @@ class Shift {
   DocumentReference shiftplanRef;
   DocumentReference workAreaRef;
   String publicNote;
+  String status;
 
   Shift.fromSnapshot(DocumentSnapshot snapshot) {
     id = snapshot.documentID;
@@ -267,5 +272,6 @@ class Shift {
     shiftplanRef = snapshot.data["shiftplanRef"];
     workAreaRef = snapshot.data["workAreaRef"];
     publicNote = snapshot.data["publicNote"];
+    status = snapshot.data["status"];
   }
 }

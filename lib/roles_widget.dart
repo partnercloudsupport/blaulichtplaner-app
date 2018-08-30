@@ -70,12 +70,12 @@ class RolesScreenState extends State<RolesScreen> {
       ),
       body: LoaderBodyWidget(
         loading: !_initialized,
-        child: _roles.isEmpty
-            ? Text('Keine Einträge')
-            : ListView.builder(
-                itemCount: _roles.length,
-                itemBuilder: _tileBuilder,
-              ),
+        child: ListView.builder(
+          itemCount: _roles.length,
+          itemBuilder: _tileBuilder,
+        ),
+        fallbackText: 'Keine Einträge',
+        empty: _roles.isEmpty,
       ),
     );
   }

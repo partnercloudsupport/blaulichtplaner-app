@@ -11,22 +11,27 @@ class LocationTile extends StatefulWidget {
   final String locationLabel;
   final String companyLabel;
   final OnChangedLocation onChanged;
+  final bool initialValue;
 
   const LocationTile({
     Key key,
     @required this.locationLabel,
     @required this.companyLabel,
     @required this.onChanged,
+    this.initialValue = false,
   }) : super(key: key);
 
   @override
   State<StatefulWidget> createState() {
-    return LocationTileState();
+    return LocationTileState(initialValue);
   }
 }
 
 class LocationTileState extends State<LocationTile> {
   bool _value = false;
+
+  LocationTileState(this._value);
+
   @override
   Widget build(BuildContext context) {
     return CheckboxListTile(
@@ -65,6 +70,7 @@ class LocationVoteForm extends StatefulWidget {
 class LocationVoteFormState extends State<LocationVoteForm> {
   final _formKey = GlobalKey<FormState>();
   bool _initialized = false;
+  bool _saving = false;
   List<Widget> _listTiles = <Widget>[];
   final List<Role> employeeRoles;
   final UserVote userVote;
@@ -74,8 +80,8 @@ class LocationVoteFormState extends State<LocationVoteForm> {
   Widget _buildLocationCheckbox(int index) {
     Role employeeRole = employeeRoles[index];
     return LocationTile(
-      locationLabel: employeeRole.locationLabel ?? "Kein Standort",
-      companyLabel: employeeRole.companyLabel ?? "Keine Firma",
+      locationLabel: employeeRole.locationLabel ?? "Unbekannter Standort",
+      companyLabel: employeeRole.companyLabel ?? "Unbekannte Firma",
       onChanged: (bool value) {
         print(value);
         if (employeeRole.locationLabel != null &&
@@ -91,6 +97,9 @@ class LocationVoteFormState extends State<LocationVoteForm> {
           print('locationRef and locationLabel not defined');
         }
       },
+      initialValue: userVote.locations.indexWhere((UserVoteLocationItem item) =>
+              item.locationRef.path == employeeRole.locationRef.path) >
+          -1,
     );
   }
 
@@ -140,13 +149,14 @@ class LocationVoteFormState extends State<LocationVoteForm> {
                 ),
               ),
               DateTimePickerWidget(
-                  dateTime: userVote.to,
-                  dateTimeChanged: (dateTime) {
-                    setState(() {
-                      userVote.to = dateTime;
-                    });
-                  },
-                  fixedDates: false,),
+                dateTime: userVote.to,
+                dateTimeChanged: (dateTime) {
+                  setState(() {
+                    userVote.to = dateTime;
+                  });
+                },
+                fixedDates: false,
+              ),
               Padding(
                 padding: EdgeInsets.only(top: 16.0),
                 child: Row(
@@ -225,26 +235,32 @@ class LocationVoteFormState extends State<LocationVoteForm> {
                   children: _listTiles,
                 ),
               ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: <Widget>[
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 16.0),
-                    child: RaisedButton(
-                      onPressed: () {
-                        if (_formKey.currentState.validate()) {
-                          print("saveBid");
-                          widget.saveLocationVote(context, userVote);
-                        } else {
-                          Scaffold.of(context).showSnackBar(SnackBar(
-                              content:
-                                  Text('Bitte füllen Sie alle Felder aus.')));
-                        }
-                      },
-                      child: Text('Bewerben'),
+              LoaderWidget(
+                loading: _saving,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: <Widget>[
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 16.0),
+                      child: RaisedButton(
+                        onPressed: () {
+                          setState(() {
+                            _saving = true;
+                          });
+                          if (_formKey.currentState.validate()) {
+                            print("saveBid");
+                            widget.saveLocationVote(context, userVote);
+                          } else {
+                            Scaffold.of(context).showSnackBar(SnackBar(
+                                content:
+                                    Text('Bitte füllen Sie alle Felder aus.')));
+                          }
+                        },
+                        child: Text('Speichern'),
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ]),
       ),

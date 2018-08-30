@@ -58,7 +58,6 @@ class AssignmentViewState extends State<AssignmentView> {
         }
         subs.add(query.snapshots().listen((snapshot) {
           setState(() {
-            _initialized = true;
             for (final doc in snapshot.documentChanges) {
               final assignmentRef = doc.document.reference;
 
@@ -76,6 +75,8 @@ class AssignmentViewState extends State<AssignmentView> {
               }
             }
             _assignments.sort((s1, s2) => s1.data.from.compareTo(s2.data.from));
+
+            _initialized = true;
           });
         }));
       }
@@ -183,11 +184,14 @@ class AssignmentViewState extends State<AssignmentView> {
           )));
     }
     Widget card = Card(
-        child: Column(mainAxisSize: MainAxisSize.max, children: cardChildren),
-      );
+      child: Column(mainAxisSize: MainAxisSize.max, children: cardChildren),
+    );
     Widget timeDiff = _timeDiffBuilder(index);
     if (timeDiff != null) {
-      return Column(children: <Widget>[timeDiff, card],mainAxisAlignment: MainAxisAlignment.center,);
+      return Column(
+        children: <Widget>[timeDiff, card],
+        mainAxisAlignment: MainAxisAlignment.center,
+      );
     } else {
       return card;
     }
@@ -233,40 +237,17 @@ class AssignmentViewState extends State<AssignmentView> {
   @override
   Widget build(BuildContext context) {
     if (widget.hasEmployeeRoles()) {
-      if (_initialized) {
-        if (_assignments.isEmpty) {
-          return Center(
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                children: <Widget>[
-                  Text(
-                    widget.upcomingShifts
-                        ? "Keine zugewiesenen Schichten verfügbar"
-                        : "Keine Schichten vorhanden, die eine Auswertung benötigen",
-                    textAlign: TextAlign.center,
-                  )
-                ],
-                mainAxisAlignment: MainAxisAlignment.center,
-              ),
-            ),
-          );
-        } else {
-          return ListView.builder(
-            itemBuilder: _assignmentBuilder,
-            itemCount: _assignments.length,
-          );
-        }
-      } else {
-        return Container(
-            color: Colors.white,
-            child: Center(
-              child: Column(
-                children: <Widget>[CircularProgressIndicator()],
-                mainAxisAlignment: MainAxisAlignment.center,
-              ),
-            ));
-      }
+      return LoaderBodyWidget(
+        loading: !_initialized,
+        child: ListView.builder(
+          itemBuilder: _assignmentBuilder,
+          itemCount: _assignments.length,
+        ),
+        empty: _assignments.isEmpty,
+        fallbackText: widget.upcomingShifts
+            ? "Sie haben keine zugewiesenen Schichten!"
+            : "Keine Schichten vorhanden, die eine Auswertung benötigen!",
+      );
     } else {
       return Center(
         child: Column(

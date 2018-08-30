@@ -41,12 +41,18 @@ class LoaderWidget extends StatelessWidget {
 class LoaderBodyWidget extends StatelessWidget {
   final bool loading;
   final Widget child;
+  final bool empty;
+  final String fallbackText;
+  final Widget fallbackWidget;
 
-  const LoaderBodyWidget(
-      {Key key,
-      this.loading,
-      this.child})
-      : super(key: key);
+  const LoaderBodyWidget({
+    Key key,
+    @required this.loading,
+    @required this.child,
+    @required this.empty,
+    this.fallbackText,
+    this.fallbackWidget,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -60,7 +66,19 @@ class LoaderBodyWidget extends StatelessWidget {
             ),
           ));
     } else {
-      return child;
+      if (empty) {
+        return fallbackWidget ?? Container(
+          color: Colors.white,
+          child: Center(
+            child: Column(
+              children: <Widget>[Text(fallbackText, textAlign: TextAlign.center,)],
+              mainAxisAlignment: MainAxisAlignment.center,
+            ),
+          ),
+        );
+      } else {
+        return child;
+      }
     }
   }
 }

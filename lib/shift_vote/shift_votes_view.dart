@@ -4,6 +4,7 @@ import 'package:blaulichtplaner_app/shift_vote/vote.dart';
 import 'package:blaulichtplaner_app/shift_vote/shift_vote.dart';
 import 'package:blaulichtplaner_app/utils/user_manager.dart';
 import 'package:blaulichtplaner_app/utils/utils.dart';
+import 'package:blaulichtplaner_app/widgets/loader.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
@@ -44,9 +45,6 @@ class ShiftVotesViewState extends State<ShiftVotesView> {
     super.initState();
     _initOwnVotes();
     _initWorkAreaShifts();
-    setState(() {
-      _initialized = true;
-    });
   }
 
   void _initWorkAreaShifts() {
@@ -70,6 +68,7 @@ class ShiftVotesViewState extends State<ShiftVotesView> {
                 _shiftVoteHolder.removeShift(Shift.fromSnapshot(doc.document));
               }
             }
+            _initialized = true;
           });
         }));
       }
@@ -96,6 +95,7 @@ class ShiftVotesViewState extends State<ShiftVotesView> {
                 _shiftVoteHolder.removeVoteFromSnapshot(doc.document);
               }
             }
+            _initialized = true;
           });
         }));
       }
@@ -104,8 +104,10 @@ class ShiftVotesViewState extends State<ShiftVotesView> {
 
   @override
   void didUpdateWidget(ShiftVotesView oldWidget) {
-    _initialized = false;
     super.didUpdateWidget(oldWidget);
+    setState(() {
+      _initialized = false;
+    });
     for (final sub in subs) {
       sub.cancel();
     }
@@ -113,7 +115,6 @@ class ShiftVotesViewState extends State<ShiftVotesView> {
     _shiftVoteHolder.clear();
     _initWorkAreaShifts();
     _initOwnVotes();
-    _initialized = true;
   }
 
   @override
@@ -280,28 +281,18 @@ class ShiftVotesViewState extends State<ShiftVotesView> {
   @override
   Widget build(BuildContext context) {
     if (widget.hasWorkAreaRoles()) {
-      if ((_shiftVoteHolder
-          .filterShiftVotes(widget.filter, widget.selectedDate)
-          .isEmpty)) {
-        return Container(
-            color: Colors.white,
-            child: Center(
-              child: Column(
-                children: <Widget>[
-                  _initialized
-                      ? Text('Keine Items')
-                      : CircularProgressIndicator()
-                ],
-                mainAxisAlignment: MainAxisAlignment.center,
-              ),
-            ));
-      } else {
-        return ListView.builder(
+      return LoaderBodyWidget(
+        loading: !_initialized,
+        child: ListView.builder(
             itemCount: _shiftVoteHolder
                 .filterShiftVotes(widget.filter, widget.selectedDate)
                 .length,
-            itemBuilder: _listElementBuilder);
-      }
+            itemBuilder: _listElementBuilder),
+        fallbackText: 'Keine Bewerbungen',
+        empty: _shiftVoteHolder
+            .filterShiftVotes(widget.filter, widget.selectedDate)
+            .isEmpty,
+      );
     } else {
       return Center(
         child: Column(

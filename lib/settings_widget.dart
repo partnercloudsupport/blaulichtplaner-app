@@ -14,18 +14,15 @@ class SettingsScreen extends StatelessWidget {
                     icon: Icon(Icons.notifications_active),
                     text: 'Benachrichtigungen',
                   ),
-                  Tab(icon: Icon(Icons.account_circle), text: 'Account'),
-                  Tab(icon: Icon(Icons.help_outline), text: 'Feedback'),
+                  Tab(
+                    icon: Icon(Icons.account_circle),
+                    text: 'Account',
+                  ),
                 ],
               ),
             ),
             body: TabBarView(
               children: <Widget>[
-                SingleChildScrollView(
-                  child: Center(
-                    child: Text('Hi'),
-                  ),
-                ),
                 SingleChildScrollView(
                   child: Center(
                     child: Text('Hi'),

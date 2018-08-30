@@ -11,6 +11,7 @@ import 'package:blaulichtplaner_app/shiftplan/shiftplan_view.dart';
 import 'package:blaulichtplaner_app/utils/user_manager.dart';
 import 'package:blaulichtplaner_app/welcome_widget.dart';
 import 'package:blaulichtplaner_app/about_widget.dart';
+import 'package:blaulichtplaner_app/widgets/loader.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -479,6 +480,7 @@ class LaunchScreenState extends State<LaunchScreen> {
         onTap: (tapId) {
           setState(() {
             selectedTab = tapId;
+            _selectDate = false;
           });
         },
       ),
@@ -487,29 +489,19 @@ class LaunchScreenState extends State<LaunchScreen> {
 
   @override
   Widget build(BuildContext context) {
-    if (!_initialized) {
-      return Container(
-          color: Colors.white,
-          child: Center(
-            child: Column(
-              children: <Widget>[CircularProgressIndicator()],
-              mainAxisAlignment: MainAxisAlignment.center,
-            ),
-          ));
-    } else {
-      if (_user == null) {
-        return LoginScreen();
-      } else if (!_registered) {
-        return RegistrationScreen(
-            user: _user,
-            successCallback: () {
-              setState(() {
-                _registered = true;
-              });
-            });
-      } else {
-        return _buildHomeScreen(context);
-      }
-    }
+    return LoaderBodyWidget(
+      loading: !_initialized,
+      child: (_registered)
+          ? _buildHomeScreen(context)
+          : RegistrationScreen(
+              user: _user,
+              successCallback: () {
+                setState(() {
+                  _registered = true;
+                });
+              }),
+      empty: _user == null,
+      fallbackWidget: LoginScreen(),
+    );
   }
 }

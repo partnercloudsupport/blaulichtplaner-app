@@ -135,5 +135,7 @@ class UserVoteHolder {
     _userVotes.sort((UserVote a, UserVote b) => a.from.compareTo(b.from));
   }
 
+  get isEmpty => _userVotes.isEmpty;
+
   List<UserVote> get userVotes => _userVotes;
 }

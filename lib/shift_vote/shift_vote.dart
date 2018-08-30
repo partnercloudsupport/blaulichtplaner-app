@@ -1,6 +1,7 @@
 import 'package:blaulichtplaner_app/shift_vote/shift_votes_view.dart';
 import 'package:blaulichtplaner_app/shift_vote/vote.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:blaulichtplaner_app/utils/user_manager.dart';
 
 class ShiftVote {
   Shift shift;
@@ -170,6 +171,7 @@ class ShiftVoteHolder {
       removeShiftVoteIfEmpty(shiftVote);
     }
   }
+
   void removeVoteFromSnapshot(DocumentSnapshot document) {
     if (document.data["isBid"]) {
       removeBid(Bid.fromSnapshot(document));
@@ -210,25 +212,31 @@ class ShiftVoteHolder {
 
   List<ShiftVote> filterShiftVotes(
       FilterOptions option, DateTime selectedDate) {
+    List<ShiftVote> filteredShiftVotes = <ShiftVote>[];
     switch (option) {
       case FilterOptions.withoutBid:
-        return _shiftVotes
-            .where((ShiftVote shiftVote) => !shiftVote.hasVote())
-            .where(_filterDate(selectedDate))
-            .toList();
+        filteredShiftVotes =
+            _shiftVotes.where((ShiftVote shiftVote) => !shiftVote.hasVote()).toList();
+        break;
       case FilterOptions.withBid:
-        return _shiftVotes
-            .where((ShiftVote shiftVote) => shiftVote.hasBid())
-            .where(_filterDate(selectedDate))
-            .toList();
+        filteredShiftVotes =
+            _shiftVotes.where((ShiftVote shiftVote) => shiftVote.hasBid()).toList();
+        break;
       case FilterOptions.notInterested:
-        return _shiftVotes
-            .where((ShiftVote shiftVote) => shiftVote.hasRejection())
-            .where(_filterDate(selectedDate))
-            .toList();
+        filteredShiftVotes = _shiftVotes
+            .where((ShiftVote shiftVote) => shiftVote.hasRejection()).toList();
+        break;
       default:
         return null;
+        break;
     }
+    return filteredShiftVotes
+        .where(_filterDate(selectedDate))
+        .where((ShiftVote shiftVote) =>
+            UserManager.get().getRoleForTypeAndReference(
+                "employee", shiftVote.shiftplanRef) !=
+            null)
+        .toList();
   }
 
   void removeShiftVoteIfEmpty(ShiftVote shiftVote) {

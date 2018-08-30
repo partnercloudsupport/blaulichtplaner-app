@@ -27,11 +27,8 @@ class LocationVotesViewState extends State<LocationVotesView> {
   @override
   void initState() {
     super.initState();
-    _initLocationVotes();
     _userVoteHolder = UserVoteHolder();
-    setState(() {
-      _initialized = true;
-    });
+    _initLocationVotes();
   }
 
   @override
@@ -59,16 +56,31 @@ class LocationVotesViewState extends State<LocationVotesView> {
             _userVoteHolder.remove(UserVote.fromSnapshot(doc.document));
           }
         }
+        _initialized = true;
       });
-    });
-    setState(() {
-      _initialized = true;
     });
   }
 
-  Widget _createLocationTile(UserVoteLocationItem location) {
-    return ListTile(
-      title: Text(location.locationLabel),
+  Widget _createLocationTile(UserVote userVote) {
+    return Padding(
+      padding: EdgeInsets.only(left:16.0),
+      child: Wrap(
+        children: userVote.locations
+            .map((UserVoteLocationItem location) => Padding(
+              padding: const EdgeInsets.only(right: 8.0),
+              child: Chip(
+                    backgroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                        side: BorderSide(
+                            color: Colors.black.withAlpha(0x1f),
+                            width: 1.0,
+                            style: BorderStyle.solid),
+                        borderRadius: BorderRadius.circular(28.0)),
+                    label: Text(location.locationLabel),
+                  ),
+            ))
+            .toList(),
+      ),
     );
   }
 
@@ -85,10 +97,7 @@ class LocationVotesViewState extends State<LocationVotesView> {
         title: Text(fromToLabel),
         subtitle: Text(hoursLabel),
       ),
-      ExpansionTile(
-        title: Text('Standorte'),
-        children: userVote.locations.map(_createLocationTile).toList(),
-      ),
+      _createLocationTile(userVote),
       ButtonTheme.bar(
         child: ButtonBar(
           children: <Widget>[
@@ -139,6 +148,8 @@ class LocationVotesViewState extends State<LocationVotesView> {
         itemCount: _userVoteHolder.userVotes.length,
       ),
       loading: !_initialized,
+      fallbackText: 'Keine Bewerbungen.\nFügen Sie neue mit dem + Symbol hinzu',
+      empty: _userVoteHolder.isEmpty,
     );
   }
 }

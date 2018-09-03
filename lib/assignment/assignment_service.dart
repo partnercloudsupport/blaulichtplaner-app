@@ -11,6 +11,7 @@ class Assignment {
   String locationLabel;
   DocumentReference shiftRef;
   DocumentReference shiftplanRef;
+  DocumentReference employeeRef;
 
   Assignment.fromSnapshot(DocumentSnapshot snapshot) {
     selfRef = snapshot.reference;
@@ -20,6 +21,7 @@ class Assignment {
     locationLabel = snapshot.data["locationLabel"];
     shiftRef = snapshot.data["shiftRef"];
     shiftplanRef = snapshot.data["shiftplanRef"];
+    employeeRef = snapshot.data["employeeRef"];
   }
 }
 
@@ -71,6 +73,8 @@ class AssignmentService {
     data["assignmentRef"] = assignment.selfRef;
     data["shiftplanRef"] = assignment.shiftplanRef;
     data["tasks"] = model.tasks.map(_taskToMap).toList();
+    data["employeeRef"] = assignment.employeeRef;
+    data["shiftRef"] = assignment.shiftRef;
     return data;
   }
 

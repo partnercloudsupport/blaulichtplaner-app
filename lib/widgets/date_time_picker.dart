@@ -11,8 +11,8 @@ class DateTimePickerWidget extends StatelessWidget {
   final bool fixedDates;
   final DateTimeChanged dateTimeChanged;
 
-  final dateFormatter = DateFormat.EEEE("de_DE").add_yMd();
-  final timeFormatter = DateFormat.Hm("de_DE");
+  final dateFormatter = DateFormat('EE, dd.MM.yyyy', 'de_DE');
+  final timeFormatter = DateFormat.Hm('de_DE');
   final inputTextStyle = TextStyle(fontSize: 18.0);
   final overtimeInputTextStyle = TextStyle(fontSize: 18.0, color: Colors.red);
 
@@ -70,9 +70,23 @@ class DateTimePickerWidget extends StatelessWidget {
         child: GestureDetector(
           child: Padding(
             padding: EdgeInsets.only(right: 8.0),
-            child: Text(
-              dateFormatter.format(dateTime),
-              style: inputTextStyle,
+            child: Row(
+              children: <Widget>[
+                Expanded(
+                  flex: 2,
+                  child: Text(
+                    DateFormat('EE, ', 'de_DE').format(dateTime),
+                    style: TextStyle(fontSize: 18.0),
+                  ),
+                ),
+                Expanded(
+                  flex: 8,
+                  child: Text(
+                    DateFormat('dd.MM.yyyy', 'de_DE').format(dateTime),
+                    style: TextStyle(fontSize: 18.0),
+                  ),
+                )
+              ],
             ),
           ),
           onTap: _createFromDateTapHandler(context),
@@ -175,9 +189,19 @@ class DatePickerWidget extends StatelessWidget {
       GestureDetector(
         child: Padding(
           padding: EdgeInsets.only(right: 8.0),
-          child: Text(
-            DateFormat.yMd("de_DE").format(dateTime),
-            style: TextStyle(fontSize: 18.0),
+          child: Row(
+            children: <Widget>[
+              Expanded(
+                child: Text(
+                  DateFormat('EE, ', 'de_DE').format(dateTime),
+                  style: TextStyle(fontSize: 18.0),
+                ),
+              ),
+              Text(
+                DateFormat('dd.MM.yyyy', 'de_DE').format(dateTime),
+                style: TextStyle(fontSize: 18.0),
+              ),
+            ],
           ),
         ),
         onTap: _createFromDateTapHandler(context),

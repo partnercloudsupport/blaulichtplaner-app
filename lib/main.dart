@@ -1,4 +1,4 @@
-import 'package:blaulichtplaner_app/api_service.dart';
+import 'package:blaulichtplaner_app/invitation_widget.dart';
 import 'package:blaulichtplaner_app/location_votes/location_vote.dart';
 import 'package:blaulichtplaner_app/location_votes/location_vote_editor.dart';
 import 'package:blaulichtplaner_app/location_votes/location_votes_view.dart';
@@ -7,7 +7,6 @@ import 'package:blaulichtplaner_app/assignment/assignment_view.dart';
 import 'package:blaulichtplaner_app/registration_widget.dart';
 import 'package:blaulichtplaner_app/roles_widget.dart';
 import 'package:blaulichtplaner_app/settings_widget.dart';
-import 'package:blaulichtplaner_app/shiftplan/shiftplan_view.dart';
 import 'package:blaulichtplaner_app/utils/user_manager.dart';
 import 'package:blaulichtplaner_app/welcome_widget.dart';
 import 'package:blaulichtplaner_app/about_widget.dart';
@@ -16,7 +15,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
-import 'package:http/http.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:intl/intl.dart';
 
@@ -172,47 +170,6 @@ class LaunchScreenState extends State<LaunchScreen> {
 
   void logout() {
     _auth.signOut();
-  }
-
-  Widget _buildDialog(BuildContext context) {
-    String url;
-    return AlertDialog(
-      title: Text("Einladungslink"),
-      content: TextField(
-        decoration: InputDecoration(labelText: "Link:"),
-        onChanged: (value) => url = value,
-      ),
-      actions: <Widget>[
-        FlatButton(
-          child: Text("Abbrechen"),
-          onPressed: () {
-            Navigator.pop(context);
-          },
-        ),
-        FlatButton(
-          child: Text("Akzeptieren"),
-          onPressed: () {
-            Navigator.pop(context, url);
-          },
-        )
-      ],
-    );
-  }
-
-  void acceptInvite(BuildContext context) async {
-    final inviteUrl =
-        await showDialog<String>(context: context, builder: _buildDialog);
-    print("invite Url: $inviteUrl");
-    if (inviteUrl != null) {
-      final slashPos = inviteUrl.lastIndexOf("/");
-      String inviteId = inviteUrl.substring(slashPos + 1);
-      print("inviteId: [$inviteId]");
-
-      InvitationRequest request = InvitationRequest(IOClient());
-      await request.performPutRequest(_user.uid, "", inviteId, null);
-    }
-    _updateUserData(_user);
-    Navigator.pop(context);
   }
 
   Widget _createBody() {
@@ -417,10 +374,11 @@ class LaunchScreenState extends State<LaunchScreen> {
                 ),
                 onPressed: () {
                   showDatePicker(
-                      context: context,
-                      firstDate: _initialDate.subtract(Duration(days: 1)),
-                      lastDate: DateTime.now().add(Duration(days: 356)),
-                      initialDate: _selectedDate).then((DateTime date) {
+                          context: context,
+                          firstDate: _initialDate.subtract(Duration(days: 1)),
+                          lastDate: DateTime.now().add(Duration(days: 356)),
+                          initialDate: _selectedDate)
+                      .then((DateTime date) {
                     setState(() {
                       _selectedDate = date;
                     });
@@ -452,7 +410,17 @@ class LaunchScreenState extends State<LaunchScreen> {
       drawer: DrawerWidget(
         user: _user,
         invitationCallback: () {
-          acceptInvite(context);
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (BuildContext context) => InvitationScreen(
+                    user: _user,
+                    onSaved: () {
+                      _updateUserData(_user);
+                    },
+                  ),
+            ),
+          );
         },
         logoutCallback: () {
           logout();

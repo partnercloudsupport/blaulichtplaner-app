@@ -2,7 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:http/http.dart';
-import 'package:secure_string/secure_string.dart';
+import 'package:nanoid/nanoid.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:blaulichtplaner_app/widgets/loader.dart';
 import 'package:blaulichtplaner_app/api_service.dart';
@@ -19,7 +19,7 @@ class RegistrationModel {
     firstName = user.displayName.split(" ")[0];
     lastName = user.displayName.split(" ")[1];
     email = user.email;
-    token = SecureString().generate(length: 64);
+    token = nanoid(64);
   }
 
   Map<String, dynamic> createData() {

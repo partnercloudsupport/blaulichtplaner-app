@@ -128,24 +128,34 @@ class AssignmentViewState extends State<AssignmentView> {
         ")";
 
     List<Widget> cardChildren = [
-      Padding(
-        padding: EdgeInsets.only(left: 16.0, right: 16.0, top: 8.0),
-        child: Row(
-          children: <Widget>[
-            Expanded(child: Text(assignment.workAreaLabel)),
-            Expanded(
-              child: Align(
-                  alignment: Alignment.centerRight,
-                  child: Text(assignment.locationLabel)),
-            )
-          ],
-        ),
-      ),
       ListTile(
         title: Text(dateTimeLabel),
         subtitle: Text(timeTimeLabel),
         contentPadding:
             EdgeInsets.only(left: 16.0, right: 16.0, top: 0.0, bottom: 0.0),
+      ),
+      Padding(
+        padding: const EdgeInsets.only(left: 16.0),
+        child: Wrap(
+          children: <Widget>[
+            Chip(
+              label: Text('${assignment.workAreaLabel}'),
+            ),
+            Padding(
+              padding: const EdgeInsets.only(left: 8.0),
+              child: Chip(
+                label: Text('${assignment.locationLabel}'),
+                backgroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                    side: BorderSide(
+                        color: Colors.black.withAlpha(0x1f),
+                        width: 1.0,
+                        style: BorderStyle.solid),
+                    borderRadius: BorderRadius.circular(28.0)),
+              ),
+            ),
+          ],
+        ),
       ),
     ];
 
@@ -184,7 +194,11 @@ class AssignmentViewState extends State<AssignmentView> {
           )));
     }
     Widget card = Card(
-      child: Column(mainAxisSize: MainAxisSize.max, children: cardChildren),
+      child: Column(
+        mainAxisSize: MainAxisSize.max,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: cardChildren,
+      ),
     );
     Widget timeDiff = _timeDiffBuilder(index);
     if (timeDiff != null) {

@@ -237,25 +237,35 @@ class ShiftVotesViewState extends State<ShiftVotesView> {
     }
 
     List<Widget> rows = <Widget>[
-      Padding(
-        padding: EdgeInsets.only(left: 16.0, right: 16.0, top: 8.0),
-        child: Row(
-          children: <Widget>[
-            Expanded(child: Text(shiftVote.workAreaLabel)),
-            Expanded(
-              child: Align(
-                  alignment: Alignment.centerRight,
-                  child: Text(shiftVote.locationLabel)),
-            )
-          ],
-        ),
-      ),
       ListTile(
         title: Text(dateTimeLabel),
         subtitle: Text(timeTimeLabel),
         contentPadding:
             EdgeInsets.only(left: 16.0, right: 16.0, top: 0.0, bottom: 0.0),
-      )
+      ),
+      Padding(
+        padding: const EdgeInsets.only(left: 16.0),
+        child: Wrap(
+          children: <Widget>[
+            Chip(
+              label: Text('${shiftVote.workAreaLabel}'),
+            ),
+            Padding(
+              padding: const EdgeInsets.only(left: 8.0),
+              child: Chip(
+                label: Text('${shiftVote.locationLabel}'),
+                backgroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                    side: BorderSide(
+                        color: Colors.black.withAlpha(0x1f),
+                        width: 1.0,
+                        style: BorderStyle.solid),
+                    borderRadius: BorderRadius.circular(28.0)),
+              ),
+            ),
+          ],
+        ),
+      ),
     ];
 
     if (shiftVote.hasShift() && isNotEmpty(shiftVote.shift.publicNote)) {

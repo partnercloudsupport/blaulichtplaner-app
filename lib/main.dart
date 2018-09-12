@@ -1,20 +1,21 @@
+import 'package:blaulichtplaner_app/about_widget.dart';
+import 'package:blaulichtplaner_app/assignment/assignment_view.dart';
 import 'package:blaulichtplaner_app/invitation_widget.dart';
 import 'package:blaulichtplaner_app/location_votes/location_vote.dart';
 import 'package:blaulichtplaner_app/location_votes/location_vote_editor.dart';
 import 'package:blaulichtplaner_app/location_votes/location_votes_view.dart';
-import 'package:blaulichtplaner_app/shift_vote/shift_votes_view.dart';
-import 'package:blaulichtplaner_app/assignment/assignment_view.dart';
 import 'package:blaulichtplaner_app/registration_widget.dart';
 import 'package:blaulichtplaner_app/roles_widget.dart';
 import 'package:blaulichtplaner_app/settings_widget.dart';
+import 'package:blaulichtplaner_app/shift_vote/shift_votes_view.dart';
 import 'package:blaulichtplaner_app/utils/user_manager.dart';
 import 'package:blaulichtplaner_app/welcome_widget.dart';
-import 'package:blaulichtplaner_app/about_widget.dart';
 import 'package:blaulichtplaner_app/widgets/loader.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:intl/intl.dart';
 
@@ -52,6 +53,7 @@ class DrawerWidget extends StatelessWidget {
   final Function logoutCallback;
   final Function invitationCallback;
   final List<Role> employeeRoles;
+
   DrawerWidget({
     Key key,
     @required this.user,
@@ -161,15 +163,25 @@ class LaunchScreenState extends State<LaunchScreen> {
   void _isRegistered(FirebaseUser user) async {
     if (user != null) {
       final doc =
-          await Firestore.instance.collection("users").document(user.uid).get();
+      await Firestore.instance.collection("users").document(user.uid).get();
       setState(() {
         _registered = doc.exists;
       });
     }
   }
 
-  void logout() {
-    _auth.signOut();
+  void logout() async {
+    FirebaseUser user = await _auth.currentUser();
+    if (user != null) {
+      // TODO check if providerId should be google. the framework returns "firebase" atm
+      if (user.providerId == "firebase") {
+        final GoogleSignIn googleSignIn = GoogleSignIn(
+          scopes: ['email'],
+        );
+        googleSignIn.disconnect();
+      }
+    }
+    await _auth.signOut();
   }
 
   Widget _createBody() {
@@ -214,11 +226,11 @@ class LaunchScreenState extends State<LaunchScreen> {
               onPressed: () {
                 Navigator.push(context,
                     MaterialPageRoute(builder: (BuildContext context) {
-                  return LocationVoteEditor(
-                    employeeRoles: userManager.rolesForType("employee"),
-                    userVote: UserVote(),
-                  );
-                }));
+                      return LocationVoteEditor(
+                        employeeRoles: userManager.rolesForType("employee"),
+                        userVote: UserVote(),
+                      );
+                    }));
               })
         ];
         break;
@@ -242,66 +254,66 @@ class LaunchScreenState extends State<LaunchScreen> {
                 padding: EdgeInsets.only(left: 12.0, right: 12.0),
                 child: Icon(Icons.filter_list)),
             itemBuilder: (BuildContext context) =>
-                <PopupMenuEntry<FilterOptions>>[
-                  PopupMenuItem(
-                    child: Text(
-                      'Filtern',
-                      style: TextStyle(color: Colors.black),
-                    ),
-                    enabled: false,
-                  ),
-                  PopupMenuItem<FilterOptions>(
-                      value: FilterOptions.withoutBid,
-                      child: Row(
-                        children: <Widget>[
-                          Radio(
-                            onChanged: (val) {
-                              setState(() {
-                                _selectedFilterOption = val;
-                              });
-                            },
-                            groupValue: _selectedFilterOption,
-                            value: FilterOptions.withoutBid,
-                          ),
-                          Text('Dienste ohne Bewerbung'),
-                          //Icon(Icons.help_outline),
-                        ],
-                      )),
-                  PopupMenuItem(
-                      value: FilterOptions.withBid,
-                      child: Row(
-                        children: <Widget>[
-                          Radio(
-                            onChanged: (val) {
-                              setState(() {
-                                _selectedFilterOption = val;
-                              });
-                            },
-                            groupValue: _selectedFilterOption,
-                            value: FilterOptions.withBid,
-                          ),
-                          Text('Beworbene Dienste'),
-                          //Icon(Icons.done_outline),
-                        ],
-                      )),
-                  PopupMenuItem(
-                      value: FilterOptions.notInterested,
-                      child: Row(
-                        children: <Widget>[
-                          Radio(
-                            onChanged: (val) {
-                              setState(() {
-                                _selectedFilterOption = val;
-                              });
-                            },
-                            groupValue: _selectedFilterOption,
-                            value: FilterOptions.notInterested,
-                          ),
-                          Text('Abgelehnte Dienste'),
-                          //Icon(Icons.not_interested),
-                        ],
-                      )),
-                ],
+            <PopupMenuEntry<FilterOptions>>[
+              PopupMenuItem(
+                child: Text(
+                  'Filtern',
+                  style: TextStyle(color: Colors.black),
+                ),
+                enabled: false,
+              ),
+              PopupMenuItem<FilterOptions>(
+                  value: FilterOptions.withoutBid,
+                  child: Row(
+                    children: <Widget>[
+                      Radio(
+                        onChanged: (val) {
+                          setState(() {
+                            _selectedFilterOption = val;
+                          });
+                        },
+                        groupValue: _selectedFilterOption,
+                        value: FilterOptions.withoutBid,
+                      ),
+                      Text('Dienste ohne Bewerbung'),
+                      //Icon(Icons.help_outline),
+                    ],
+                  )),
+              PopupMenuItem(
+                  value: FilterOptions.withBid,
+                  child: Row(
+                    children: <Widget>[
+                      Radio(
+                        onChanged: (val) {
+                          setState(() {
+                            _selectedFilterOption = val;
+                          });
+                        },
+                        groupValue: _selectedFilterOption,
+                        value: FilterOptions.withBid,
+                      ),
+                      Text('Beworbene Dienste'),
+                      //Icon(Icons.done_outline),
+                    ],
+                  )),
+              PopupMenuItem(
+                  value: FilterOptions.notInterested,
+                  child: Row(
+                    children: <Widget>[
+                      Radio(
+                        onChanged: (val) {
+                          setState(() {
+                            _selectedFilterOption = val;
+                          });
+                        },
+                        groupValue: _selectedFilterOption,
+                        value: FilterOptions.notInterested,
+                      ),
+                      Text('Abgelehnte Dienste'),
+                      //Icon(Icons.not_interested),
+                    ],
+                  )),
+            ],
           ),
         ];
         break;
@@ -351,19 +363,19 @@ class LaunchScreenState extends State<LaunchScreen> {
               IconButton(
                 icon: Icon(Icons.arrow_back),
                 onPressed: (_selectedDate
-                            .subtract(Duration(days: 1))
-                            .compareTo(_initialDate) >=
-                        0)
+                    .subtract(Duration(days: 1))
+                    .compareTo(_initialDate) >=
+                    0)
                     ? () {
-                        setState(() {
-                          _selectedDate = (_selectedDate
-                                      .subtract(Duration(days: 1))
-                                      .compareTo(_initialDate) >=
-                                  0)
-                              ? _initialDate
-                              : _selectedDate.subtract(Duration(days: 1));
-                        });
-                      }
+                  setState(() {
+                    _selectedDate = (_selectedDate
+                        .subtract(Duration(days: 1))
+                        .compareTo(_initialDate) >=
+                        0)
+                        ? _initialDate
+                        : _selectedDate.subtract(Duration(days: 1));
+                  });
+                }
                     : null,
                 color: Colors.white,
               ),
@@ -374,10 +386,10 @@ class LaunchScreenState extends State<LaunchScreen> {
                 ),
                 onPressed: () {
                   showDatePicker(
-                          context: context,
-                          firstDate: _initialDate.subtract(Duration(days: 1)),
-                          lastDate: DateTime.now().add(Duration(days: 356)),
-                          initialDate: _selectedDate)
+                      context: context,
+                      firstDate: _initialDate.subtract(Duration(days: 1)),
+                      lastDate: DateTime.now().add(Duration(days: 356)),
+                      initialDate: _selectedDate)
                       .then((DateTime date) {
                     setState(() {
                       _selectedDate = date;
@@ -414,11 +426,11 @@ class LaunchScreenState extends State<LaunchScreen> {
             context,
             MaterialPageRoute(
               builder: (BuildContext context) => InvitationScreen(
-                    user: _user,
-                    onSaved: () {
-                      _updateUserData(_user);
-                    },
-                  ),
+                user: _user,
+                onSaved: () {
+                  _updateUserData(_user);
+                },
+              ),
             ),
           );
         },
@@ -462,12 +474,12 @@ class LaunchScreenState extends State<LaunchScreen> {
       child: (_registered)
           ? _buildHomeScreen(context)
           : RegistrationScreen(
-              user: _user,
-              successCallback: () {
-                setState(() {
-                  _registered = true;
-                });
-              }),
+          user: _user,
+          successCallback: () {
+            setState(() {
+              _registered = true;
+            });
+          }),
       empty: _user == null,
       fallbackWidget: LoginScreen(),
     );

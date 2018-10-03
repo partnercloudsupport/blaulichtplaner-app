@@ -10,7 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:intl/intl.dart';
 
-enum FilterOptions { withoutBid, withBid, notInterested }
+enum FilterOptions { allShifts, withoutBid, withBid, notInterested }
 
 class ShiftVotesView extends StatefulWidget {
   final List<Role> workAreaRoles;
@@ -184,6 +184,9 @@ class ShiftVotesViewState extends State<ShiftVotesView> {
         onPressed: () async {
           try {
             await VoteService().delete(shiftVote.vote);
+            Scaffold.of(context).showSnackBar(SnackBar(
+              content: Text('Bewerbung gelöscht.'),
+            ));
           } catch (e) {
             print(e);
           }
@@ -195,6 +198,9 @@ class ShiftVotesViewState extends State<ShiftVotesView> {
         onPressed: () async {
           try {
             await VoteService().delete(shiftVote.vote);
+            Scaffold.of(context).showSnackBar(SnackBar(
+              content: Text('Ablehnung gelöscht.'),
+            ));
           } catch (e) {
             print(e);
           }
@@ -205,43 +211,59 @@ class ShiftVotesViewState extends State<ShiftVotesView> {
         textColor: Colors.red,
         child: Text('Ablehnen'),
         onPressed: () async {
-          final role = UserManager
-              .get()
+          final role = UserManager.get()
               .getRoleForTypeAndReference("employee", shiftVote.shiftplanRef);
           if (role != null) {
-            print(await VoteService()
-                .save(Rejection.fromShift(shiftVote.shift, role)));
+            await VoteService()
+                .save(Rejection.fromShift(shiftVote.shift, role));
+            Scaffold.of(context).showSnackBar(SnackBar(
+              content: Text('Ablehnung gespeichert.'),
+            ));
           } else {
             Scaffold.of(context).showSnackBar(SnackBar(
-                  content: Text('Sie können sich nicht bewerben.'),
-                ));
+              content: Text('Sie können sich nicht bewerben.'),
+            ));
           }
         },
       ));
       buttons.add(FlatButton(
         child: Text('Bewerben'),
         onPressed: () async {
-          final role = UserManager
-              .get()
+          final role = UserManager.get()
               .getRoleForTypeAndReference("employee", shiftVote.shiftplanRef);
           if (role != null) {
-            print(
-                await VoteService().save(Bid.fromShift(shiftVote.shift, role)));
+            await VoteService().save(Bid.fromShift(shiftVote.shift, role));
+            Scaffold.of(context).showSnackBar(SnackBar(
+              content: Text('Bewerbung gespeichert.'),
+            ));
           } else {
             Scaffold.of(context).showSnackBar(SnackBar(
-                  content: Text('Sie können sich nicht bewerben.'),
-                ));
+              content: Text('Sie können sich nicht bewerben.'),
+            ));
           }
         },
       ));
     }
 
+    IconData icon = Icons.help;
+    Color color = Colors.grey;
+    if (shiftVote.hasBid()) {
+      icon = Icons.check;
+      color = Colors.green;
+    } else if (shiftVote.hasRejection()) {
+      icon = Icons.close;
+      color = Colors.red;
+    }
     List<Widget> rows = <Widget>[
       ListTile(
         title: Text(dateTimeLabel),
         subtitle: Text(timeTimeLabel),
         contentPadding:
             EdgeInsets.only(left: 16.0, right: 16.0, top: 0.0, bottom: 0.0),
+        trailing: Icon(
+          icon,
+          color: color,
+        ),
       ),
       Padding(
         padding: const EdgeInsets.only(left: 16.0),
@@ -288,6 +310,19 @@ class ShiftVotesViewState extends State<ShiftVotesView> {
     );
   }
 
+  String _fallbackText() {
+    switch (widget.filter) {
+      case FilterOptions.allShifts:
+        return 'Keine Dienste';
+      case FilterOptions.notInterested:
+        return 'Keine abgelehnten Schichten';
+      case FilterOptions.withBid:
+        return 'Keine Dienste mit Bewerbung';
+      case FilterOptions.withoutBid:
+        return 'Keine offenen Dienste';
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     if (widget.hasWorkAreaRoles()) {
@@ -298,7 +333,7 @@ class ShiftVotesViewState extends State<ShiftVotesView> {
                 .filterShiftVotes(widget.filter, widget.selectedDate)
                 .length,
             itemBuilder: _listElementBuilder),
-        fallbackText: 'Keine Bewerbungen',
+        fallbackText: _fallbackText(),
         empty: _shiftVoteHolder
             .filterShiftVotes(widget.filter, widget.selectedDate)
             .isEmpty,

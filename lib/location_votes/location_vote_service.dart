@@ -58,16 +58,14 @@ class UserVoteService {
                 if (doc != null) {
                   batch.updateData(
                       doc.reference,
-                      LocationVote
-                          .fromUserVote(userVote, location)
+                      LocationVote.fromUserVote(userVote, location)
                           .toFirebaseData());
                 }
                 break;
               case DatabaseOperation.setData:
                 batch.setData(
                     locationVotesRef.document(),
-                    LocationVote
-                        .fromUserVote(userVote, location)
+                    LocationVote.fromUserVote(userVote, location)
                         .toFirebaseData());
                 break;
             }
@@ -114,7 +112,7 @@ class UserVoteHolder {
   UserVoteHolder() : _userVotes = List();
   void add(UserVote vote) {
     _userVotes.add(vote);
-    _userVotes.sort((UserVote a, UserVote b) => a.from.compareTo(b.from));
+    _userVotes.sort((UserVote a, UserVote b) => a.to.compareTo(b.to));
   }
 
   void modify(UserVote vote) {
@@ -123,7 +121,7 @@ class UserVoteHolder {
     if (index >= 0) {
       _userVotes[index] = vote;
     }
-    _userVotes.sort((UserVote a, UserVote b) => a.from.compareTo(b.from));
+    _userVotes.sort((UserVote a, UserVote b) => a.to.compareTo(b.to));
   }
 
   void remove(UserVote vote) {
@@ -132,7 +130,6 @@ class UserVoteHolder {
     if (index >= 0) {
       _userVotes.removeAt(index);
     }
-    _userVotes.sort((UserVote a, UserVote b) => a.from.compareTo(b.from));
   }
 
   get isEmpty => _userVotes.isEmpty;

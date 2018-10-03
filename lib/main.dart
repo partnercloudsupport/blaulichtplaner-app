@@ -48,6 +48,102 @@ class LaunchScreen extends StatefulWidget {
   LaunchScreenState createState() => LaunchScreenState();
 }
 
+class FilterMenu extends StatefulWidget {
+  final FilterOptions initialValue;
+  final Function onChanged;
+
+  const FilterMenu({
+    Key key,
+    @required this.initialValue,
+    @required this.onChanged,
+  }) : super(key: key);
+
+  @override
+  State<StatefulWidget> createState() {
+    return FilterMenuState(initialValue);
+  }
+}
+
+class FilterMenuState extends State<FilterMenu> {
+  FilterOptions _selectedFilterOption;
+  FilterMenuState(this._selectedFilterOption);
+  void _onChanged(val) {
+    setState(() {
+      _selectedFilterOption = val;
+    });
+    widget.onChanged(_selectedFilterOption);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: <Widget>[
+          RadioListTile(
+            groupValue: _selectedFilterOption,
+            onChanged: _onChanged,
+            value: FilterOptions.allShifts,
+            title: Text('Alle Dienste'),
+          ),
+          RadioListTile(
+            groupValue: _selectedFilterOption,
+            onChanged: _onChanged,
+            value: FilterOptions.withoutBid,
+            title: Row(
+              children: <Widget>[
+                Text('Dienste ohne Bewerbung'),
+                Padding(
+                  padding: const EdgeInsets.only(left: 8.0),
+                  child: Icon(
+                    Icons.help,
+                    color: Colors.grey,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          RadioListTile(
+            groupValue: _selectedFilterOption,
+            onChanged: _onChanged,
+            value: FilterOptions.withBid,
+            title: Row(
+              children: <Widget>[
+                Text('Dienste mit Bewerbung'),
+                Padding(
+                  padding: const EdgeInsets.only(left: 8.0),
+                  child: Icon(
+                    Icons.check,
+                    color: Colors.green,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          RadioListTile(
+            groupValue: _selectedFilterOption,
+            onChanged: _onChanged,
+            value: FilterOptions.notInterested,
+            title: Row(
+              children: <Widget>[
+                Text('Abgelehnte Dienste'),
+                Padding(
+                  padding: const EdgeInsets.only(left: 8.0),
+                  child: Icon(
+                    Icons.close,
+                    color: Colors.red,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+      padding: EdgeInsets.all(16.0),
+    );
+  }
+}
+
 class DrawerWidget extends StatelessWidget {
   final FirebaseUser user;
   final Function logoutCallback;
@@ -125,10 +221,11 @@ class LaunchScreenState extends State<LaunchScreen> {
   int selectedTab = 0;
   bool upcomingShifts = true;
   String currentTitle = "Blaulichtplaner";
-  FilterOptions _selectedFilterOption = FilterOptions.withoutBid;
+  FilterOptions _selectedFilterOption = FilterOptions.allShifts;
   bool _selectDate = false;
   DateTime _initialDate;
   DateTime _selectedDate;
+  GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
 
   final UserManager userManager = UserManager.get();
 
@@ -163,14 +260,14 @@ class LaunchScreenState extends State<LaunchScreen> {
   void _isRegistered(FirebaseUser user) async {
     if (user != null) {
       final doc =
-      await Firestore.instance.collection("users").document(user.uid).get();
+          await Firestore.instance.collection("users").document(user.uid).get();
       setState(() {
         _registered = doc.exists;
       });
     }
   }
 
-  void logout() async {
+  void _logout() async {
     FirebaseUser user = await _auth.currentUser();
     if (user != null) {
       // TODO check if providerId should be google. the framework returns "firebase" atm
@@ -178,7 +275,7 @@ class LaunchScreenState extends State<LaunchScreen> {
         final GoogleSignIn googleSignIn = GoogleSignIn(
           scopes: ['email'],
         );
-        googleSignIn.disconnect();
+        await googleSignIn.disconnect();
       }
     }
     await _auth.signOut();
@@ -226,11 +323,11 @@ class LaunchScreenState extends State<LaunchScreen> {
               onPressed: () {
                 Navigator.push(context,
                     MaterialPageRoute(builder: (BuildContext context) {
-                      return LocationVoteEditor(
-                        employeeRoles: userManager.rolesForType("employee"),
-                        userVote: UserVote(),
-                      );
-                    }));
+                  return LocationVoteEditor(
+                    employeeRoles: userManager.rolesForType("employee"),
+                    userVote: UserVote(),
+                  );
+                }));
               })
         ];
         break;
@@ -244,77 +341,21 @@ class LaunchScreenState extends State<LaunchScreen> {
               });
             },
           ),
-          PopupMenuButton(
-            onSelected: (FilterOptions val) {
-              setState(() {
-                _selectedFilterOption = val;
-              });
+          IconButton(
+            icon: Icon(Icons.filter_list),
+            onPressed: () {
+              showModalBottomSheet(
+                  context: context,
+                  builder: (BuildContext context) => FilterMenu(
+                        onChanged: (val) {
+                          setState(() {
+                            _selectedFilterOption = val;
+                          });
+                        },
+                        initialValue: _selectedFilterOption,
+                      ));
             },
-            child: Padding(
-                padding: EdgeInsets.only(left: 12.0, right: 12.0),
-                child: Icon(Icons.filter_list)),
-            itemBuilder: (BuildContext context) =>
-            <PopupMenuEntry<FilterOptions>>[
-              PopupMenuItem(
-                child: Text(
-                  'Filtern',
-                  style: TextStyle(color: Colors.black),
-                ),
-                enabled: false,
-              ),
-              PopupMenuItem<FilterOptions>(
-                  value: FilterOptions.withoutBid,
-                  child: Row(
-                    children: <Widget>[
-                      Radio(
-                        onChanged: (val) {
-                          setState(() {
-                            _selectedFilterOption = val;
-                          });
-                        },
-                        groupValue: _selectedFilterOption,
-                        value: FilterOptions.withoutBid,
-                      ),
-                      Text('Dienste ohne Bewerbung'),
-                      //Icon(Icons.help_outline),
-                    ],
-                  )),
-              PopupMenuItem(
-                  value: FilterOptions.withBid,
-                  child: Row(
-                    children: <Widget>[
-                      Radio(
-                        onChanged: (val) {
-                          setState(() {
-                            _selectedFilterOption = val;
-                          });
-                        },
-                        groupValue: _selectedFilterOption,
-                        value: FilterOptions.withBid,
-                      ),
-                      Text('Beworbene Dienste'),
-                      //Icon(Icons.done_outline),
-                    ],
-                  )),
-              PopupMenuItem(
-                  value: FilterOptions.notInterested,
-                  child: Row(
-                    children: <Widget>[
-                      Radio(
-                        onChanged: (val) {
-                          setState(() {
-                            _selectedFilterOption = val;
-                          });
-                        },
-                        groupValue: _selectedFilterOption,
-                        value: FilterOptions.notInterested,
-                      ),
-                      Text('Abgelehnte Dienste'),
-                      //Icon(Icons.not_interested),
-                    ],
-                  )),
-            ],
-          ),
+          )
         ];
         break;
       default:
@@ -324,6 +365,8 @@ class LaunchScreenState extends State<LaunchScreen> {
 
   String _createShiftBidTitle() {
     switch (_selectedFilterOption) {
+      case FilterOptions.allShifts:
+        return "Alle Dienste";
       case FilterOptions.withoutBid:
         return "Offene Dienste";
       case FilterOptions.withBid:
@@ -363,19 +406,19 @@ class LaunchScreenState extends State<LaunchScreen> {
               IconButton(
                 icon: Icon(Icons.arrow_back),
                 onPressed: (_selectedDate
-                    .subtract(Duration(days: 1))
-                    .compareTo(_initialDate) >=
-                    0)
-                    ? () {
-                  setState(() {
-                    _selectedDate = (_selectedDate
-                        .subtract(Duration(days: 1))
-                        .compareTo(_initialDate) >=
+                            .subtract(Duration(days: 1))
+                            .compareTo(_initialDate) >=
                         0)
-                        ? _initialDate
-                        : _selectedDate.subtract(Duration(days: 1));
-                  });
-                }
+                    ? () {
+                        setState(() {
+                          _selectedDate = (_selectedDate
+                                      .subtract(Duration(days: 1))
+                                      .compareTo(_initialDate) >=
+                                  0)
+                              ? _initialDate
+                              : _selectedDate.subtract(Duration(days: 1));
+                        });
+                      }
                     : null,
                 color: Colors.white,
               ),
@@ -386,10 +429,10 @@ class LaunchScreenState extends State<LaunchScreen> {
                 ),
                 onPressed: () {
                   showDatePicker(
-                      context: context,
-                      firstDate: _initialDate.subtract(Duration(days: 1)),
-                      lastDate: DateTime.now().add(Duration(days: 356)),
-                      initialDate: _selectedDate)
+                          context: context,
+                          firstDate: _initialDate.subtract(Duration(days: 1)),
+                          lastDate: DateTime.now().add(Duration(days: 356)),
+                          initialDate: _selectedDate)
                       .then((DateTime date) {
                     setState(() {
                       _selectedDate = date;
@@ -414,6 +457,7 @@ class LaunchScreenState extends State<LaunchScreen> {
 
   Widget _buildHomeScreen(BuildContext context) {
     return Scaffold(
+      key: _scaffoldKey,
       appBar: AppBar(
         title: Text(_createTitle()),
         actions: _createAppBarActions(),
@@ -426,17 +470,15 @@ class LaunchScreenState extends State<LaunchScreen> {
             context,
             MaterialPageRoute(
               builder: (BuildContext context) => InvitationScreen(
-                user: _user,
-                onSaved: () {
-                  _updateUserData(_user);
-                },
-              ),
+                    user: _user,
+                    onSaved: () {
+                      _updateUserData(_user);
+                    },
+                  ),
             ),
           );
         },
-        logoutCallback: () {
-          logout();
-        },
+        logoutCallback: _logout,
         employeeRoles: userManager.rolesForType("employee"),
       ),
       body: _createBody(),
@@ -474,12 +516,12 @@ class LaunchScreenState extends State<LaunchScreen> {
       child: (_registered)
           ? _buildHomeScreen(context)
           : RegistrationScreen(
-          user: _user,
-          successCallback: () {
-            setState(() {
-              _registered = true;
-            });
-          }),
+              user: _user,
+              successCallback: () {
+                setState(() {
+                  _registered = true;
+                });
+              }),
       empty: _user == null,
       fallbackWidget: LoginScreen(),
     );

@@ -63,12 +63,12 @@ class LocationVotesViewState extends State<LocationVotesView> {
 
   Widget _createLocationTile(UserVote userVote) {
     return Padding(
-      padding: EdgeInsets.only(left:16.0),
+      padding: EdgeInsets.only(left: 16.0),
       child: Wrap(
         children: userVote.locations
             .map((UserVoteLocationItem location) => Padding(
-              padding: const EdgeInsets.only(right: 8.0),
-              child: Chip(
+                  padding: const EdgeInsets.only(right: 8.0),
+                  child: Chip(
                     backgroundColor: Colors.white,
                     shape: RoundedRectangleBorder(
                         side: BorderSide(
@@ -78,7 +78,7 @@ class LocationVotesViewState extends State<LocationVotesView> {
                         borderRadius: BorderRadius.circular(28.0)),
                     label: Text(location.locationLabel),
                   ),
-            ))
+                ))
             .toList(),
       ),
     );

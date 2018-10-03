@@ -214,6 +214,9 @@ class ShiftVoteHolder {
       FilterOptions option, DateTime selectedDate) {
     List<ShiftVote> filteredShiftVotes = <ShiftVote>[];
     switch (option) {
+      case FilterOptions.allShifts:
+        filteredShiftVotes = _shiftVotes;
+        break;
       case FilterOptions.withoutBid:
         filteredShiftVotes = _shiftVotes
             .where((ShiftVote shiftVote) =>

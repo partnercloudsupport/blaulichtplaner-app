@@ -1,8 +1,5 @@
-# blaulichtplaner_app
+### Blaulichtplaner Mobile App
 
-Blaulichtplaner App
+Eine Plattform für die Planung und Abrechnung von Notdiensten.
 
-## Getting Started
-
-For help getting started with Flutter, view our online
-[documentation](https://flutter.io/).
+Ein Projekt gefördert im Rahmen vom Prototype Fund.

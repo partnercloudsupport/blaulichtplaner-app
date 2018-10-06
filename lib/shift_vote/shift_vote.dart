@@ -264,6 +264,7 @@ class Shift {
   DocumentReference workAreaRef;
   String publicNote;
   String status;
+  int requiredEmployees;
 
   Shift.fromSnapshot(DocumentSnapshot snapshot) {
     id = snapshot.documentID;
@@ -276,5 +277,6 @@ class Shift {
     workAreaRef = snapshot.data["workAreaRef"];
     publicNote = snapshot.data["publicNote"];
     status = snapshot.data["status"];
+    requiredEmployees = snapshot.data["requiredEmployees"];
   }
 }

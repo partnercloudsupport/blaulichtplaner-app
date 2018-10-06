@@ -8,6 +8,7 @@ import 'package:blaulichtplaner_app/registration_widget.dart';
 import 'package:blaulichtplaner_app/roles_widget.dart';
 import 'package:blaulichtplaner_app/settings_widget.dart';
 import 'package:blaulichtplaner_app/shift_vote/shift_votes_view.dart';
+import 'package:blaulichtplaner_app/shiftplan/shiftplan_overview.dart';
 import 'package:blaulichtplaner_app/utils/user_manager.dart';
 import 'package:blaulichtplaner_app/welcome_widget.dart';
 import 'package:blaulichtplaner_app/widgets/loader.dart';
@@ -215,17 +216,18 @@ class DrawerWidget extends StatelessWidget {
 
 class LaunchScreenState extends State<LaunchScreen> {
   bool _initialized = false;
-  bool _registered = false;
+  bool _registered = true;
   FirebaseUser _user;
   final FirebaseAuth _auth = FirebaseAuth.instance;
   int selectedTab = 0;
   bool upcomingShifts = true;
+  bool upcomingPlans = true;
   String currentTitle = "Blaulichtplaner";
   FilterOptions _selectedFilterOption = FilterOptions.allShifts;
   bool _selectDate = false;
   DateTime _initialDate;
   DateTime _selectedDate;
-  GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
+  GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   final UserManager userManager = UserManager.get();
 
@@ -288,10 +290,14 @@ class LaunchScreenState extends State<LaunchScreen> {
             employeeRoles: userManager.rolesForType("employee"),
             upcomingShifts: upcomingShifts);
       case 1:
-        return LocationVotesView(
+        return ShiftplanOverview(
           employeeRoles: userManager.rolesForType("employee"),
         );
       case 2:
+        return LocationVotesView(
+          employeeRoles: userManager.rolesForType("employee"),
+        );
+      case 3:
         return ShiftVotesView(
           workAreaRoles: userManager.rolesForType("workArea"),
           employeeRoles: userManager.rolesForType("employee"),
@@ -315,8 +321,19 @@ class LaunchScreenState extends State<LaunchScreen> {
                 });
               })
         ];
-        break;
+
       case 1:
+        return <Widget>[
+          IconButton(
+            icon: Icon(Icons.rotate_90_degrees_ccw),
+            onPressed: () {
+              setState(() {
+                upcomingPlans = !upcomingPlans;
+              });
+            },
+          )
+        ];
+      case 2:
         return <Widget>[
           IconButton(
               icon: Icon(Icons.add),
@@ -330,8 +347,7 @@ class LaunchScreenState extends State<LaunchScreen> {
                 }));
               })
         ];
-        break;
-      case 2:
+      case 3:
         return <Widget>[
           IconButton(
             icon: Icon(Icons.today),
@@ -357,7 +373,6 @@ class LaunchScreenState extends State<LaunchScreen> {
             },
           )
         ];
-        break;
       default:
         return [];
     }
@@ -380,23 +395,22 @@ class LaunchScreenState extends State<LaunchScreen> {
   String _createTitle() {
     switch (selectedTab) {
       case 0:
-        {
-          return upcomingShifts ? "Kommende Dienste" : "Vergangene Dienste";
-        }
+        return upcomingShifts ? "Kommende Dienste" : "Vergangene Dienste";
       case 1:
-        {
-          return "Zeiträume";
-        }
+        return upcomingPlans
+            ? "Aktuelle Dienstpläne"
+            : "Vergangene Dienstpläne";
       case 2:
-        {
-          return _createShiftBidTitle();
-        }
+        return "Zeiträume";
+      case 3:
+        return _createShiftBidTitle();
+      default:
+        return "Blaulichtplaner";
     }
-    return "Blaulichtplaner";
   }
 
   Widget _createDateNavigation() {
-    if (_selectDate && selectedTab == 2) {
+    if (_selectDate && selectedTab == 3) {
       return PreferredSize(
           preferredSize: const Size.fromHeight(48.0),
           child: Row(
@@ -488,6 +502,10 @@ class LaunchScreenState extends State<LaunchScreen> {
           BottomNavigationBarItem(
             icon: Icon(Icons.event_available),
             title: Text("Schichten"),
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.table_chart),
+            title: Text('Dienstpäne'),
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.timelapse),

@@ -93,7 +93,7 @@ class InvitationInfoState extends State<InvitationInfo> {
                                 style: BorderStyle.solid),
                             borderRadius: BorderRadius.circular(28.0)),
                         label: Text(_locationLabel),
-                      )
+                      ),
                     ],
                   ),
                 ],

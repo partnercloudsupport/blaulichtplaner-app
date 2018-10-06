@@ -171,8 +171,7 @@ class ShiftDurationFormField extends FormField<ShiftDuration> {
           },
         );
   @override
-  ShiftDurationFormFieldState createState() =>
-      new ShiftDurationFormFieldState();
+  ShiftDurationFormFieldState createState() => ShiftDurationFormFieldState();
 }
 
 class ShiftDurationFormFieldState extends FormFieldState<ShiftDuration> {
@@ -202,7 +201,7 @@ class LocationList extends StatefulWidget {
 class LocationListState extends State<LocationList> {
   List<Widget> _listTiles = <Widget>[];
   bool _initialized = false;
-  UserVote userVote = new UserVote();
+  UserVote userVote = UserVote();
 
   Widget _buildLocationCheckbox(int index) {
     Role employeeRole = widget.employeeRoles[index];

@@ -4,13 +4,13 @@ import 'package:blaulichtplaner_app/invitation_widget.dart';
 import 'package:blaulichtplaner_app/location_votes/location_vote.dart';
 import 'package:blaulichtplaner_app/location_votes/location_vote_editor.dart';
 import 'package:blaulichtplaner_app/location_votes/location_votes_view.dart';
-import 'package:blaulichtplaner_app/registration_widget.dart';
+import 'package:blaulichtplaner_app/login/google_registration_widget.dart';
 import 'package:blaulichtplaner_app/roles_widget.dart';
 import 'package:blaulichtplaner_app/settings_widget.dart';
 import 'package:blaulichtplaner_app/shift_vote/shift_votes_view.dart';
 import 'package:blaulichtplaner_app/shiftplan/shiftplan_overview.dart';
 import 'package:blaulichtplaner_app/utils/user_manager.dart';
-import 'package:blaulichtplaner_app/welcome_widget.dart';
+import 'package:blaulichtplaner_app/login/welcome_widget.dart';
 import 'package:blaulichtplaner_app/widgets/loader.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -37,7 +37,7 @@ class ShiftplanApp extends StatelessWidget {
       ),
       home: LaunchScreen(),
       debugShowMaterialGrid: false,
-      debugShowCheckedModeBanner: false,
+      debugShowCheckedModeBanner: true,
     );
   }
 }
@@ -533,7 +533,7 @@ class LaunchScreenState extends State<LaunchScreen> {
       loading: !_initialized,
       child: (_registered)
           ? _buildHomeScreen(context)
-          : RegistrationScreen(
+          : GoogleRegistrationScreen(
               user: _user,
               successCallback: () {
                 setState(() {
@@ -541,7 +541,7 @@ class LaunchScreenState extends State<LaunchScreen> {
                 });
               }),
       empty: _user == null,
-      fallbackWidget: LoginScreen(),
+      fallbackWidget: WelcomeScreen(),
     );
   }
 }

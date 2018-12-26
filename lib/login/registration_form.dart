@@ -16,8 +16,8 @@ class RegistrationModel {
   String token;
 
   RegistrationModel.fromUser(FirebaseUser user) {
-    firstName = user.displayName.split(" ")[0];
-    lastName = user.displayName.split(" ")[1];
+    firstName = user.displayName.split(" ").first;
+    lastName = user.displayName.split(" ").last;
     email = user.email;
     token = nanoid(64);
   }
@@ -34,26 +34,11 @@ class RegistrationModel {
   }
 }
 
-class RegistrationScreen extends StatelessWidget {
-  final FirebaseUser user;
-  final Function successCallback;
-  RegistrationScreen({Key key, @required this.user, @required this.successCallback}) : super(key: key);
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text("Registrieren")),
-      body: RegistrationForm(
-        user: user,
-        successCallback: successCallback,
-      ),
-    );
-  }
-}
-
 class RegistrationForm extends StatefulWidget {
   final FirebaseUser user;
   final Function successCallback;
-  RegistrationForm({Key key, @required this.user, @required this.successCallback}) : super(key: key);
+  RegistrationForm({Key key, this.user, this.successCallback})
+      : super(key: key);
   @override
   State<StatefulWidget> createState() {
     return RegistrationFormState();
@@ -115,7 +100,12 @@ class RegistrationFormState extends State<RegistrationForm> {
           .document(widget.user.uid)
           .setData(_registrationModel.createData());
       RegistrationRequest request = RegistrationRequest(IOClient());
-      await request.performPostRequest(widget.user.uid, "", "user", {"token": _registrationModel.token});
+      await request.performPostRequest(
+          widget.user.uid, "", "user", {"token": _registrationModel.token});
+      UserUpdateInfo info = UserUpdateInfo();
+      info.displayName =
+          '${_registrationModel.firstName} ${_registrationModel.lastName}';
+      await FirebaseAuth.instance.updateProfile(info);
       widget.successCallback();
     } catch (e) {
       print(e);
@@ -239,8 +229,8 @@ class RegistrationFormState extends State<RegistrationForm> {
                       _saveRegistration();
                     } else {
                       Scaffold.of(context).showSnackBar(SnackBar(
-                            content: Text('Bitte alle Felder ausfüllen'),
-                          ));
+                        content: Text('Bitte alle Felder ausfüllen'),
+                      ));
                     }
                   },
                   child: Text('Bestätigen'),

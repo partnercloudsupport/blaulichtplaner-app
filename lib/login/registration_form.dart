@@ -1,23 +1,23 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:http/http.dart';
 import 'package:nanoid/nanoid.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:blaulichtplaner_app/widgets/loader.dart';
-import 'package:blaulichtplaner_app/api_service.dart';
+
+typedef void OnChange(RegistrationModel r);
 
 class RegistrationModel {
-  String firstName;
-  String lastName;
+  String firstName = '';
+  String lastName = '';
   String email;
   DateTime privacyPolicyAccepted;
   DateTime termsAccepted;
   String token;
 
   RegistrationModel.fromUser(FirebaseUser user) {
-    firstName = user.displayName.split(" ").first;
-    lastName = user.displayName.split(" ").last;
+    if (user.displayName != null) {
+      firstName = user.displayName.split(' ').first;
+      lastName = user.displayName.split(' ').last;
+    }
     email = user.email;
     token = nanoid(64);
   }
@@ -34,37 +34,127 @@ class RegistrationModel {
   }
 }
 
-class RegistrationForm extends StatefulWidget {
-  final FirebaseUser user;
-  final Function successCallback;
-  RegistrationForm({Key key, this.user, this.successCallback})
+class TermsForm extends StatefulWidget {
+  final RegistrationModel registrationModel;
+  final GlobalKey<FormState> formKey;
+  final OnChange onChange;
+  const TermsForm(
+      {Key key, @required this.registrationModel, this.formKey, this.onChange})
       : super(key: key);
   @override
   State<StatefulWidget> createState() {
-    return RegistrationFormState();
+    return _TermsFormState();
   }
 }
 
-class RegistrationFormState extends State<RegistrationForm> {
-  final _formKey = GlobalKey<FormState>();
-  RegistrationModel _registrationModel;
+class _TermsFormState extends State<TermsForm> {
+  @override
+  Widget build(BuildContext context) {
+    return Form(
+      key: widget.formKey,
+      child: Column(
+        children: <Widget>[
+          FormField(
+            builder: (FormFieldState<String> arg) {
+              return CheckboxListTile(
+                title: Text('AGBs akzeptieren'),
+                value: widget.registrationModel.termsAccepted != null,
+                onChanged: (value) {
+                  setState(() {
+                    widget.registrationModel.termsAccepted =
+                        value ? DateTime.now() : null;
+                  });
+                  widget.onChange(widget.registrationModel);
+                },
+                activeColor: Colors.blue,
+                controlAffinity: ListTileControlAffinity.leading,
+                secondary: IconButton(
+                  icon: Icon(Icons.open_in_new),
+                  onPressed: () async {
+                    String url = 'https://grundid.de/';
+                    if (await canLaunch(url)) {
+                      await launch(url);
+                    } else {
+                      throw 'Can not launch $url';
+                    }
+                  },
+                ),
+              );
+            },
+            validator: (String arg) {
+              if (widget.registrationModel.termsAccepted == null) {
+                return 'Checkbox ausfüllen!';
+              }
+            },
+          ),
+          FormField(
+            builder: (FormFieldState<String> arg) {
+              return CheckboxListTile(
+                title: Text('Datenschutzerklärung akzeptieren'),
+                value: widget.registrationModel.privacyPolicyAccepted != null,
+                onChanged: (value) {
+                  setState(() {
+                    widget.registrationModel.privacyPolicyAccepted =
+                        value ? DateTime.now() : null;
+                  });
+                  widget.onChange(widget.registrationModel);
+                },
+                activeColor: Colors.blue,
+                controlAffinity: ListTileControlAffinity.leading,
+                secondary: IconButton(
+                  icon: Icon(Icons.open_in_new),
+                  onPressed: () async {
+                    String url = 'https://grundid.de/';
+                    if (await canLaunch(url)) {
+                      await launch(url);
+                    } else {
+                      throw 'Can not launch $url';
+                    }
+                  },
+                ),
+              );
+            },
+            validator: (String arg) {
+              if (widget.registrationModel.privacyPolicyAccepted == null) {
+                return 'Checkbox ausfüllen!';
+              }
+            },
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class NameForm extends StatefulWidget {
+  final RegistrationModel registrationModel;
+  final Function successCallback;
+  final GlobalKey<FormState> formKey;
+  final OnChange onChange;
+  NameForm(
+      {Key key,
+      @required this.registrationModel,
+      this.successCallback,
+      this.formKey, this.onChange})
+      : super(key: key);
+  @override
+  State<StatefulWidget> createState() {
+    return _NameFormState();
+  }
+}
+
+class _NameFormState extends State<NameForm> {
   TextEditingController firstNameController;
   TextEditingController lastNameController;
-  TextEditingController emailController;
-  bool _validated = false;
-
   @override
   void initState() {
     super.initState();
-    _registrationModel = RegistrationModel.fromUser(widget.user);
     firstNameController =
-        TextEditingController(text: _registrationModel.firstName)
+        TextEditingController(text: widget.registrationModel.firstName)
           ..addListener(_firstNameListener);
     lastNameController =
-        TextEditingController(text: _registrationModel.lastName)
+        TextEditingController(text: widget.registrationModel.lastName)
           ..addListener(_lastNameListener);
-    emailController = TextEditingController(text: _registrationModel.email)
-      ..addListener(_emailListener);
   }
 
   @override
@@ -75,170 +165,136 @@ class RegistrationFormState extends State<RegistrationForm> {
     lastNameController
       ..removeListener(_lastNameListener)
       ..dispose();
-    emailController
-      ..removeListener(_emailListener)
-      ..dispose();
     super.dispose();
   }
 
   void _firstNameListener() {
-    _registrationModel.firstName = firstNameController.text;
+    widget.registrationModel.firstName = firstNameController.text;
+    widget.onChange(widget.registrationModel);
   }
 
   void _lastNameListener() {
-    _registrationModel.lastName = lastNameController.text;
-  }
-
-  void _emailListener() {
-    _registrationModel.email = emailController.text;
-  }
-
-  _saveRegistration() async {
-    try {
-      await Firestore.instance
-          .collection('registrations')
-          .document(widget.user.uid)
-          .setData(_registrationModel.createData());
-      RegistrationRequest request = RegistrationRequest(IOClient());
-      await request.performPostRequest(
-          widget.user.uid, "", "user", {"token": _registrationModel.token});
-      UserUpdateInfo info = UserUpdateInfo();
-      info.displayName =
-          '${_registrationModel.firstName} ${_registrationModel.lastName}';
-      await FirebaseAuth.instance.updateProfile(info);
-      widget.successCallback();
-    } catch (e) {
-      print(e);
-    }
+    widget.registrationModel.lastName = lastNameController.text;
+    widget.onChange(widget.registrationModel);
   }
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      child: Form(
-        key: _formKey,
-        child: Padding(
-          padding: EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              TextFormField(
-                controller:
-                    TextEditingController(text: _registrationModel.firstName),
-                decoration: InputDecoration(helperText: "Vorname"),
-                validator: (String value) {
-                  if (value.isEmpty) {
-                    return "Bitte Vorame eingeben";
-                  }
-                },
-              ),
-              TextFormField(
-                controller:
-                    TextEditingController(text: _registrationModel.lastName),
-                decoration: InputDecoration(helperText: "Nachname"),
-                validator: (String value) {
-                  if (value.isEmpty) {
-                    return "Bitte Familienname eingeben";
-                  }
-                },
-              ),
-              TextFormField(
-                controller:
-                    TextEditingController(text: _registrationModel.email),
-                decoration: InputDecoration(helperText: "EMail"),
-                validator: (String value) {
-                  if (value.isEmpty) {
-                    return "Bitte EMail eingeben";
-                  }
-                },
-              ),
-              FormField(
-                builder: (FormFieldState<String> arg) {
-                  return CheckboxListTile(
-                    title: Text('AGBs akzeptieren'),
-                    value: _registrationModel.termsAccepted != null,
-                    onChanged: (value) {
-                      setState(() {
-                        _registrationModel.termsAccepted =
-                            value ? DateTime.now() : null;
-                      });
-                    },
-                    activeColor: Colors.blue,
-                    controlAffinity: ListTileControlAffinity.leading,
-                    secondary: IconButton(
-                      icon: Icon(Icons.open_in_new),
-                      onPressed: () async {
-                        String url = 'https://grundid.de/';
-                        if (await canLaunch(url)) {
-                          await launch(url);
-                        } else {
-                          throw 'Can not launch $url';
-                        }
-                      },
-                    ),
-                  );
-                },
-                validator: (String arg) {
-                  if (_registrationModel.termsAccepted == null) {
-                    return 'Checkbox ausfüllen!';
-                  }
-                },
-              ),
-              FormField(
-                initialValue: _registrationModel.email,
-                builder: (FormFieldState<String> arg) {
-                  return CheckboxListTile(
-                    title: Text('Datenschutzerklärung akzeptieren'),
-                    value: _registrationModel.privacyPolicyAccepted != null,
-                    onChanged: (value) {
-                      setState(() {
-                        _registrationModel.privacyPolicyAccepted =
-                            value ? DateTime.now() : null;
-                      });
-                    },
-                    activeColor: Colors.blue,
-                    controlAffinity: ListTileControlAffinity.leading,
-                    secondary: IconButton(
-                      icon: Icon(Icons.open_in_new),
-                      onPressed: () async {
-                        String url = 'https://grundid.de/';
-                        if (await canLaunch(url)) {
-                          await launch(url);
-                        } else {
-                          throw 'Can not launch $url';
-                        }
-                      },
-                    ),
-                  );
-                },
-                validator: (String arg) {
-                  if (_registrationModel.privacyPolicyAccepted == null) {
-                    return 'Checkbox ausfüllen!';
-                  }
-                },
-              ),
-              LoaderWidget(
-                loading: _validated,
-                padding: EdgeInsets.symmetric(vertical: 16.0),
-                child: RaisedButton(
-                  onPressed: () {
-                    if (_formKey.currentState.validate()) {
-                      setState(() {
-                        _validated = true;
-                      });
-                      _saveRegistration();
-                    } else {
-                      Scaffold.of(context).showSnackBar(SnackBar(
-                        content: Text('Bitte alle Felder ausfüllen'),
-                      ));
-                    }
-                  },
-                  child: Text('Bestätigen'),
-                ),
-              ),
-            ],
+    return Form(
+      key: widget.formKey,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          TextFormField(
+            controller:
+                TextEditingController(text: widget.registrationModel.firstName),
+            decoration: InputDecoration(helperText: "Vorname"),
+            validator: (String value) {
+              if (value.isEmpty) {
+                return "Bitte Vorame eingeben";
+              }
+            },
           ),
-        ),
+          TextFormField(
+            controller:
+                TextEditingController(text: widget.registrationModel.lastName),
+            decoration: InputDecoration(helperText: "Nachname"),
+            validator: (String value) {
+              if (value.isEmpty) {
+                return "Bitte Familienname eingeben";
+              }
+            },
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class EmailRegistrationForm extends StatefulWidget {
+  final GlobalKey<FormState> formKey;
+  final TextEditingController emailController;
+  final TextEditingController passwordController;
+
+  const EmailRegistrationForm({
+    Key key,
+    @required this.formKey,
+    @required this.emailController,
+    @required this.passwordController,
+  }) : super(key: key);
+  @override
+  State<StatefulWidget> createState() => _EmailRegistrationFormState();
+}
+
+class _EmailRegistrationFormState extends State<EmailRegistrationForm> {
+  String _password;
+  String _email;
+
+  _passwordListener() {
+    setState(() {
+      _password = widget.passwordController.text;
+    });
+  }
+
+  _emailListener() {
+    setState(() {
+      _email = widget.emailController.text;
+    });
+  }
+
+  void initState() {
+    super.initState();
+    widget.passwordController.addListener(_passwordListener);
+    widget.emailController.addListener(_emailListener);
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    widget.emailController
+      ..removeListener(_emailListener)
+      ..dispose();
+    widget.passwordController
+      ..removeListener(_passwordListener)
+      ..dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Form(
+      key: widget.formKey,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          TextFormField(
+            decoration: InputDecoration(helperText: 'E-Mail'),
+            controller: widget.emailController,
+            validator: (String value) {
+              if (value.isEmpty) {
+                return 'Bitte E-Mail-Adresse eingeben!';
+              }
+            },
+          ),
+          TextFormField(
+            obscureText: true,
+            decoration: InputDecoration(helperText: 'Passwort'),
+            controller: widget.passwordController,
+            validator: (String value) {
+              if (value.isEmpty) {
+                return 'Bitte Passwort eingeben!';
+              }
+            },
+          ),
+          TextFormField(
+            obscureText: true,
+            decoration: InputDecoration(helperText: 'Passwort wiederholen'),
+            validator: (String value) {
+              if (_password != value) {
+                return 'Passwort stimmt nicht überein!';
+              }
+            },
+          ),
+        ],
       ),
     );
   }

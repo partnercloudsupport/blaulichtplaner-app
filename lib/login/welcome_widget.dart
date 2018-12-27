@@ -125,12 +125,12 @@ class WelcomeScreenState extends State<WelcomeScreen> {
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: <Widget>[
                             Text(
-                              'Einloggen',
+                              'Registrieren',
                               style: TextStyle(
                                   fontWeight: FontWeight.bold, fontSize: 18.0),
                             ),
                             FlatButton(
-                              onPressed: () {},
+                              onPressed: _handleGoogleLogin,
                               child: Text('Mit Google-Konto registrieren'),
                             ),
                             FlatButton(

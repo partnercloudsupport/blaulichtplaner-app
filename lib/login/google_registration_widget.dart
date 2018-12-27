@@ -12,10 +12,11 @@ class GoogleRegistrationScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text("Registrieren")),
-      body: RegistrationForm(
+      body: Text('Hi'),
+      /*TODO RegistrationForm(
         user: user,
         successCallback: successCallback,
-      ),
+      ),*/
     );
   }
 }

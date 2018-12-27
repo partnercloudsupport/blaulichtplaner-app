@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 
-typedef void EmailLogin(String email, String password);
+typedef void EmailLoginHandler(String email, String password);
 
 class EmailLoginForm extends StatefulWidget {
-  final EmailLogin emailLogin;
+  final EmailLoginHandler emailLogin;
 
-  const EmailLoginForm({Key key, this.emailLogin}) : super(key: key);
+  const EmailLoginForm({Key key, @required this.emailLogin}) : super(key: key);
   @override
   State<StatefulWidget> createState() => EmailLoginFormState();
 }
@@ -15,7 +15,7 @@ class EmailLoginFormState extends State<EmailLoginForm> {
   String _email;
   TextEditingController _passwordController;
   TextEditingController _emailController;
-
+  GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   _passwordListener() {
     setState(() {
       _password = _passwordController.text;
@@ -49,21 +49,34 @@ class EmailLoginFormState extends State<EmailLoginForm> {
   @override
   Widget build(BuildContext context) {
     return Form(
+      key: _formKey,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
           TextFormField(
             decoration: InputDecoration(hintText: 'E-Mail'),
             controller: _emailController,
+            validator: (String value) {
+              if (value.isEmpty) {
+                return 'Bitte E-Mail-Adresse eingeben!';
+              }
+            },
           ),
           TextFormField(
             decoration: InputDecoration(hintText: 'Passwort'),
             controller: _passwordController,
+            validator: (String value){
+              if(value.isEmpty){
+                return 'Bitte Passwort eingeben!';
+              }
+            },
           ),
           RaisedButton(
             color: Colors.blue,
             onPressed: () {
-              widget.emailLogin(_email, _password);
+              if (_formKey.currentState.validate()) {
+                widget.emailLogin(_email, _password);
+              }
             },
             child: Text(
               'Anmelden',

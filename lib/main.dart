@@ -165,8 +165,9 @@ class DrawerWidget extends StatelessWidget {
       child: ListView(
         children: <Widget>[
           ListTile(
-            leading: CircleAvatar(backgroundImage: NetworkImage(user.photoUrl)),
-            title: Text(user.displayName),
+            //TODO REMOVE
+            leading: CircleAvatar(backgroundImage: NetworkImage(user.photoUrl ?? 'https://images.pexels.com/photos/104827/cat-pet-animal-domestic-104827.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=750&w=1260')),
+            title: Text(user.displayName ?? 'KEIN NAME'),
           ),
           ListTile(
             leading: Icon(Icons.insert_link),
@@ -533,13 +534,13 @@ class LaunchScreenState extends State<LaunchScreen> {
       loading: !_initialized,
       child: (_registered)
           ? _buildHomeScreen(context)
-          : GoogleRegistrationScreen(
+          : _buildHomeScreen(context)/*GoogleRegistrationScreen(
               user: _user,
               successCallback: () {
                 setState(() {
                   _registered = true;
                 });
-              }),
+              })*/,
       empty: _user == null,
       fallbackWidget: WelcomeScreen(),
     );

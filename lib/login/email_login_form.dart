@@ -54,7 +54,7 @@ class EmailLoginFormState extends State<EmailLoginForm> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
           TextFormField(
-            decoration: InputDecoration(hintText: 'E-Mail'),
+            decoration: InputDecoration(helperText: 'E-Mail'),
             controller: _emailController,
             validator: (String value) {
               if (value.isEmpty) {
@@ -63,7 +63,7 @@ class EmailLoginFormState extends State<EmailLoginForm> {
             },
           ),
           TextFormField(
-            decoration: InputDecoration(hintText: 'Passwort'),
+            decoration: InputDecoration(helperText: 'Passwort'),
             controller: _passwordController,
             validator: (String value){
               if(value.isEmpty){

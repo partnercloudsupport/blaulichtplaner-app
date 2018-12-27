@@ -7,6 +7,10 @@ import '../widgets/loader.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class EmailRegistrationScreen extends StatefulWidget {
+  final Function successCallback;
+
+  const EmailRegistrationScreen({Key key, @required this.successCallback})
+      : super(key: key);
   @override
   State<StatefulWidget> createState() {
     return EmailRegistrationScreenState();
@@ -21,23 +25,22 @@ class EmailRegistrationScreenState extends State<EmailRegistrationScreen> {
   bool _saving = false;
   RegistrationModel _registrationModel;
 
-  TextEditingController _emailController = TextEditingController();
-  TextEditingController _passwordController = TextEditingController();
+  final _emailKey = GlobalKey<FormState>();
+  final _nameKey = GlobalKey<FormState>();
+  final _termsKey = GlobalKey<FormState>();
+
+  String _password;
+  String _email;
 
   _emailRegistrationHandler() async {
     try {
       _user = await FirebaseAuth.instance.createUserWithEmailAndPassword(
-        email: _emailController.text,
-        password: _passwordController.text,
+        email: _email,
+        password: _password,
       );
       _registrationModel = RegistrationModel.fromUser(_user);
     } catch (e) {
       print(e.toString());
-      Scaffold.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Versuchen Sie es noch einmal!'),
-        ),
-      );
     }
   }
 
@@ -45,21 +48,20 @@ class EmailRegistrationScreenState extends State<EmailRegistrationScreen> {
     try {
       UserUpdateInfo info = UserUpdateInfo();
       info.displayName =
-          '${_registrationModel.firstName} ${_registrationModel.lastName}';
+          '${_registrationModel.firstName} ${_registrationModel.lastName}';
       await FirebaseAuth.instance.updateProfile(info);
-      await _user.sendEmailVerification();
+      if (!_user.isEmailVerified) {
+        await _user.sendEmailVerification();
+      }
     } catch (e) {
       print(e.toString());
-      Scaffold.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Fehler'),
-        ),
-      );
     }
   }
 
   _saveDatabaseHandler() async {
     try {
+      _registrationModel.termsAccepted = DateTime.now();
+      _registrationModel.privacyPolicyAccepted = DateTime.now();
       await Firestore.instance
           .collection('registrations')
           .document(_user.uid)
@@ -67,23 +69,10 @@ class EmailRegistrationScreenState extends State<EmailRegistrationScreen> {
       RegistrationRequest request = RegistrationRequest(IOClient());
       await request.performPostRequest(
           _user.uid, "", "user", {"token": _registrationModel.token});
-      UserUpdateInfo info = UserUpdateInfo();
-      info.displayName =
-          '${_registrationModel.firstName} ${_registrationModel.lastName}';
-      await FirebaseAuth.instance.updateProfile(info);
     } catch (e) {
       print(e.toString());
-      Scaffold.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Fehler'),
-        ),
-      );
     }
   }
-
-  final _emailKey = GlobalKey<FormState>();
-  final _nameKey = GlobalKey<FormState>();
-  final _termsKey = GlobalKey<FormState>();
 
   _validate() {
     switch (_currentStep) {
@@ -137,6 +126,7 @@ class EmailRegistrationScreenState extends State<EmailRegistrationScreen> {
             _saving = true;
           });
           await _saveDatabaseHandler();
+          widget.successCallback();
           Navigator.pop(context);
           break;
       }
@@ -161,8 +151,12 @@ class EmailRegistrationScreenState extends State<EmailRegistrationScreen> {
           loading: _emailSaving,
           child: EmailRegistrationForm(
             formKey: _emailKey,
-            emailController: _emailController,
-            passwordController: _passwordController,
+            onChangedEmail: (String val) {
+              _email = val;
+            },
+            onChangedPassword: (String val) {
+              _password = val;
+            },
           ),
         ),
       ),
@@ -172,11 +166,15 @@ class EmailRegistrationScreenState extends State<EmailRegistrationScreen> {
         content: LoaderWidget(
           loading: _nameSaving,
           child: NameForm(
-              formKey: _nameKey,
-              registrationModel: _registrationModel,
-              onChange: (RegistrationModel r) {
-                _registrationModel = r;
-              }),
+            formKey: _nameKey,
+            registrationModel: _registrationModel,
+            onChangedFirstName: (String val) {
+              _registrationModel.firstName = val;
+            },
+            onChangedLastName: (String val) {
+              _registrationModel.lastName = val;
+            },
+          ),
         ),
       ),
       Step(
@@ -184,17 +182,22 @@ class EmailRegistrationScreenState extends State<EmailRegistrationScreen> {
         subtitle: Text('Blabla'),
         content: TermsForm(
           formKey: _termsKey,
-          registrationModel: _registrationModel,
-          onChange: (RegistrationModel r) {
-            _registrationModel = r;
-          },
         ),
       ),
     ];
     return Scaffold(
       appBar: AppBar(
         title: Text("Registrieren"),
-        leading: _currentStep == 0 ? BackButton() : null,
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back_ios),
+          onPressed: () {
+            if (_currentStep == 0) {
+              Navigator.maybePop(context);
+            } else {
+              _onStepCancel();
+            }
+          },
+        ),
       ),
       body: LoaderBodyWidget(
         empty: false,

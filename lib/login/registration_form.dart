@@ -3,12 +3,12 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:nanoid/nanoid.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-typedef void OnChange(RegistrationModel r);
+typedef void OnChanged(String value);
 
 class RegistrationModel {
   String firstName = '';
   String lastName = '';
-  String email;
+  String email = '';
   DateTime privacyPolicyAccepted;
   DateTime termsAccepted;
   String token;
@@ -35,12 +35,9 @@ class RegistrationModel {
 }
 
 class TermsForm extends StatefulWidget {
-  final RegistrationModel registrationModel;
   final GlobalKey<FormState> formKey;
-  final OnChange onChange;
-  const TermsForm(
-      {Key key, @required this.registrationModel, this.formKey, this.onChange})
-      : super(key: key);
+
+  const TermsForm({Key key, this.formKey}) : super(key: key);
   @override
   State<StatefulWidget> createState() {
     return _TermsFormState();
@@ -48,6 +45,9 @@ class TermsForm extends StatefulWidget {
 }
 
 class _TermsFormState extends State<TermsForm> {
+  bool _eula = false;
+  bool _privacy = false;
+
   @override
   Widget build(BuildContext context) {
     return Form(
@@ -55,16 +55,14 @@ class _TermsFormState extends State<TermsForm> {
       child: Column(
         children: <Widget>[
           FormField(
-            builder: (FormFieldState<String> arg) {
+            builder: (FormFieldState<bool> state) {
               return CheckboxListTile(
                 title: Text('AGBs akzeptieren'),
-                value: widget.registrationModel.termsAccepted != null,
+                value: _eula,
                 onChanged: (value) {
                   setState(() {
-                    widget.registrationModel.termsAccepted =
-                        value ? DateTime.now() : null;
+                    _eula = value;
                   });
-                  widget.onChange(widget.registrationModel);
                 },
                 activeColor: Colors.blue,
                 controlAffinity: ListTileControlAffinity.leading,
@@ -81,23 +79,21 @@ class _TermsFormState extends State<TermsForm> {
                 ),
               );
             },
-            validator: (String arg) {
-              if (widget.registrationModel.termsAccepted == null) {
+            validator: (bool arg) {
+              if (!_eula) {
                 return 'Checkbox ausfüllen!';
               }
             },
           ),
           FormField(
-            builder: (FormFieldState<String> arg) {
+            builder: (FormFieldState<bool> state) {
               return CheckboxListTile(
                 title: Text('Datenschutzerklärung akzeptieren'),
-                value: widget.registrationModel.privacyPolicyAccepted != null,
+                value: _privacy,
                 onChanged: (value) {
                   setState(() {
-                    widget.registrationModel.privacyPolicyAccepted =
-                        value ? DateTime.now() : null;
+                    _privacy = value;
                   });
-                  widget.onChange(widget.registrationModel);
                 },
                 activeColor: Colors.blue,
                 controlAffinity: ListTileControlAffinity.leading,
@@ -114,8 +110,8 @@ class _TermsFormState extends State<TermsForm> {
                 ),
               );
             },
-            validator: (String arg) {
-              if (widget.registrationModel.privacyPolicyAccepted == null) {
+            validator: (bool arg) {
+              if (!_privacy) {
                 return 'Checkbox ausfüllen!';
               }
             },
@@ -127,16 +123,17 @@ class _TermsFormState extends State<TermsForm> {
 }
 
 class NameForm extends StatefulWidget {
-  final RegistrationModel registrationModel;
-  final Function successCallback;
   final GlobalKey<FormState> formKey;
-  final OnChange onChange;
-  NameForm(
-      {Key key,
-      @required this.registrationModel,
-      this.successCallback,
-      this.formKey, this.onChange})
-      : super(key: key);
+  final OnChanged onChangedFirstName;
+  final OnChanged onChangedLastName;
+  final RegistrationModel registrationModel;
+  NameForm({
+    Key key,
+    @required this.formKey,
+    @required this.onChangedFirstName,
+    @required this.onChangedLastName,
+    this.registrationModel,
+  }) : super(key: key);
   @override
   State<StatefulWidget> createState() {
     return _NameFormState();
@@ -144,38 +141,33 @@ class NameForm extends StatefulWidget {
 }
 
 class _NameFormState extends State<NameForm> {
-  TextEditingController firstNameController;
-  TextEditingController lastNameController;
+  TextEditingController _firstNameController = TextEditingController();
+  TextEditingController _lastNameController = TextEditingController();
+
   @override
   void initState() {
     super.initState();
-    firstNameController =
-        TextEditingController(text: widget.registrationModel.firstName)
-          ..addListener(_firstNameListener);
-    lastNameController =
-        TextEditingController(text: widget.registrationModel.lastName)
-          ..addListener(_lastNameListener);
+    _firstNameController.addListener(_firstNameListener);
+    _lastNameController.addListener(_lastNameListener);
   }
 
   @override
   void dispose() {
-    firstNameController
+    _firstNameController
       ..removeListener(_firstNameListener)
       ..dispose();
-    lastNameController
+    _lastNameController
       ..removeListener(_lastNameListener)
       ..dispose();
     super.dispose();
   }
 
   void _firstNameListener() {
-    widget.registrationModel.firstName = firstNameController.text;
-    widget.onChange(widget.registrationModel);
+    widget.onChangedFirstName(_firstNameController.text);
   }
 
   void _lastNameListener() {
-    widget.registrationModel.lastName = lastNameController.text;
-    widget.onChange(widget.registrationModel);
+    widget.onChangedLastName(_lastNameController.text);
   }
 
   @override
@@ -186,8 +178,7 @@ class _NameFormState extends State<NameForm> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
           TextFormField(
-            controller:
-                TextEditingController(text: widget.registrationModel.firstName),
+            controller: _firstNameController,
             decoration: InputDecoration(helperText: "Vorname"),
             validator: (String value) {
               if (value.isEmpty) {
@@ -196,8 +187,7 @@ class _NameFormState extends State<NameForm> {
             },
           ),
           TextFormField(
-            controller:
-                TextEditingController(text: widget.registrationModel.lastName),
+            controller: _lastNameController,
             decoration: InputDecoration(helperText: "Nachname"),
             validator: (String value) {
               if (value.isEmpty) {
@@ -213,14 +203,14 @@ class _NameFormState extends State<NameForm> {
 
 class EmailRegistrationForm extends StatefulWidget {
   final GlobalKey<FormState> formKey;
-  final TextEditingController emailController;
-  final TextEditingController passwordController;
+  final OnChanged onChangedEmail;
+  final OnChanged onChangedPassword;
 
   const EmailRegistrationForm({
     Key key,
     @required this.formKey,
-    @required this.emailController,
-    @required this.passwordController,
+    @required this.onChangedEmail,
+    @required this.onChangedPassword,
   }) : super(key: key);
   @override
   State<StatefulWidget> createState() => _EmailRegistrationFormState();
@@ -228,33 +218,34 @@ class EmailRegistrationForm extends StatefulWidget {
 
 class _EmailRegistrationFormState extends State<EmailRegistrationForm> {
   String _password;
-  String _email;
+
+  TextEditingController _emailController = TextEditingController();
+  TextEditingController _passwordController = TextEditingController();
 
   _passwordListener() {
     setState(() {
-      _password = widget.passwordController.text;
+      _password = _passwordController.text;
     });
+    widget.onChangedPassword(_passwordController.text);
   }
 
   _emailListener() {
-    setState(() {
-      _email = widget.emailController.text;
-    });
+    widget.onChangedEmail(_emailController.text);
   }
 
   void initState() {
     super.initState();
-    widget.passwordController.addListener(_passwordListener);
-    widget.emailController.addListener(_emailListener);
+    _passwordController.addListener(_passwordListener);
+    _emailController.addListener(_emailListener);
   }
 
   @override
   void dispose() {
     super.dispose();
-    widget.emailController
+    _emailController
       ..removeListener(_emailListener)
       ..dispose();
-    widget.passwordController
+    _passwordController
       ..removeListener(_passwordListener)
       ..dispose();
   }
@@ -268,7 +259,7 @@ class _EmailRegistrationFormState extends State<EmailRegistrationForm> {
         children: <Widget>[
           TextFormField(
             decoration: InputDecoration(helperText: 'E-Mail'),
-            controller: widget.emailController,
+            controller: _emailController,
             validator: (String value) {
               if (value.isEmpty) {
                 return 'Bitte E-Mail-Adresse eingeben!';
@@ -278,7 +269,7 @@ class _EmailRegistrationFormState extends State<EmailRegistrationForm> {
           TextFormField(
             obscureText: true,
             decoration: InputDecoration(helperText: 'Passwort'),
-            controller: widget.passwordController,
+            controller: _passwordController,
             validator: (String value) {
               if (value.isEmpty) {
                 return 'Bitte Passwort eingeben!';

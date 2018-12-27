@@ -6,7 +6,6 @@ import 'package:blaulichtplaner_app/location_votes/location_vote_editor.dart';
 import 'package:blaulichtplaner_app/location_votes/location_votes_view.dart';
 import 'package:blaulichtplaner_app/login/google_registration_widget.dart';
 import 'package:blaulichtplaner_app/roles_widget.dart';
-import 'package:blaulichtplaner_app/settings_widget.dart';
 import 'package:blaulichtplaner_app/shift_vote/shift_votes_view.dart';
 import 'package:blaulichtplaner_app/shiftplan/shiftplan_overview.dart';
 import 'package:blaulichtplaner_app/utils/user_manager.dart';
@@ -159,15 +158,22 @@ class DrawerWidget extends StatelessWidget {
     @required this.employeeRoles,
   }) : super(key: key);
 
+  Widget _buildImage() {
+    if (user.photoUrl != null) {
+      return CircleAvatar(backgroundImage: NetworkImage(user.photoUrl));
+    } else {
+      return Icon(Icons.account_circle);
+    }
+  }
+
   @override
   build(BuildContext context) {
     return Drawer(
       child: ListView(
         children: <Widget>[
           ListTile(
-            //TODO REMOVE
-            leading: CircleAvatar(backgroundImage: NetworkImage(user.photoUrl ?? 'https://images.pexels.com/photos/104827/cat-pet-animal-domestic-104827.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=750&w=1260')),
-            title: Text(user.displayName ?? 'KEIN NAME'),
+            leading: _buildImage(),
+            title: Text(user.displayName),
           ),
           ListTile(
             leading: Icon(Icons.insert_link),
@@ -182,16 +188,6 @@ class DrawerWidget extends StatelessWidget {
 
               Navigator.push(context,
                   MaterialPageRoute(builder: (context) => RolesScreen()));
-            },
-          ),
-          ListTile(
-            leading: Icon(Icons.settings),
-            title: Text("Einstellungen"),
-            onTap: () {
-              Navigator.pop(context);
-
-              Navigator.push(context,
-                  MaterialPageRoute(builder: (context) => SettingsScreen()));
             },
           ),
           Divider(),
@@ -534,15 +530,21 @@ class LaunchScreenState extends State<LaunchScreen> {
       loading: !_initialized,
       child: (_registered)
           ? _buildHomeScreen(context)
-          : _buildHomeScreen(context)/*GoogleRegistrationScreen(
+          : GoogleRegistrationScreen(
               user: _user,
               successCallback: () {
                 setState(() {
                   _registered = true;
                 });
-              })*/,
+              }),
       empty: _user == null,
-      fallbackWidget: WelcomeScreen(),
+      fallbackWidget: WelcomeScreen(
+        successCallback: () {
+          setState(() {
+            _registered = true;
+          });
+        },
+      ),
     );
   }
 }

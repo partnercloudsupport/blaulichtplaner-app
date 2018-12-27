@@ -81,7 +81,7 @@ class Invitation {
 class InvitationRequest extends AsyncHttpRequest<Invitation> {
   InvitationRequest(Client client)
       : super(client,
-            'https://us-central1-blaulichtplaner.cloudfunctions.net/invitation');
+            'https://europe-west1-blaulichtplaner.cloudfunctions.net/invitation');
 
   @override
   Map<String, Object> _convertData(Invitation data) {
@@ -92,7 +92,7 @@ class InvitationRequest extends AsyncHttpRequest<Invitation> {
 class RegistrationRequest extends AsyncHttpRequest<Map<String, dynamic>> {
   RegistrationRequest(Client client)
       : super(client,
-            'https://us-central1-blaulichtplaner.cloudfunctions.net');
+            'https://europe-west1-blaulichtplaner.cloudfunctions.net');
 
   @override
   Map<String, dynamic> _convertData(Map<String, dynamic> data) {

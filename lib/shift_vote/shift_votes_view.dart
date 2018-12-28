@@ -9,6 +9,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:intl/intl.dart';
+import 'package:blaulichtplaner_app/widgets/no_employee.dart';
+
 
 enum FilterOptions { allShifts, withoutBid, withBid, notInterested }
 
@@ -339,15 +341,7 @@ class ShiftVotesViewState extends State<ShiftVotesView> {
             .isEmpty,
       );
     } else {
-      return Center(
-        child: Column(
-          children: <Widget>[
-            Text(
-                "Sie sind noch an keinem Standort als Mitarbeiter registriert.")
-          ],
-          mainAxisAlignment: MainAxisAlignment.center,
-        ),
-      );
+      return NoEmployee();
     }
   }
 }

@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:blaulichtplaner_app/evaluation/evaluation_form.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-class Assignment {
+class AssignmentModel {
   DocumentReference selfRef;
   DateTime from;
   DateTime to;
@@ -13,7 +13,7 @@ class Assignment {
   DocumentReference shiftplanRef;
   DocumentReference employeeRef;
 
-  Assignment.fromSnapshot(DocumentSnapshot snapshot) {
+  AssignmentModel.fromSnapshot(DocumentSnapshot snapshot) {
     selfRef = snapshot.reference;
     from = snapshot.data["from"];
     to = snapshot.data["to"];
@@ -37,7 +37,7 @@ class AssignmentService {
   }
 
   static void initModelWithAssignment(
-      EvaluationModel model, Assignment assignment) {
+      EvaluationModel model, AssignmentModel assignment) {
     model.originalFrom = assignment.from;
     model.originalTo = assignment.to;
     model.actualFrom = assignment.from;
@@ -63,7 +63,7 @@ class AssignmentService {
   }
 
   static Map<String, dynamic> _createData(
-      EvaluationModel model, bool finish, Assignment assignment) {
+      EvaluationModel model, bool finish, AssignmentModel assignment) {
     Map<String, dynamic> data = {};
     data["finished"] = finish;
     data["actualFrom"] = model.actualFrom;
@@ -78,7 +78,7 @@ class AssignmentService {
     return data;
   }
 
-  static Future finishAssignment(Assignment assignment) async {
+  static Future finishAssignment(AssignmentModel assignment) async {
     final query = await Firestore.instance
         .collection("evaluations")
         .where("assignmentRef", isEqualTo: assignment.selfRef)
@@ -95,7 +95,7 @@ class AssignmentService {
   }
 
   static Future saveEvaluation(DocumentReference knownEvaluation,
-      Assignment assignment, EvaluationModel model, bool finish) async {
+      AssignmentModel assignment, EvaluationModel model, bool finish) async {
     final data = _createData(model, finish, assignment);
     if (knownEvaluation == null) {
       knownEvaluation = await Firestore.instance

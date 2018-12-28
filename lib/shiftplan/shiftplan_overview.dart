@@ -4,7 +4,7 @@ import 'package:blaulichtplaner_app/widgets/loader.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:blaulichtplaner_app/utils/user_manager.dart';
-
+import 'package:blaulichtplaner_app/widgets/no_employee.dart';
 import 'dart:async';
 
 class ShiftplanOverview extends StatefulWidget {
@@ -78,6 +78,7 @@ class ShiftplanOverviewState extends State<ShiftplanOverview> {
 
   @override
   Widget build(BuildContext context) {
+    if(widget.hasEmployeeRoles()){
     return LoaderBodyWidget(
       child: ListView.builder(
         itemBuilder: (BuildContext context, int index) {
@@ -101,5 +102,8 @@ class ShiftplanOverviewState extends State<ShiftplanOverview> {
       loading: !_initialized,
       fallbackText: 'Sie haben keine Dienstpläne',
     );
+    } else{
+      return NoEmployee();
+    }
   }
 }

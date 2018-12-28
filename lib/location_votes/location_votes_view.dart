@@ -8,10 +8,14 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:blaulichtplaner_app/widgets/no_employee.dart';
 
 class LocationVotesView extends StatefulWidget {
   final List<Role> employeeRoles;
   LocationVotesView({Key key, @required this.employeeRoles}) : super(key: key);
+  bool hasEmployeeRoles() {
+    return employeeRoles != null && employeeRoles.isNotEmpty;
+  }
 
   @override
   State<StatefulWidget> createState() {
@@ -142,14 +146,19 @@ class LocationVotesViewState extends State<LocationVotesView> {
 
   @override
   Widget build(BuildContext context) {
-    return LoaderBodyWidget(
-      child: ListView.builder(
-        itemBuilder: _itemBuilder,
-        itemCount: _userVoteHolder.userVotes.length,
-      ),
-      loading: !_initialized,
-      fallbackText: 'Keine Bewerbungen.\nFügen Sie neue mit dem + Symbol hinzu',
-      empty: _userVoteHolder.isEmpty,
-    );
+    if (widget.hasEmployeeRoles()) {
+      return LoaderBodyWidget(
+        child: ListView.builder(
+          itemBuilder: _itemBuilder,
+          itemCount: _userVoteHolder.userVotes.length,
+        ),
+        loading: !_initialized,
+        fallbackText:
+            'Keine Bewerbungen.\nFügen Sie neue mit dem + Symbol hinzu',
+        empty: _userVoteHolder.isEmpty,
+      );
+    } else {
+      return NoEmployee();
+    }
   }
 }

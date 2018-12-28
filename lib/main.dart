@@ -1,11 +1,9 @@
-import 'package:blaulichtplaner_app/about_widget.dart';
 import 'package:blaulichtplaner_app/assignment/assignment_view.dart';
-import 'package:blaulichtplaner_app/invitation_widget.dart';
+import 'package:blaulichtplaner_app/invitation/invitation_view.dart';
 import 'package:blaulichtplaner_app/location_votes/location_vote.dart';
 import 'package:blaulichtplaner_app/location_votes/location_vote_editor.dart';
 import 'package:blaulichtplaner_app/location_votes/location_votes_view.dart';
 import 'package:blaulichtplaner_app/login/google_registration_widget.dart';
-import 'package:blaulichtplaner_app/roles_widget.dart';
 import 'package:blaulichtplaner_app/shift_vote/shift_votes_view.dart';
 import 'package:blaulichtplaner_app/shiftplan/shiftplan_overview.dart';
 import 'package:blaulichtplaner_app/utils/user_manager.dart';
@@ -17,7 +15,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:intl/date_symbol_data_local.dart';
-import 'package:intl/intl.dart';
+import 'package:blaulichtplaner_app/widgets/date_navigation.dart';
+import 'package:blaulichtplaner_app/widgets/drawer.dart';
 
 void main() {
   // debugPaintSizeEnabled = true;
@@ -144,73 +143,6 @@ class FilterMenuState extends State<FilterMenu> {
   }
 }
 
-class DrawerWidget extends StatelessWidget {
-  final FirebaseUser user;
-  final Function logoutCallback;
-  final Function invitationCallback;
-  final List<Role> employeeRoles;
-
-  DrawerWidget({
-    Key key,
-    @required this.user,
-    @required this.logoutCallback,
-    @required this.invitationCallback,
-    @required this.employeeRoles,
-  }) : super(key: key);
-
-  Widget _buildImage() {
-    if (user.photoUrl != null) {
-      return CircleAvatar(backgroundImage: NetworkImage(user.photoUrl));
-    } else {
-      return Icon(Icons.account_circle);
-    }
-  }
-
-  @override
-  build(BuildContext context) {
-    return Drawer(
-      child: ListView(
-        children: <Widget>[
-          ListTile(
-            leading: _buildImage(),
-            title: Text(user.displayName),
-          ),
-          ListTile(
-            leading: Icon(Icons.insert_link),
-            title: Text("Einladung annehmen"),
-            onTap: invitationCallback,
-          ),
-          ListTile(
-            leading: Icon(Icons.location_on),
-            title: Text("Zugeordnete Standorte"),
-            onTap: () {
-              Navigator.pop(context);
-
-              Navigator.push(context,
-                  MaterialPageRoute(builder: (context) => RolesScreen()));
-            },
-          ),
-          Divider(),
-          ListTile(
-            leading: Icon(Icons.info_outline),
-            title: Text("Über die App"),
-            onTap: () {
-              Navigator.pop(context);
-              Navigator.push(context,
-                  MaterialPageRoute(builder: (context) => AboutScreen()));
-            },
-          ),
-          ListTile(
-            leading: Icon(Icons.exit_to_app),
-            title: Text("Logout"),
-            onTap: logoutCallback,
-          ),
-        ],
-      ),
-    );
-  }
-}
-
 class LaunchScreenState extends State<LaunchScreen> {
   bool _initialized = false;
   bool _registered = true;
@@ -265,6 +197,10 @@ class LaunchScreenState extends State<LaunchScreen> {
       });
     }
   }
+
+  bool _hasEmployeeRoles() =>
+      userManager.rolesForType("employee") != null &&
+      userManager.rolesForType("employee").isNotEmpty;
 
   void _logout() async {
     FirebaseUser user = await _auth.currentUser();
@@ -333,16 +269,23 @@ class LaunchScreenState extends State<LaunchScreen> {
       case 2:
         return <Widget>[
           IconButton(
-              icon: Icon(Icons.add),
-              onPressed: () {
-                Navigator.push(context,
-                    MaterialPageRoute(builder: (BuildContext context) {
-                  return LocationVoteEditor(
-                    employeeRoles: userManager.rolesForType("employee"),
-                    userVote: UserVote(),
-                  );
-                }));
-              })
+            icon: Icon(Icons.add),
+            onPressed: _hasEmployeeRoles()
+                ? () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (BuildContext context) {
+                          return LocationVoteEditor(
+                            employeeRoles: userManager.rolesForType("employee"),
+                            userVote: UserVote(),
+                          );
+                        },
+                      ),
+                    );
+                  }
+                : null,
+          )
         ];
       case 3:
         return <Widget>[
@@ -409,58 +352,14 @@ class LaunchScreenState extends State<LaunchScreen> {
   Widget _createDateNavigation() {
     if (_selectDate && selectedTab == 3) {
       return PreferredSize(
-          preferredSize: const Size.fromHeight(48.0),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: <Widget>[
-              IconButton(
-                icon: Icon(Icons.arrow_back),
-                onPressed: (_selectedDate
-                            .subtract(Duration(days: 1))
-                            .compareTo(_initialDate) >=
-                        0)
-                    ? () {
-                        setState(() {
-                          _selectedDate = (_selectedDate
-                                      .subtract(Duration(days: 1))
-                                      .compareTo(_initialDate) >=
-                                  0)
-                              ? _initialDate
-                              : _selectedDate.subtract(Duration(days: 1));
-                        });
-                      }
-                    : null,
-                color: Colors.white,
-              ),
-              FlatButton(
-                child: Text(
-                  DateFormat.yMMMd("de_DE").format(_selectedDate),
-                  style: TextStyle(color: Colors.white),
-                ),
-                onPressed: () {
-                  showDatePicker(
-                          context: context,
-                          firstDate: _initialDate.subtract(Duration(days: 1)),
-                          lastDate: DateTime.now().add(Duration(days: 356)),
-                          initialDate: _selectedDate)
-                      .then((DateTime date) {
-                    setState(() {
-                      _selectedDate = date;
-                    });
-                  });
-                },
-              ),
-              IconButton(
-                  icon: Icon(Icons.arrow_forward),
-                  onPressed: () {
-                    setState(() {
-                      _selectedDate = _selectedDate.add(Duration(days: 1));
-                    });
-                  },
-                  color: Colors.white)
-            ],
-          ));
+        preferredSize: const Size.fromHeight(48.0),
+        child: DateNavigation(
+          initialValue: _selectedDate,
+          onChanged: (DateTime date) {
+            _selectedDate = date;
+          },
+        ),
+      );
     } else {
       return null;
     }

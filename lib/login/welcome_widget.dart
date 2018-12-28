@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:blaulichtplaner_app/widgets/loader.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -21,15 +19,17 @@ class WelcomeScreen extends StatefulWidget {
 class WelcomeScreenState extends State<WelcomeScreen> {
   bool _saving = false;
   final FirebaseAuth _auth = FirebaseAuth.instance;
-  final GoogleSignIn _googleSignIn = GoogleSignIn(
-    scopes: ['email'],
-  );
 
   _handleGoogleLogin() async {
     setState(() {
       _saving = true;
     });
     try {
+      final GoogleSignIn _googleSignIn = GoogleSignIn(
+        scopes: [
+          'email',
+        ],
+      );
       GoogleSignInAccount googleUser = await _googleSignIn.signIn();
       if (googleUser != null) {
         GoogleSignInAuthentication googleAuth = await googleUser.authentication;
@@ -48,7 +48,7 @@ class WelcomeScreenState extends State<WelcomeScreen> {
       setState(() {
         _saving = false;
       });
-    }
+    } finally {}
   }
 
   _handleEmailSignIn(String email, String password) async {
@@ -72,7 +72,7 @@ class WelcomeScreenState extends State<WelcomeScreen> {
       setState(() {
         _saving = false;
       });
-    }
+    } finally {}
   }
 
   @override

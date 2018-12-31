@@ -214,6 +214,9 @@ class ShiftVoteHolder {
       FilterOptions option, DateTime selectedDate) {
     List<ShiftVote> filteredShiftVotes = <ShiftVote>[];
     switch (option) {
+      case FilterOptions.allShifts:
+        filteredShiftVotes = _shiftVotes;
+        break;
       case FilterOptions.withoutBid:
         filteredShiftVotes = _shiftVotes
             .where((ShiftVote shiftVote) =>
@@ -261,6 +264,7 @@ class Shift {
   DocumentReference workAreaRef;
   String publicNote;
   String status;
+  int requiredEmployees;
 
   Shift.fromSnapshot(DocumentSnapshot snapshot) {
     id = snapshot.documentID;
@@ -273,5 +277,6 @@ class Shift {
     workAreaRef = snapshot.data["workAreaRef"];
     publicNote = snapshot.data["publicNote"];
     status = snapshot.data["status"];
+    requiredEmployees = snapshot.data["requiredEmployees"];
   }
 }

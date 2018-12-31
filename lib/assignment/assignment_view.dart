@@ -1,5 +1,5 @@
 import 'dart:async';
-
+import 'package:async/async.dart';
 import 'package:blaulichtplaner_app/assignment/assignment_service.dart';
 import 'package:blaulichtplaner_app/evaluation/evaluation_editor.dart';
 import 'package:blaulichtplaner_app/utils/user_manager.dart';
@@ -8,6 +8,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:intl/intl.dart';
+import 'package:blaulichtplaner_app/widgets/no_employee.dart';
 
 class AssignmentView extends StatefulWidget {
   final List<Role> employeeRoles;
@@ -27,9 +28,8 @@ class AssignmentView extends StatefulWidget {
 }
 
 class AssignmentViewState extends State<AssignmentView> {
-  final List<Loadable<Assignment>> _assignments = [];
-  final List<StreamSubscription> subs = [];
-  bool _initialized = false;
+  final List<Stream> _streams = [];
+  Stream _mergedStream;
 
   @override
   void initState() {
@@ -56,56 +56,20 @@ class AssignmentViewState extends State<AssignmentView> {
               .where("to", isLessThanOrEqualTo: DateTime.now())
               .orderBy("to", descending: true);
         }
-        subs.add(query.snapshots().listen((snapshot) {
-          setState(() {
-            for (final doc in snapshot.documentChanges) {
-              final assignmentRef = doc.document.reference;
-
-              if (doc.type == DocumentChangeType.added) {
-                _assignments
-                    .add(Loadable(Assignment.fromSnapshot(doc.document)));
-              } else if (doc.type == DocumentChangeType.modified) {
-                _assignments.removeWhere(
-                    (assignment) => assignment.data.selfRef == assignmentRef);
-                _assignments
-                    .add(Loadable(Assignment.fromSnapshot(doc.document)));
-              } else if (doc.type == DocumentChangeType.removed) {
-                _assignments.removeWhere(
-                    (assignment) => assignment.data.selfRef == assignmentRef);
-              }
-            }
-            _assignments.sort((s1, s2) => s1.data.from.compareTo(s2.data.from));
-
-            _initialized = true;
-          });
-        }));
+        _streams.add(query.snapshots());
       }
+      _mergedStream = StreamZip(_streams);
     }
   }
 
   @override
   void didUpdateWidget(AssignmentView oldWidget) {
     super.didUpdateWidget(oldWidget);
-    _cancelDataListeners();
-    _assignments.clear();
     _initDataListeners();
   }
 
-  @override
-  void dispose() {
-    super.dispose();
-    _cancelDataListeners();
-  }
-
-  void _cancelDataListeners() {
-    for (final sub in subs) {
-      sub.cancel();
-    }
-  }
-
-  Widget _assignmentBuilder(BuildContext context, int index) {
-    Loadable loadableAssignment = _assignments[index];
-    Assignment assignment = loadableAssignment.data;
+  Widget _assignmentBuilder(BuildContext context, AssignmentModel assignment) {
+    Loadable loadableAssignment = Loadable(assignment);
     final dateFormatter = DateFormat.EEEE("de_DE").add_yMd();
     final timeFormatter = DateFormat.Hm("de_DE");
 
@@ -200,7 +164,7 @@ class AssignmentViewState extends State<AssignmentView> {
         children: cardChildren,
       ),
     );
-    Widget timeDiff = _timeDiffBuilder(index);
+    Widget timeDiff = _timeDiffBuilder(assignment);
     if (timeDiff != null) {
       return Column(
         children: <Widget>[timeDiff, card],
@@ -211,12 +175,9 @@ class AssignmentViewState extends State<AssignmentView> {
     }
   }
 
-  _timeDiffBuilder(int index) {
-    if (index == 0) {
-      return null;
-    }
-    DateTime from = _assignments[index - 1].data.to;
-    DateTime to = _assignments[index].data.from;
+  _timeDiffBuilder(AssignmentModel assignment) {
+    DateTime from = assignment.to;
+    DateTime to = assignment.from;
     Duration diff = to.difference(from);
     if (diff.inMinutes > 0) {
       String label = "";
@@ -235,11 +196,12 @@ class AssignmentViewState extends State<AssignmentView> {
         child: Chip(
           backgroundColor: Colors.white,
           shape: RoundedRectangleBorder(
-              side: BorderSide(
-                  color: Colors.black.withAlpha(0x1f),
-                  width: 1.0,
-                  style: BorderStyle.solid),
-              borderRadius: BorderRadius.circular(28.0)),
+            side: BorderSide(
+                color: Colors.black.withAlpha(0x1f),
+                width: 1.0,
+                style: BorderStyle.solid),
+            borderRadius: BorderRadius.circular(28.0),
+          ),
           label: Text(label),
         ),
       );
@@ -248,30 +210,31 @@ class AssignmentViewState extends State<AssignmentView> {
     }
   }
 
+  _streamBuilder(BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
+    if (!snapshot.hasData) {
+      return CircularProgressIndicator();
+    }
+    if(snapshot.data.documents.isEmpty){
+      return Center(child: Text('Keine Dienste'));
+    }
+    return ListView.builder(
+      itemBuilder: (BuildContext context, int index) => _assignmentBuilder(
+            context,
+            AssignmentModel.fromSnapshot(snapshot.data.documents[index]),
+          ),
+      itemCount: snapshot.data.documents.length,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     if (widget.hasEmployeeRoles()) {
-      return LoaderBodyWidget(
-        loading: !_initialized,
-        child: ListView.builder(
-          itemBuilder: _assignmentBuilder,
-          itemCount: _assignments.length,
-        ),
-        empty: _assignments.isEmpty,
-        fallbackText: widget.upcomingShifts
-            ? "Sie haben keine zugewiesenen Schichten!"
-            : "Keine Schichten vorhanden, die eine Auswertung benötigen!",
+      return StreamBuilder<QuerySnapshot>(
+        stream: _mergedStream,
+        builder: _streamBuilder,
       );
     } else {
-      return Center(
-        child: Column(
-          children: <Widget>[
-            Text(
-                "Sie sind noch an keinem Standort als Mitarbeiter registriert.")
-          ],
-          mainAxisAlignment: MainAxisAlignment.center,
-        ),
-      );
+      return NoEmployee();
     }
   }
 }

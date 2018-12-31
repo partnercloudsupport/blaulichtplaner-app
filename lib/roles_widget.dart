@@ -1,11 +1,9 @@
-import 'dart:async';
-
 import 'package:blaulichtplaner_app/utils/user_manager.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:blaulichtplaner_app/widgets/loader.dart';
 import 'package:intl/intl.dart';
+import 'package:blaulichtplaner_app/widgets/no_employee.dart';
 
 class RolesScreen extends StatefulWidget {
   @override
@@ -15,50 +13,34 @@ class RolesScreen extends StatefulWidget {
 }
 
 class RolesScreenState extends State<RolesScreen> {
-  bool _initialized = false;
-  List<Map<String, dynamic>> _roles = [];
   FirebaseUser user;
   @override
   void initState() {
     super.initState();
     user = UserManager.get().user;
-    if (user != null) {
-      _fetchRoles(user).then((dynamic nul) {
-        setState(() {
-          _initialized = true;
-        });
-      });
-    } else {
-      print('Nothing');
-    }
   }
 
-  Future<void> _fetchRoles(FirebaseUser user) async {
-    QuerySnapshot snapshot = await Firestore.instance
-        .collection('users')
-        .document(user.uid)
-        .collection("roles")
-        .getDocuments();
-    for (DocumentSnapshot doc in snapshot.documents) {
-      Role role = Role.fromSnapshot(doc.data);
-
-      if (role.type == "employee") {
-        Map<String, dynamic> contents = {
-          "companyLabel": role.companyLabel ?? "Keine Firma",
-          "locationLabel": role.locationLabel ?? "Kein Standort",
-          "created": role.created ?? DateTime.now(),
-        };
-        _roles.add(contents);
-      }
-    }
-  }
-
-  Widget _tileBuilder(BuildContext context, int index) {
+  Widget _tileBuilder(BuildContext context, Role role) {
+    String sinceLabel = 'Seit ' + DateFormat.yMMM("de_DE").format(role.created);
     return ListTile(
-      title: Text(_roles[index]["locationLabel"]),
-      subtitle: Text(_roles[index]["companyLabel"]),
-      trailing: Text(
-          "Seit " + DateFormat.yMMM("de_DE").format(_roles[index]["created"])),
+      title: Text(role.companyLabel),
+      trailing: Text(sinceLabel),
+    );
+  }
+
+  Widget _streamBuilder(BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
+    if(!snapshot.hasData){
+      return Center(child: CircularProgressIndicator(),);
+    }
+    if(snapshot.data.documents.isEmpty){
+      return NoEmployee();
+    }
+    return ListView.builder(
+      itemCount: snapshot.data.documents.length,
+      itemBuilder: (BuildContext context, int index) {
+        return _tileBuilder(
+            context, Role.fromSnapshot(snapshot.data.documents[index].data));
+      },
     );
   }
 
@@ -66,16 +48,15 @@ class RolesScreenState extends State<RolesScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Zugeordnete Standorte"),
+        title: Text("Zugeordnete Firmen"),
       ),
-      body: LoaderBodyWidget(
-        loading: !_initialized,
-        child: ListView.builder(
-          itemCount: _roles.length,
-          itemBuilder: _tileBuilder,
-        ),
-        fallbackText: 'Keine Einträge',
-        empty: _roles.isEmpty,
+      body: StreamBuilder<QuerySnapshot>(
+        builder: _streamBuilder,
+        stream: Firestore.instance
+            .collection('users')
+            .document(user.uid)
+            .collection("roles")
+            .snapshots(),
       ),
     );
   }

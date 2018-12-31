@@ -1,15 +1,13 @@
-import 'package:blaulichtplaner_app/about_widget.dart';
 import 'package:blaulichtplaner_app/assignment/assignment_view.dart';
-import 'package:blaulichtplaner_app/invitation_widget.dart';
+import 'package:blaulichtplaner_app/invitation/invitation_view.dart';
 import 'package:blaulichtplaner_app/location_votes/location_vote.dart';
 import 'package:blaulichtplaner_app/location_votes/location_vote_editor.dart';
 import 'package:blaulichtplaner_app/location_votes/location_votes_view.dart';
-import 'package:blaulichtplaner_app/registration_widget.dart';
-import 'package:blaulichtplaner_app/roles_widget.dart';
-import 'package:blaulichtplaner_app/settings_widget.dart';
+import 'package:blaulichtplaner_app/login/google_registration_widget.dart';
 import 'package:blaulichtplaner_app/shift_vote/shift_votes_view.dart';
+import 'package:blaulichtplaner_app/shiftplan/shiftplan_overview.dart';
 import 'package:blaulichtplaner_app/utils/user_manager.dart';
-import 'package:blaulichtplaner_app/welcome_widget.dart';
+import 'package:blaulichtplaner_app/login/welcome_widget.dart';
 import 'package:blaulichtplaner_app/widgets/loader.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -17,7 +15,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:intl/date_symbol_data_local.dart';
-import 'package:intl/intl.dart';
+import 'package:blaulichtplaner_app/widgets/date_navigation.dart';
+import 'package:blaulichtplaner_app/widgets/drawer.dart';
 
 void main() {
   // debugPaintSizeEnabled = true;
@@ -36,7 +35,7 @@ class ShiftplanApp extends StatelessWidget {
       ),
       home: LaunchScreen(),
       debugShowMaterialGrid: false,
-      debugShowCheckedModeBanner: false,
+      debugShowCheckedModeBanner: true,
     );
   }
 }
@@ -48,87 +47,116 @@ class LaunchScreen extends StatefulWidget {
   LaunchScreenState createState() => LaunchScreenState();
 }
 
-class DrawerWidget extends StatelessWidget {
-  final FirebaseUser user;
-  final Function logoutCallback;
-  final Function invitationCallback;
-  final List<Role> employeeRoles;
+class FilterMenu extends StatefulWidget {
+  final FilterOptions initialValue;
+  final Function onChanged;
 
-  DrawerWidget({
+  const FilterMenu({
     Key key,
-    @required this.user,
-    @required this.logoutCallback,
-    @required this.invitationCallback,
-    @required this.employeeRoles,
+    @required this.initialValue,
+    @required this.onChanged,
   }) : super(key: key);
 
   @override
-  build(BuildContext context) {
-    return Drawer(
-      child: ListView(
+  State<StatefulWidget> createState() {
+    return FilterMenuState(initialValue);
+  }
+}
+
+class FilterMenuState extends State<FilterMenu> {
+  FilterOptions _selectedFilterOption;
+  FilterMenuState(this._selectedFilterOption);
+  void _onChanged(val) {
+    setState(() {
+      _selectedFilterOption = val;
+    });
+    widget.onChanged(_selectedFilterOption);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: <Widget>[
-          ListTile(
-            leading: CircleAvatar(backgroundImage: NetworkImage(user.photoUrl)),
-            title: Text(user.displayName),
+          RadioListTile(
+            groupValue: _selectedFilterOption,
+            onChanged: _onChanged,
+            value: FilterOptions.allShifts,
+            title: Text('Alle Dienste'),
           ),
-          ListTile(
-            leading: Icon(Icons.insert_link),
-            title: Text("Einladung annehmen"),
-            onTap: invitationCallback,
+          RadioListTile(
+            groupValue: _selectedFilterOption,
+            onChanged: _onChanged,
+            value: FilterOptions.withoutBid,
+            title: Row(
+              children: <Widget>[
+                Text('Dienste ohne Bewerbung'),
+                Padding(
+                  padding: const EdgeInsets.only(left: 8.0),
+                  child: Icon(
+                    Icons.help,
+                    color: Colors.grey,
+                  ),
+                ),
+              ],
+            ),
           ),
-          ListTile(
-            leading: Icon(Icons.location_on),
-            title: Text("Zugeordnete Standorte"),
-            onTap: () {
-              Navigator.pop(context);
-
-              Navigator.push(context,
-                  MaterialPageRoute(builder: (context) => RolesScreen()));
-            },
+          RadioListTile(
+            groupValue: _selectedFilterOption,
+            onChanged: _onChanged,
+            value: FilterOptions.withBid,
+            title: Row(
+              children: <Widget>[
+                Text('Dienste mit Bewerbung'),
+                Padding(
+                  padding: const EdgeInsets.only(left: 8.0),
+                  child: Icon(
+                    Icons.check,
+                    color: Colors.green,
+                  ),
+                ),
+              ],
+            ),
           ),
-          ListTile(
-            leading: Icon(Icons.settings),
-            title: Text("Einstellungen"),
-            onTap: () {
-              Navigator.pop(context);
-
-              Navigator.push(context,
-                  MaterialPageRoute(builder: (context) => SettingsScreen()));
-            },
-          ),
-          Divider(),
-          ListTile(
-            leading: Icon(Icons.info_outline),
-            title: Text("Über die App"),
-            onTap: () {
-              Navigator.pop(context);
-              Navigator.push(context,
-                  MaterialPageRoute(builder: (context) => AboutScreen()));
-            },
-          ),
-          ListTile(
-            leading: Icon(Icons.exit_to_app),
-            title: Text("Logout"),
-            onTap: logoutCallback,
+          RadioListTile(
+            groupValue: _selectedFilterOption,
+            onChanged: _onChanged,
+            value: FilterOptions.notInterested,
+            title: Row(
+              children: <Widget>[
+                Text('Abgelehnte Dienste'),
+                Padding(
+                  padding: const EdgeInsets.only(left: 8.0),
+                  child: Icon(
+                    Icons.close,
+                    color: Colors.red,
+                  ),
+                ),
+              ],
+            ),
           ),
         ],
       ),
+      padding: EdgeInsets.all(16.0),
     );
   }
 }
 
 class LaunchScreenState extends State<LaunchScreen> {
   bool _initialized = false;
-  bool _registered = false;
+  bool _registered = true;
   FirebaseUser _user;
   final FirebaseAuth _auth = FirebaseAuth.instance;
   int selectedTab = 0;
   bool upcomingShifts = true;
+  bool upcomingPlans = true;
   String currentTitle = "Blaulichtplaner";
-  FilterOptions _selectedFilterOption = FilterOptions.withoutBid;
+  FilterOptions _selectedFilterOption = FilterOptions.allShifts;
   bool _selectDate = false;
   DateTime _initialDate;
   DateTime _selectedDate;
+  GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   final UserManager userManager = UserManager.get();
 
@@ -163,14 +191,18 @@ class LaunchScreenState extends State<LaunchScreen> {
   void _isRegistered(FirebaseUser user) async {
     if (user != null) {
       final doc =
-      await Firestore.instance.collection("users").document(user.uid).get();
+          await Firestore.instance.collection("users").document(user.uid).get();
       setState(() {
         _registered = doc.exists;
       });
     }
   }
 
-  void logout() async {
+  bool _hasEmployeeRoles() =>
+      userManager.rolesForType("employee") != null &&
+      userManager.rolesForType("employee").isNotEmpty;
+
+  void _logout() async {
     FirebaseUser user = await _auth.currentUser();
     if (user != null) {
       // TODO check if providerId should be google. the framework returns "firebase" atm
@@ -178,7 +210,7 @@ class LaunchScreenState extends State<LaunchScreen> {
         final GoogleSignIn googleSignIn = GoogleSignIn(
           scopes: ['email'],
         );
-        googleSignIn.disconnect();
+        await googleSignIn.disconnect();
       }
     }
     await _auth.signOut();
@@ -191,10 +223,14 @@ class LaunchScreenState extends State<LaunchScreen> {
             employeeRoles: userManager.rolesForType("employee"),
             upcomingShifts: upcomingShifts);
       case 1:
-        return LocationVotesView(
+        return ShiftplanOverview(
           employeeRoles: userManager.rolesForType("employee"),
         );
       case 2:
+        return LocationVotesView(
+          employeeRoles: userManager.rolesForType("employee"),
+        );
+      case 3:
         return ShiftVotesView(
           workAreaRoles: userManager.rolesForType("workArea"),
           employeeRoles: userManager.rolesForType("employee"),
@@ -218,23 +254,40 @@ class LaunchScreenState extends State<LaunchScreen> {
                 });
               })
         ];
-        break;
+
       case 1:
         return <Widget>[
           IconButton(
-              icon: Icon(Icons.add),
-              onPressed: () {
-                Navigator.push(context,
-                    MaterialPageRoute(builder: (BuildContext context) {
-                      return LocationVoteEditor(
-                        employeeRoles: userManager.rolesForType("employee"),
-                        userVote: UserVote(),
-                      );
-                    }));
-              })
+            icon: Icon(Icons.rotate_90_degrees_ccw),
+            onPressed: () {
+              setState(() {
+                upcomingPlans = !upcomingPlans;
+              });
+            },
+          )
         ];
-        break;
       case 2:
+        return <Widget>[
+          IconButton(
+            icon: Icon(Icons.add),
+            onPressed: _hasEmployeeRoles()
+                ? () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (BuildContext context) {
+                          return LocationVoteEditor(
+                            employeeRoles: userManager.rolesForType("employee"),
+                            userVote: UserVote(),
+                          );
+                        },
+                      ),
+                    );
+                  }
+                : null,
+          )
+        ];
+      case 3:
         return <Widget>[
           IconButton(
             icon: Icon(Icons.today),
@@ -244,79 +297,22 @@ class LaunchScreenState extends State<LaunchScreen> {
               });
             },
           ),
-          PopupMenuButton(
-            onSelected: (FilterOptions val) {
-              setState(() {
-                _selectedFilterOption = val;
-              });
+          IconButton(
+            icon: Icon(Icons.filter_list),
+            onPressed: () {
+              showModalBottomSheet(
+                  context: context,
+                  builder: (BuildContext context) => FilterMenu(
+                        onChanged: (val) {
+                          setState(() {
+                            _selectedFilterOption = val;
+                          });
+                        },
+                        initialValue: _selectedFilterOption,
+                      ));
             },
-            child: Padding(
-                padding: EdgeInsets.only(left: 12.0, right: 12.0),
-                child: Icon(Icons.filter_list)),
-            itemBuilder: (BuildContext context) =>
-            <PopupMenuEntry<FilterOptions>>[
-              PopupMenuItem(
-                child: Text(
-                  'Filtern',
-                  style: TextStyle(color: Colors.black),
-                ),
-                enabled: false,
-              ),
-              PopupMenuItem<FilterOptions>(
-                  value: FilterOptions.withoutBid,
-                  child: Row(
-                    children: <Widget>[
-                      Radio(
-                        onChanged: (val) {
-                          setState(() {
-                            _selectedFilterOption = val;
-                          });
-                        },
-                        groupValue: _selectedFilterOption,
-                        value: FilterOptions.withoutBid,
-                      ),
-                      Text('Dienste ohne Bewerbung'),
-                      //Icon(Icons.help_outline),
-                    ],
-                  )),
-              PopupMenuItem(
-                  value: FilterOptions.withBid,
-                  child: Row(
-                    children: <Widget>[
-                      Radio(
-                        onChanged: (val) {
-                          setState(() {
-                            _selectedFilterOption = val;
-                          });
-                        },
-                        groupValue: _selectedFilterOption,
-                        value: FilterOptions.withBid,
-                      ),
-                      Text('Beworbene Dienste'),
-                      //Icon(Icons.done_outline),
-                    ],
-                  )),
-              PopupMenuItem(
-                  value: FilterOptions.notInterested,
-                  child: Row(
-                    children: <Widget>[
-                      Radio(
-                        onChanged: (val) {
-                          setState(() {
-                            _selectedFilterOption = val;
-                          });
-                        },
-                        groupValue: _selectedFilterOption,
-                        value: FilterOptions.notInterested,
-                      ),
-                      Text('Abgelehnte Dienste'),
-                      //Icon(Icons.not_interested),
-                    ],
-                  )),
-            ],
-          ),
+          )
         ];
-        break;
       default:
         return [];
     }
@@ -324,6 +320,8 @@ class LaunchScreenState extends State<LaunchScreen> {
 
   String _createShiftBidTitle() {
     switch (_selectedFilterOption) {
+      case FilterOptions.allShifts:
+        return "Alle Dienste";
       case FilterOptions.withoutBid:
         return "Offene Dienste";
       case FilterOptions.withBid:
@@ -337,76 +335,31 @@ class LaunchScreenState extends State<LaunchScreen> {
   String _createTitle() {
     switch (selectedTab) {
       case 0:
-        {
-          return upcomingShifts ? "Kommende Dienste" : "Vergangene Dienste";
-        }
+        return upcomingShifts ? "Kommende Dienste" : "Vergangene Dienste";
       case 1:
-        {
-          return "Zeiträume";
-        }
+        return upcomingPlans
+            ? "Aktuelle Dienstpläne"
+            : "Vergangene Dienstpläne";
       case 2:
-        {
-          return _createShiftBidTitle();
-        }
+        return "Zeiträume";
+      case 3:
+        return _createShiftBidTitle();
+      default:
+        return "Blaulichtplaner";
     }
-    return "Blaulichtplaner";
   }
 
   Widget _createDateNavigation() {
-    if (_selectDate && selectedTab == 2) {
+    if (_selectDate && selectedTab == 3) {
       return PreferredSize(
-          preferredSize: const Size.fromHeight(48.0),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: <Widget>[
-              IconButton(
-                icon: Icon(Icons.arrow_back),
-                onPressed: (_selectedDate
-                    .subtract(Duration(days: 1))
-                    .compareTo(_initialDate) >=
-                    0)
-                    ? () {
-                  setState(() {
-                    _selectedDate = (_selectedDate
-                        .subtract(Duration(days: 1))
-                        .compareTo(_initialDate) >=
-                        0)
-                        ? _initialDate
-                        : _selectedDate.subtract(Duration(days: 1));
-                  });
-                }
-                    : null,
-                color: Colors.white,
-              ),
-              FlatButton(
-                child: Text(
-                  DateFormat.yMMMd("de_DE").format(_selectedDate),
-                  style: TextStyle(color: Colors.white),
-                ),
-                onPressed: () {
-                  showDatePicker(
-                      context: context,
-                      firstDate: _initialDate.subtract(Duration(days: 1)),
-                      lastDate: DateTime.now().add(Duration(days: 356)),
-                      initialDate: _selectedDate)
-                      .then((DateTime date) {
-                    setState(() {
-                      _selectedDate = date;
-                    });
-                  });
-                },
-              ),
-              IconButton(
-                  icon: Icon(Icons.arrow_forward),
-                  onPressed: () {
-                    setState(() {
-                      _selectedDate = _selectedDate.add(Duration(days: 1));
-                    });
-                  },
-                  color: Colors.white)
-            ],
-          ));
+        preferredSize: const Size.fromHeight(48.0),
+        child: DateNavigation(
+          initialValue: _selectedDate,
+          onChanged: (DateTime date) {
+            _selectedDate = date;
+          },
+        ),
+      );
     } else {
       return null;
     }
@@ -414,6 +367,7 @@ class LaunchScreenState extends State<LaunchScreen> {
 
   Widget _buildHomeScreen(BuildContext context) {
     return Scaffold(
+      key: _scaffoldKey,
       appBar: AppBar(
         title: Text(_createTitle()),
         actions: _createAppBarActions(),
@@ -426,17 +380,15 @@ class LaunchScreenState extends State<LaunchScreen> {
             context,
             MaterialPageRoute(
               builder: (BuildContext context) => InvitationScreen(
-                user: _user,
-                onSaved: () {
-                  _updateUserData(_user);
-                },
-              ),
+                    user: _user,
+                    onSaved: () {
+                      _updateUserData(_user);
+                    },
+                  ),
             ),
           );
         },
-        logoutCallback: () {
-          logout();
-        },
+        logoutCallback: _logout,
         employeeRoles: userManager.rolesForType("employee"),
       ),
       body: _createBody(),
@@ -446,6 +398,10 @@ class LaunchScreenState extends State<LaunchScreen> {
           BottomNavigationBarItem(
             icon: Icon(Icons.event_available),
             title: Text("Schichten"),
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.table_chart),
+            title: Text('Dienstpäne'),
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.timelapse),
@@ -473,15 +429,21 @@ class LaunchScreenState extends State<LaunchScreen> {
       loading: !_initialized,
       child: (_registered)
           ? _buildHomeScreen(context)
-          : RegistrationScreen(
-          user: _user,
-          successCallback: () {
-            setState(() {
-              _registered = true;
-            });
-          }),
+          : GoogleRegistrationScreen(
+              user: _user,
+              successCallback: () {
+                setState(() {
+                  _registered = true;
+                });
+              }),
       empty: _user == null,
-      fallbackWidget: LoginScreen(),
+      fallbackWidget: WelcomeScreen(
+        successCallback: () {
+          setState(() {
+            _registered = true;
+          });
+        },
+      ),
     );
   }
 }

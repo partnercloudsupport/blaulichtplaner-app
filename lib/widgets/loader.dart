@@ -15,9 +15,9 @@ class LoaderWidget extends StatelessWidget {
 
   const LoaderWidget(
       {Key key,
-      this.loading,
+      @required this.loading,
       this.padding = const EdgeInsets.all(0.0),
-      this.child})
+      @required this.child})
       : super(key: key);
 
   @override

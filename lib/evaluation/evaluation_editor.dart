@@ -8,7 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 
 class EvaluationEditor extends StatefulWidget {
-  final Assignment assignment;
+  final AssignmentModel assignment;
 
   const EvaluationEditor({Key key, this.assignment}) : super(key: key);
 

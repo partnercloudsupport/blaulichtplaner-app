@@ -15,20 +15,18 @@ import 'package:blaulichtplaner_app/widgets/no_employee.dart';
 enum FilterOptions { allShifts, withoutBid, withBid, notInterested }
 
 class ShiftVotesView extends StatefulWidget {
-  final List<Role> workAreaRoles;
   final List<Role> employeeRoles;
   final FilterOptions filter;
   final DateTime selectedDate;
 
   ShiftVotesView(
       {Key key,
-      @required this.workAreaRoles,
       @required this.employeeRoles,
       @required this.filter,
       this.selectedDate});
 
-  bool hasWorkAreaRoles() {
-    return workAreaRoles != null && workAreaRoles.isNotEmpty;
+  bool hasEmployeeRoles() {
+    return employeeRoles != null && employeeRoles.isNotEmpty;
   }
 
   @override
@@ -45,18 +43,37 @@ class ShiftVotesViewState extends State<ShiftVotesView> {
   @override
   void initState() {
     super.initState();
-    _initOwnVotes();
-    _initWorkAreaShifts();
+    _initDataListeners();
   }
 
-  void _initWorkAreaShifts() {
+  void _initDataListeners() {
     final firestore = Firestore.instance;
-    if (widget.hasWorkAreaRoles()) {
-      for (final role in widget.workAreaRoles) {
+    if (widget.hasEmployeeRoles()) {
+      for (final role in widget.employeeRoles) {
+        final votesQueryStream = firestore
+            .collection("shiftVotes")
+            .where("employeeRef", isEqualTo: role.reference)
+            .where("from", isGreaterThanOrEqualTo: DateTime.now())
+            .snapshots();
+        subs.add(votesQueryStream.listen((snapshot) {
+          setState(() {
+            for (final doc in snapshot.documentChanges) {
+              if (doc.type == DocumentChangeType.added) {
+                _shiftVoteHolder.addVoteFromSnapshot(doc.document);
+              } else if (doc.type == DocumentChangeType.modified) {
+                _shiftVoteHolder.modifyVoteFromSnapshot(doc.document);
+              } else if (doc.type == DocumentChangeType.removed) {
+                _shiftVoteHolder.removeVoteFromSnapshot(doc.document);
+              }
+            }
+            _initialized = true;
+          });
+        }));
         final queryStream = firestore
             .collection("shifts")
-            .where("workAreaRef", isEqualTo: role.reference)
+            .where("companyRef", isEqualTo: role.companyRef)
             .where("acceptBid", isEqualTo: true)
+            .where("manned",isEqualTo: false)
             .where("from", isGreaterThanOrEqualTo: DateTime.now())
             .snapshots();
         subs.add(queryStream.listen((snapshot) {
@@ -77,33 +94,6 @@ class ShiftVotesViewState extends State<ShiftVotesView> {
     }
   }
 
-  void _initOwnVotes() {
-    final firestore = Firestore.instance;
-    if (widget.employeeRoles != null && widget.employeeRoles.isNotEmpty) {
-      for (final role in widget.employeeRoles) {
-        final queryStream = firestore
-            .collection("shiftVotes")
-            .where("employeeRef", isEqualTo: role.reference)
-            .where("from", isGreaterThanOrEqualTo: DateTime.now())
-            .snapshots();
-        subs.add(queryStream.listen((snapshot) {
-          setState(() {
-            for (final doc in snapshot.documentChanges) {
-              if (doc.type == DocumentChangeType.added) {
-                _shiftVoteHolder.addVoteFromSnapshot(doc.document);
-              } else if (doc.type == DocumentChangeType.modified) {
-                _shiftVoteHolder.modifyVoteFromSnapshot(doc.document);
-              } else if (doc.type == DocumentChangeType.removed) {
-                _shiftVoteHolder.removeVoteFromSnapshot(doc.document);
-              }
-            }
-            _initialized = true;
-          });
-        }));
-      }
-    }
-  }
-
   @override
   void didUpdateWidget(ShiftVotesView oldWidget) {
     super.didUpdateWidget(oldWidget);
@@ -115,8 +105,7 @@ class ShiftVotesViewState extends State<ShiftVotesView> {
     }
     subs.clear();
     _shiftVoteHolder.clear();
-    _initWorkAreaShifts();
-    _initOwnVotes();
+    _initDataListeners();
   }
 
   @override
@@ -315,7 +304,7 @@ class ShiftVotesViewState extends State<ShiftVotesView> {
   String _fallbackText() {
     switch (widget.filter) {
       case FilterOptions.allShifts:
-        return 'Keine Dienste';
+        return 'Keine Dienste verfügbar';
       case FilterOptions.notInterested:
         return 'Keine abgelehnten Schichten';
       case FilterOptions.withBid:
@@ -327,7 +316,7 @@ class ShiftVotesViewState extends State<ShiftVotesView> {
 
   @override
   Widget build(BuildContext context) {
-    if (widget.hasWorkAreaRoles()) {
+    if (widget.hasEmployeeRoles()) {
       return LoaderBodyWidget(
         loading: !_initialized,
         child: ListView.builder(

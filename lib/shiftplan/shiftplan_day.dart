@@ -10,8 +10,8 @@ class ShiftplanDay extends StatelessWidget {
   Widget build(BuildContext context) {
     DateFormat timeFormatter = DateFormat('EE HH:mm', 'de_DE');
     if (shifts.isEmpty) {
-      return ListTile(
-        title: Text('Keine Inhalte', style: TextStyle(color: Colors.black)),
+      return Center(
+        child: Text('Keine Inhalte', style: TextStyle(color: Colors.black)),
       );
     } else {
       return ListView.builder(

@@ -4,7 +4,6 @@ import 'package:blaulichtplaner_app/shift_vote/shift_vote.dart';
 import 'package:blaulichtplaner_app/shiftplan/shiftplan_day.dart';
 import 'package:blaulichtplaner_app/shiftplan/shiftplan_model.dart';
 import 'package:blaulichtplaner_app/shiftplan/shiftplan_month.dart';
-import 'package:blaulichtplaner_app/shiftplan/shiftplan_week.dart';
 import 'package:blaulichtplaner_app/widgets/loader.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
@@ -64,7 +63,8 @@ class ShiftplanState extends State<Shiftplan> {
     Query query = Firestore.instance
         .collection('shifts')
         .where('shiftplanRef', isEqualTo: widget.plan.selfRef)
-        .orderBy('to');
+        .where('status', isEqualTo: 'public')
+        .orderBy('from');
     _sub = query.snapshots().listen(
       (snapshot) {
         setState(() {
@@ -103,16 +103,12 @@ class ShiftplanState extends State<Shiftplan> {
             _selectedDate.add(Duration(days: 1)),
           ),
         );
-      case 2:
-        return ShiftplanMonth(selectDay: _selectDayCallback);
       case 1:
       default:
-        return ShiftplanWeek(
-          selected: _selectedDate,
-          shifts: _shifts.getShiftsBetween(
-            _selectedDate,
-            _selectedDate.add(Duration(days: 7)),
-          ),
+        return ShiftplanMonth(
+          plan: widget.plan,
+          shiftHolder: _shifts,
+          selectDay: _selectDayCallback,
         );
     }
   }
@@ -122,15 +118,6 @@ class ShiftplanState extends State<Shiftplan> {
       _selectedDate =
           DateTime(selected.year, selected.month, selected.day, 0, 0);
       _selectedTab = 0;
-    });
-  }
-
-  _selectWeekCallback(DateTime selected) {
-    DateTime date = DateTime(selected.year, selected.month, selected.day, 0, 0);
-    setState(() {
-      _selectedDate =
-          date.subtract(Duration(days: (date.weekday - 1)));
-      _selectedTab = 1;
     });
   }
 
@@ -144,84 +131,45 @@ class ShiftplanState extends State<Shiftplan> {
   }
 
   Widget _createDateNavigation() {
-    List<Widget> navigation = <Widget>[];
-
-    switch (_selectedTab) {
-      case 0:
-        navigation.addAll(
-          <Widget>[
-            IconButton(
-              icon: Icon(Icons.arrow_back),
-              onPressed: () {
-                setState(() {
-                  _selectedDate = _selectedDate.subtract(Duration(days: 1));
-                });
-              },
-              color: Colors.white,
-            ),
-            FlatButton(
-              child: Text(
-                DateFormat.yMMMd("de_DE").format(_selectedDate),
-                style: TextStyle(color: Colors.white),
-              ),
-              onPressed: () {
-                showDatePicker(
-                        context: context,
-                        firstDate: DateTime.now().subtract(Duration(days: 365)),
-                        lastDate: DateTime.now().add(Duration(days: 365)),
-                        initialDate: _selectedDate)
-                    .then((DateTime date) {
-                  setState(() {
-                    _selectedDate = date;
-                  });
-                });
-              },
-            ),
-            IconButton(
-                icon: Icon(Icons.arrow_forward),
-                onPressed: () {
-                  setState(() {
-                    _selectedDate = _selectedDate.add(Duration(days: 1));
-                  });
-                },
-                color: Colors.white)
-          ],
-        );
-        break;
-      case 1:
-        navigation.addAll(<Widget>[
-          IconButton(
-            icon: Icon(Icons.arrow_back),
-            onPressed: () {
+    if (_selectedTab == 0) {
+      List<Widget> navigation = <Widget>[
+        IconButton(
+          icon: Icon(Icons.arrow_back),
+          onPressed: () {
+            setState(() {
+              _selectedDate = _selectedDate.subtract(Duration(days: 1));
+            });
+          },
+          color: Colors.white,
+        ),
+        FlatButton(
+          child: Text(
+            DateFormat.yMMMd("de_DE").format(_selectedDate),
+            style: TextStyle(color: Colors.white),
+          ),
+          onPressed: () {
+            showDatePicker(
+                    context: context,
+                    firstDate: DateTime.now().subtract(Duration(days: 365)),
+                    lastDate: DateTime.now().add(Duration(days: 365)),
+                    initialDate: _selectedDate)
+                .then((DateTime date) {
               setState(() {
-                _selectedDate = _selectedDate.subtract(Duration(days: 7));
+                _selectedDate = date;
               });
-            },
-            color: Colors.white,
-          ),
-          FlatButton(
-            onPressed: null,
-            child: Text(
-              _weekOfYear(),
-              style: TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ),
-          IconButton(
+            });
+          },
+        ),
+        IconButton(
             icon: Icon(Icons.arrow_forward),
             onPressed: () {
               setState(() {
-                _selectedDate = _selectedDate.add(Duration(days: 7));
+                _selectedDate = _selectedDate.add(Duration(days: 1));
               });
             },
-            color: Colors.white,
-          )
-        ]);
-    }
+            color: Colors.white)
+      ];
 
-    if (_selectedTab < 2) {
       return PreferredSize(
         preferredSize: const Size.fromHeight(48.0),
         child: Row(
@@ -249,22 +197,14 @@ class ShiftplanState extends State<Shiftplan> {
                   value: 0,
                 ),
                 DropdownMenuItem<int>(
-                  child: Text('Woche'),
-                  value: 1,
-                ),
-                DropdownMenuItem<int>(
                   child: Text('Monat'),
                   value: 2,
                 ),
               ],
               onChanged: (int val) {
-                if (val == 1) {
-                  _selectWeekCallback(_selectedDate);
-                } else {
-                  setState(() {
-                    _selectedTab = val;
-                  });
-                }
+                setState(() {
+                  _selectedTab = val;
+                });
               },
             ),
           ),

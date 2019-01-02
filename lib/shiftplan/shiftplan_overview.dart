@@ -38,7 +38,7 @@ class ShiftplanOverviewState extends State<ShiftplanOverview> {
     if (widget.hasEmployeeRoles()) {
       print("Listening for shiftplans");
       for (Role role in widget.employeeRoles) {
-        Query query = role.locationRef
+        Query query = role.companyRef
             .collection('shiftplans')
             .where('status', isEqualTo: 'public')
             .orderBy('to');

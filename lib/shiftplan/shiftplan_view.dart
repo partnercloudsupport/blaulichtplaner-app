@@ -4,6 +4,7 @@ import 'package:blaulichtplaner_app/shift_vote/shift_vote.dart';
 import 'package:blaulichtplaner_app/shiftplan/shiftplan_day.dart';
 import 'package:blaulichtplaner_app/shiftplan/shiftplan_model.dart';
 import 'package:blaulichtplaner_app/shiftplan/shiftplan_month.dart';
+import 'package:blaulichtplaner_app/widgets/date_navigation.dart';
 import 'package:blaulichtplaner_app/widgets/loader.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
@@ -22,31 +23,14 @@ class Shiftplan extends StatefulWidget {
 
 class ShiftplanState extends State<Shiftplan> {
   bool _initialized = false;
-  int _selectedTab = 0;
-  DateTime _selectedDate;
-  DateTime _startDate, _endDate;
+  bool _selectMonth = false;
+  DateTime _selectedDate = DateTime.now();
   StreamSubscription _sub;
   ShiftHolder _shifts = new ShiftHolder();
 
   @override
   void initState() {
     super.initState();
-
-    _startDate = _selectedDate = DateTime(
-      widget.plan.from.year ?? DateTime.now().year,
-      widget.plan.from.month ?? DateTime.now().month,
-      widget.plan.from.day ?? DateTime.now().day,
-      0,
-      0,
-    );
-    _endDate = DateTime(
-      widget.plan.to.year ?? DateTime.now().year,
-      widget.plan.to.month ?? DateTime.now().month,
-      widget.plan.to.day ?? DateTime.now().day,
-      0,
-      0,
-    ).add(Duration(days: 1));
-
     _initDataListeners();
   }
 
@@ -94,22 +78,20 @@ class ShiftplanState extends State<Shiftplan> {
   }
 
   Widget _buildBody() {
-    print(_selectedTab);
-    switch (_selectedTab) {
-      case 0:
-        return ShiftplanDay(
-          shifts: _shifts.getShiftsBetween(
-            _selectedDate,
-            _selectedDate.add(Duration(days: 1)),
-          ),
-        );
-      case 1:
-      default:
-        return ShiftplanMonth(
-          plan: widget.plan,
-          shiftHolder: _shifts,
-          selectDay: _selectDayCallback,
-        );
+    print(_selectMonth);
+    if (_selectMonth) {
+      return ShiftplanMonth(
+        plan: widget.plan,
+        shiftHolder: _shifts,
+        selectDay: _selectDayCallback,
+      );
+    } else {
+      return ShiftplanDay(
+        shifts: _shifts.getShiftsBetween(
+          _selectedDate,
+          _selectedDate.add(Duration(days: 1)),
+        ),
+      );
     }
   }
 
@@ -117,69 +99,21 @@ class ShiftplanState extends State<Shiftplan> {
     setState(() {
       _selectedDate =
           DateTime(selected.year, selected.month, selected.day, 0, 0);
-      _selectedTab = 0;
+      _selectMonth = false;
     });
   }
 
-  String _weekOfYear() {
-    DateTime startOfYear = new DateTime(_selectedDate.year, 1, 1, 0, 0);
-    int firstWeek = 8 - startOfYear.weekday;
-    Duration diff = _selectedDate.difference(startOfYear);
-    int weeks =
-        ((diff.inDays - firstWeek) / 7).ceil() + ((firstWeek > 3) ? 1 : 0);
-    return 'KW $weeks';
-  }
-
   Widget _createDateNavigation() {
-    if (_selectedTab == 0) {
-      List<Widget> navigation = <Widget>[
-        IconButton(
-          icon: Icon(Icons.arrow_back),
-          onPressed: () {
-            setState(() {
-              _selectedDate = _selectedDate.subtract(Duration(days: 1));
-            });
-          },
-          color: Colors.white,
-        ),
-        FlatButton(
-          child: Text(
-            DateFormat.yMMMd("de_DE").format(_selectedDate),
-            style: TextStyle(color: Colors.white),
-          ),
-          onPressed: () {
-            showDatePicker(
-                    context: context,
-                    firstDate: DateTime.now().subtract(Duration(days: 365)),
-                    lastDate: DateTime.now().add(Duration(days: 365)),
-                    initialDate: _selectedDate)
-                .then((DateTime date) {
-              setState(() {
-                _selectedDate = date;
-              });
-            });
-          },
-        ),
-        IconButton(
-            icon: Icon(Icons.arrow_forward),
-            onPressed: () {
-              setState(() {
-                _selectedDate = _selectedDate.add(Duration(days: 1));
-              });
-            },
-            color: Colors.white)
-      ];
-
+    if (_selectMonth) {
+      return null;
+    } else {
       return PreferredSize(
         preferredSize: const Size.fromHeight(48.0),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: navigation,
+        child: DateNavigation(
+          initialValue: _selectedDate,
+          onChanged: _selectDayCallback,
         ),
       );
-    } else {
-      return null;
     }
   }
 
@@ -188,26 +122,14 @@ class ShiftplanState extends State<Shiftplan> {
     return Scaffold(
       appBar: AppBar(
         actions: <Widget>[
-          DropdownButtonHideUnderline(
-            child: DropdownButton<int>(
-              value: _selectedTab,
-              items: <DropdownMenuItem<int>>[
-                DropdownMenuItem<int>(
-                  child: Text('Tag'),
-                  value: 0,
-                ),
-                DropdownMenuItem<int>(
-                  child: Text('Monat'),
-                  value: 2,
-                ),
-              ],
-              onChanged: (int val) {
-                setState(() {
-                  _selectedTab = val;
-                });
-              },
-            ),
-          ),
+          IconButton(
+            icon: Icon(_selectMonth ? Icons.view_day : Icons.view_week),
+            onPressed: () {
+              setState(() {
+                _selectMonth = !_selectMonth;
+              });
+            },
+          )
         ],
         bottom: _createDateNavigation(),
         title: Text(widget.plan.label ?? 'Dienstplan'),

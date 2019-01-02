@@ -154,18 +154,23 @@ class ShiftplanMonth extends StatelessWidget {
       row.add(
         Expanded(
           flex: 1,
-          child: Container(
-            height: 150.0,
-            decoration: BoxDecoration(
-              border: Border.all(color: Colors.grey, width: 0.25),
-            ),
-            alignment: Alignment.topCenter,
-            padding: EdgeInsets.only(top: 8.0, bottom: 8.0),
-            child: Padding(
-              padding: const EdgeInsets.all(1.0),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: shiftBadges,
+          child: GestureDetector(
+            onTap: () {
+              selectDay(day);
+            },
+            child: Container(
+              height: 150.0,
+              decoration: BoxDecoration(
+                border: Border.all(color: Colors.grey, width: 0.25),
+              ),
+              alignment: Alignment.topCenter,
+              padding: EdgeInsets.only(top: 8.0, bottom: 8.0),
+              child: Padding(
+                padding: const EdgeInsets.all(1.0),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: shiftBadges,
+                ),
               ),
             ),
           ),

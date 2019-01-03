@@ -10,8 +10,8 @@ class ShiftplanDay extends StatelessWidget {
   Widget build(BuildContext context) {
     DateFormat timeFormatter = DateFormat('EE HH:mm', 'de_DE');
     if (shifts.isEmpty) {
-      return ListTile(
-        title: Text('Keine Inhalte', style: TextStyle(color: Colors.black)),
+      return Center(
+        child: Text('Keine Inhalte', style: TextStyle(color: Colors.black)),
       );
     } else {
       return ListView.builder(
@@ -72,19 +72,29 @@ class ShiftplanDay extends StatelessWidget {
                         label: Row(
                           children: <Widget>[
                             Text(
-                              '0 / ${shifts[index].requiredEmployees}',
+                              '${shifts[index].manned ? shifts[index].requiredEmployees : '0'} / ${shifts[index].requiredEmployees}',
                               style: TextStyle(
-                                color: Colors.red,
+                                color: shifts[index].manned
+                                    ? Colors.green
+                                    : Colors.red,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
-                            Icon(Icons.person, size: 15.0,color: Colors.red,)
+                            Icon(
+                              Icons.person,
+                              size: 15.0,
+                              color: shifts[index].manned
+                                    ? Colors.green
+                                    : Colors.red,
+                            )
                           ],
                         ),
                         backgroundColor: Colors.greenAccent,
                         shape: RoundedRectangleBorder(
                             side: BorderSide(
-                              color: Colors.red,
+                              color: shifts[index].manned
+                                    ? Colors.green
+                                    : Colors.red,
                               width: 1.0,
                               style: BorderStyle.solid,
                             ),

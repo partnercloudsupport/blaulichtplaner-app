@@ -24,40 +24,57 @@ class _InvitationState extends State<Invitation> {
     setState(() {
       _saving = true;
     });
-    DocumentReference userRef =
-        Firestore.instance.collection('users').document(widget.user.uid);
-    QuerySnapshot snapshot = await userRef
-        .collection('roles')
-        .where('reference', isEqualTo: widget.invitationModel.employeeRef)
-        .where('type', isEqualTo: 'employee')
-        .getDocuments();
-    if (snapshot.documents.isEmpty) {
-      WriteBatch batch = Firestore.instance.batch();
-      Map<String, dynamic> roleData = {};
-      roleData['role'] = 'user';
-      roleData['type'] = 'employee';
-      roleData['created'] = DateTime.now();
-      roleData['reference'] = widget.invitationModel.employeeRef;
-      roleData['companyRef'] = widget.invitationModel.companyRef;
-      roleData['companyLabel'] = widget.invitationModel.companyLabel;
+    try {
+      DocumentReference userRef =
+          Firestore.instance.collection('users').document(widget.user.uid);
+      QuerySnapshot snapshot = await userRef
+          .collection('roles')
+          .where('reference', isEqualTo: widget.invitationModel.employeeRef)
+          .where('type', isEqualTo: 'employee')
+          .getDocuments();
+      if (snapshot.documents.isEmpty) {
+        WriteBatch batch = Firestore.instance.batch();
+        Map<String, dynamic> roleData = {};
+        roleData['role'] = 'user';
+        roleData['type'] = 'employee';
+        roleData['created'] = DateTime.now();
+        roleData['reference'] = widget.invitationModel.employeeRef;
+        roleData['companyRef'] = widget.invitationModel.companyRef;
+        roleData['companyLabel'] = widget.invitationModel.companyLabel;
 
-      Map<String, Object> invitationData = {};
-      invitationData["accepted"] = true;
-      invitationData["acceptedOn"] = DateTime.now();
+        Map<String, Object> invitationData = {};
+        invitationData["accepted"] = true;
+        invitationData["acceptedOn"] = DateTime.now();
 
-      Map<String, Object> employeeData = {};
-      employeeData["userRef"] = userRef;
-      employeeData["invitationPending"] = false;
+        Map<String, Object> employeeData = {};
+        employeeData["userRef"] = userRef;
+        employeeData["invitationPending"] = false;
 
-      batch
-      ..setData(userRef.collection('roles').document(), roleData)
-      ..updateData(widget.invitationModel.selfRef, invitationData)
-      ..updateData(widget.invitationModel.employeeRef, employeeData);
+        batch
+          ..setData(userRef.collection('roles').document(), roleData)
+          ..updateData(widget.invitationModel.selfRef, invitationData)
+          ..updateData(widget.invitationModel.employeeRef, employeeData);
 
-      await batch.commit();
-    } else {
-      print("user has already employee role");
-      // TODO show error
+        await batch.commit();
+        Scaffold.of(context).showSnackBar(SnackBar(
+          content: Text('Einladung erfolgreich akzeptiert'),
+        ));
+      } else {
+        Map<String, Object> invitationData = {};
+        invitationData["accepted"] = true;
+        invitationData["acceptedOn"] = DateTime.now();
+        widget.invitationModel.selfRef.updateData(invitationData);
+        print("user has already employee role");
+        Scaffold.of(context).showSnackBar(SnackBar(
+          content: Text(
+              'Sie sind wurden schon einmal zu diesem Standort eingeladen.'),
+        ));
+      }
+    } catch (e) {
+      print(e);
+      Scaffold.of(context).showSnackBar(SnackBar(
+        content: Text('Einladung konnte nicht akzeptiert werden.'),
+      ));
     }
   }
 
@@ -133,7 +150,7 @@ class InvitationScreen extends StatelessWidget {
       return Center(child: CircularProgressIndicator());
     }
     if (snapshot.data.documents.isEmpty) {
-      return Center(child: Text('Keine neuen Einladungen'));
+      return Center(child: Text('Sie haben keine neuen Einladungen'));
     }
 
     return ListView.builder(

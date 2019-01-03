@@ -12,7 +12,7 @@ class ShiftplanModel {
   ShiftplanModel.fromSnapshot(DocumentSnapshot snapshot, this.companyLabel) {
     selfRef = snapshot.reference;
     from = snapshot.data["from"];
-    to = snapshot.data["from"];
+    to = snapshot.data["to"];
     status = snapshot.data["status"];
     label = snapshot.data["label"];
   }

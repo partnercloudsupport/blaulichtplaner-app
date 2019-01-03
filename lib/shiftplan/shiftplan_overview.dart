@@ -38,7 +38,7 @@ class ShiftplanOverviewState extends State<ShiftplanOverview> {
     if (widget.hasEmployeeRoles()) {
       print("Listening for shiftplans");
       for (Role role in widget.employeeRoles) {
-        Query query = role.locationRef
+        Query query = role.companyRef
             .collection('shiftplans')
             .where('status', isEqualTo: 'public')
             .orderBy('to');
@@ -78,31 +78,35 @@ class ShiftplanOverviewState extends State<ShiftplanOverview> {
 
   @override
   Widget build(BuildContext context) {
-    if(widget.hasEmployeeRoles()){
-    return LoaderBodyWidget(
-      child: ListView.builder(
-        itemBuilder: (BuildContext context, int index) {
-          return ListTile(
-            title: Text(_shiftplans.plans[index].label ?? 'Kein bla'),
-            subtitle: Text(_shiftplans.plans[index].companyLabel ?? 'Kein bla'),
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (BuildContext context) =>
-                      Shiftplan(plan: _shiftplans.plans[index]),
-                ),
-              );
-            },
-          );
-        },
-        itemCount: _shiftplans.plans.length,
-      ),
-      empty: _shiftplans.isEmpty,
-      loading: !_initialized,
-      fallbackText: 'Sie haben keine Dienstpläne',
-    );
-    } else{
+    if (widget.hasEmployeeRoles()) {
+      return LoaderBodyWidget(
+        child: ListView.builder(
+          itemBuilder: (BuildContext context, int index) {
+            return Card(
+              child: ListTile(
+                title: Text(
+                    _shiftplans.plans[index].label ?? 'Dienstplan ohne Name'),
+                subtitle: Text(_shiftplans.plans[index].companyLabel ??
+                    'Unbekannte Firma'),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (BuildContext context) =>
+                          Shiftplan(plan: _shiftplans.plans[index]),
+                    ),
+                  );
+                },
+              ),
+            );
+          },
+          itemCount: _shiftplans.plans.length,
+        ),
+        empty: _shiftplans.isEmpty,
+        loading: !_initialized,
+        fallbackText: 'Sie haben keine Dienstpläne',
+      );
+    } else {
       return NoEmployee();
     }
   }

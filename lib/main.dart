@@ -232,7 +232,6 @@ class LaunchScreenState extends State<LaunchScreen> {
         );
       case 3:
         return ShiftVotesView(
-          workAreaRoles: userManager.rolesForType("workArea"),
           employeeRoles: userManager.rolesForType("employee"),
           filter: _selectedFilterOption,
           selectedDate: _selectDate ? _selectedDate : null,

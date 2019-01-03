@@ -28,13 +28,34 @@ class AssignmentView extends StatefulWidget {
 }
 
 class AssignmentViewState extends State<AssignmentView> {
-  final List<Stream> _streams = [];
-  Stream _mergedStream;
+  final List<Loadable<AssignmentModel>> _assignments = [];
+  final List<StreamSubscription> subs = [];
+  bool _initialized = false;
 
   @override
   void initState() {
     super.initState();
     _initDataListeners();
+  }
+
+  @override
+  void didUpdateWidget(AssignmentView oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    _cancelDataListeners();
+    _assignments.clear();
+    _initDataListeners();
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    _cancelDataListeners();
+  }
+
+  void _cancelDataListeners() {
+    for (final sub in subs) {
+      sub.cancel();
+    }
   }
 
   void _initDataListeners() {
@@ -45,6 +66,7 @@ class AssignmentViewState extends State<AssignmentView> {
       for (final role in widget.employeeRoles) {
         Query query = firestore
             .collection("assignments")
+            .where("status", isEqualTo: "public")
             .where("employeeRef", isEqualTo: role.reference);
         if (widget.upcomingShifts) {
           query = query
@@ -56,20 +78,36 @@ class AssignmentViewState extends State<AssignmentView> {
               .where("to", isLessThanOrEqualTo: DateTime.now())
               .orderBy("to", descending: true);
         }
-        _streams.add(query.snapshots());
+        subs.add(query.snapshots().listen((snapshot) {
+          setState(() {
+            for (final doc in snapshot.documentChanges) {
+              final assignmentRef = doc.document.reference;
+
+              if (doc.type == DocumentChangeType.added) {
+                _assignments
+                    .add(Loadable(AssignmentModel.fromSnapshot(doc.document)));
+              } else if (doc.type == DocumentChangeType.modified) {
+                _assignments.removeWhere(
+                    (assignment) => assignment.data.selfRef == assignmentRef);
+                _assignments
+                    .add(Loadable(AssignmentModel.fromSnapshot(doc.document)));
+              } else if (doc.type == DocumentChangeType.removed) {
+                _assignments.removeWhere(
+                    (assignment) => assignment.data.selfRef == assignmentRef);
+              }
+            }
+            _assignments.sort((s1, s2) => s1.data.from.compareTo(s2.data.from));
+
+            _initialized = true;
+          });
+        }));
       }
-      _mergedStream = StreamZip(_streams);
     }
   }
 
-  @override
-  void didUpdateWidget(AssignmentView oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    _initDataListeners();
-  }
-
-  Widget _assignmentBuilder(BuildContext context, AssignmentModel assignment) {
-    Loadable loadableAssignment = Loadable(assignment);
+  Widget _assignmentBuilder(BuildContext context, int index) {
+    Loadable loadableAssignment = _assignments[index];
+    AssignmentModel assignment = loadableAssignment.data;
     final dateFormatter = DateFormat.EEEE("de_DE").add_yMd();
     final timeFormatter = DateFormat.Hm("de_DE");
 
@@ -99,7 +137,9 @@ class AssignmentViewState extends State<AssignmentView> {
             EdgeInsets.only(left: 16.0, right: 16.0, top: 0.0, bottom: 0.0),
       ),
       Padding(
-        padding: const EdgeInsets.only(left: 16.0),
+        padding: EdgeInsets.only(
+            left: 16.0,
+            bottom: assignment.from.isBefore(DateTime.now()) ? 0 : 8),
         child: Wrap(
           children: <Widget>[
             Chip(
@@ -124,7 +164,8 @@ class AssignmentViewState extends State<AssignmentView> {
     ];
 
     if (assignment.from.isBefore(DateTime.now())) {
-      cardChildren.add(LoaderWidget(
+      cardChildren.add(
+        LoaderWidget(
           loading: loadableAssignment.loading,
           padding: EdgeInsets.all(14.0),
           child: ButtonTheme.bar(
@@ -155,7 +196,9 @@ class AssignmentViewState extends State<AssignmentView> {
                 ),
               ],
             ),
-          )));
+          ),
+        ),
+      );
     }
     Widget card = Card(
       child: Column(
@@ -164,7 +207,7 @@ class AssignmentViewState extends State<AssignmentView> {
         children: cardChildren,
       ),
     );
-    Widget timeDiff = _timeDiffBuilder(assignment);
+    Widget timeDiff = _timeDiffBuilder(index);
     if (timeDiff != null) {
       return Column(
         children: <Widget>[timeDiff, card],
@@ -175,9 +218,12 @@ class AssignmentViewState extends State<AssignmentView> {
     }
   }
 
-  _timeDiffBuilder(AssignmentModel assignment) {
-    DateTime from = assignment.to;
-    DateTime to = assignment.from;
+  _timeDiffBuilder(int index) {
+    if (index == 0) {
+      return null;
+    }
+    DateTime from = _assignments[index - 1].data.to;
+    DateTime to = _assignments[index].data.from;
     Duration diff = to.difference(from);
     if (diff.inMinutes > 0) {
       String label = "";
@@ -210,28 +256,19 @@ class AssignmentViewState extends State<AssignmentView> {
     }
   }
 
-  _streamBuilder(BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
-    if (!snapshot.hasData) {
-      return CircularProgressIndicator();
-    }
-    if(snapshot.data.documents.isEmpty){
-      return Center(child: Text('Keine Dienste'));
-    }
-    return ListView.builder(
-      itemBuilder: (BuildContext context, int index) => _assignmentBuilder(
-            context,
-            AssignmentModel.fromSnapshot(snapshot.data.documents[index]),
-          ),
-      itemCount: snapshot.data.documents.length,
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     if (widget.hasEmployeeRoles()) {
-      return StreamBuilder<QuerySnapshot>(
-        stream: _mergedStream,
-        builder: _streamBuilder,
+      return LoaderBodyWidget(
+        loading: !_initialized,
+        child: ListView.builder(
+          itemBuilder: _assignmentBuilder,
+          itemCount: _assignments.length,
+        ),
+        empty: _assignments.isEmpty,
+        fallbackText: widget.upcomingShifts
+            ? "Sie haben keine zugewiesenen Schichten!"
+            : "Keine Schichten vorhanden, die eine Auswertung benötigen!",
       );
     } else {
       return NoEmployee();

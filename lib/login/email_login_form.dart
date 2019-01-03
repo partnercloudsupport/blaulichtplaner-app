@@ -70,6 +70,7 @@ class EmailLoginFormState extends State<EmailLoginForm> {
                 return 'Bitte Passwort eingeben!';
               }
             },
+            obscureText: true,
           ),
           RaisedButton(
             color: Colors.blue,

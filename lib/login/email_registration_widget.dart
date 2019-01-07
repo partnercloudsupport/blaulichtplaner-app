@@ -20,8 +20,6 @@ class EmailRegistrationScreen extends StatefulWidget {
 class EmailRegistrationScreenState extends State<EmailRegistrationScreen> {
   FirebaseUser _user;
   int _currentStep = 0;
-  bool _emailSaving = false;
-  bool _nameSaving = false;
   bool _saving = false;
   RegistrationModel _registrationModel;
 
@@ -39,13 +37,6 @@ class EmailRegistrationScreenState extends State<EmailRegistrationScreen> {
         password: _password,
       );
       _registrationModel = RegistrationModel.fromUser(_user);
-    } catch (e) {
-      print(e.toString());
-    }
-  }
-
-  _updateProfileHandler() async {
-    try {
       UserUpdateInfo info = UserUpdateInfo();
       info.displayName =
           '${_registrationModel.firstName} ${_registrationModel.lastName}';
@@ -53,13 +44,6 @@ class EmailRegistrationScreenState extends State<EmailRegistrationScreen> {
       if (!_user.isEmailVerified) {
         await _user.sendEmailVerification();
       }
-    } catch (e) {
-      print(e.toString());
-    }
-  }
-
-  _saveDatabaseHandler() async {
-    try {
       _registrationModel.termsAccepted = DateTime.now();
       _registrationModel.privacyPolicyAccepted = DateTime.now();
       await Firestore.instance
@@ -68,7 +52,11 @@ class EmailRegistrationScreenState extends State<EmailRegistrationScreen> {
           .setData(_registrationModel.createData());
       RegistrationRequest request = RegistrationRequest(IOClient());
       await request.performPostRequest(
-          _user.uid, "", "user", {"token": _registrationModel.token});
+        _user.uid,
+        "",
+        "user",
+        {"token": _registrationModel.token},
+      );
     } catch (e) {
       print(e.toString());
     }
@@ -103,21 +91,11 @@ class EmailRegistrationScreenState extends State<EmailRegistrationScreen> {
       switch (_currentStep) {
         case 0:
           setState(() {
-            _emailSaving = true;
-          });
-          await _emailRegistrationHandler();
-          setState(() {
-            _emailSaving = false;
             _currentStep += 1;
           });
           break;
         case 1:
           setState(() {
-            _nameSaving = true;
-          });
-          await _updateProfileHandler();
-          setState(() {
-            _nameSaving = false;
             _currentStep += 1;
           });
           break;
@@ -125,7 +103,7 @@ class EmailRegistrationScreenState extends State<EmailRegistrationScreen> {
           setState(() {
             _saving = true;
           });
-          await _saveDatabaseHandler();
+          await _emailRegistrationHandler();
           widget.successCallback();
           Navigator.pop(context);
           break;
@@ -134,11 +112,9 @@ class EmailRegistrationScreenState extends State<EmailRegistrationScreen> {
   }
 
   _onStepCancel() {
-    if (_currentStep > 1) {
-      setState(() {
-        _currentStep--;
-      });
-    }
+    setState(() {
+      _currentStep -= _currentStep > 0 ? 1 : 0;
+    });
   }
 
   @override
@@ -147,34 +123,28 @@ class EmailRegistrationScreenState extends State<EmailRegistrationScreen> {
       Step(
         title: Text('E-Mail und Passwort'),
         subtitle: Text('Legen Sie Ihre Login-Daten fest.'),
-        content: LoaderWidget(
-          loading: _emailSaving,
-          child: EmailRegistrationForm(
-            formKey: _emailKey,
-            onChangedEmail: (String val) {
-              _email = val;
-            },
-            onChangedPassword: (String val) {
-              _password = val;
-            },
-          ),
+        content: EmailRegistrationForm(
+          formKey: _emailKey,
+          onChangedEmail: (String val) {
+            _email = val;
+          },
+          onChangedPassword: (String val) {
+            _password = val;
+          },
         ),
       ),
       Step(
         title: Text('Persönliche Daten'),
         subtitle: Text('Passen Sie Ihre Daten an!'),
-        content: LoaderWidget(
-          loading: _nameSaving,
-          child: NameForm(
-            formKey: _nameKey,
-            registrationModel: _registrationModel,
-            onChangedFirstName: (String val) {
-              _registrationModel.firstName = val;
-            },
-            onChangedLastName: (String val) {
-              _registrationModel.lastName = val;
-            },
-          ),
+        content: NameForm(
+          formKey: _nameKey,
+          registrationModel: _registrationModel,
+          onChangedFirstName: (String val) {
+            _registrationModel.firstName = val;
+          },
+          onChangedLastName: (String val) {
+            _registrationModel.lastName = val;
+          },
         ),
       ),
       Step(

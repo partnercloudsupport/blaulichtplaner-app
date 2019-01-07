@@ -11,7 +11,6 @@ import 'package:flutter/widgets.dart';
 import 'package:intl/intl.dart';
 import 'package:blaulichtplaner_app/widgets/no_employee.dart';
 
-
 enum FilterOptions { allShifts, withoutBid, withBid, notInterested }
 
 class ShiftVotesView extends StatefulWidget {
@@ -19,11 +18,12 @@ class ShiftVotesView extends StatefulWidget {
   final FilterOptions filter;
   final DateTime selectedDate;
 
-  ShiftVotesView(
-      {Key key,
-      @required this.employeeRoles,
-      @required this.filter,
-      this.selectedDate});
+  ShiftVotesView({
+    Key key,
+    @required this.employeeRoles,
+    @required this.filter,
+    this.selectedDate,
+  });
 
   bool hasEmployeeRoles() {
     return employeeRoles != null && employeeRoles.isNotEmpty;
@@ -66,14 +66,13 @@ class ShiftVotesViewState extends State<ShiftVotesView> {
                 _shiftVoteHolder.removeVoteFromSnapshot(doc.document);
               }
             }
-            _initialized = true;
           });
         }));
         final queryStream = firestore
             .collection("shifts")
             .where("companyRef", isEqualTo: role.companyRef)
             .where("acceptBid", isEqualTo: true)
-            .where("manned",isEqualTo: false)
+            .where("manned", isEqualTo: false)
             .where("from", isGreaterThanOrEqualTo: DateTime.now())
             .snapshots();
         subs.add(queryStream.listen((snapshot) {
@@ -87,10 +86,12 @@ class ShiftVotesViewState extends State<ShiftVotesView> {
                 _shiftVoteHolder.removeShift(Shift.fromSnapshot(doc.document));
               }
             }
-            _initialized = true;
           });
         }));
       }
+      setState(() {
+        _initialized = true;
+      });
     }
   }
 
@@ -301,14 +302,14 @@ class ShiftVotesViewState extends State<ShiftVotesView> {
     );
   }
 
-  String _fallbackText() {
+  _fallbackText() {
     switch (widget.filter) {
       case FilterOptions.allShifts:
-        return 'Keine Dienste verfügbar';
+        return 'Keine Schichten verfügbar';
       case FilterOptions.notInterested:
         return 'Keine abgelehnten Schichten';
       case FilterOptions.withBid:
-        return 'Keine Dienste mit Bewerbung';
+        return 'Keine Schichten mit Bewerbung';
       case FilterOptions.withoutBid:
         return 'Keine offenen Dienste';
     }

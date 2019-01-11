@@ -1,10 +1,12 @@
 import 'package:blaulichtplaner_app/launch_screen_widget.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
 void main() {
   // debugPaintSizeEnabled = true;
-
+  Firestore firestore = Firestore.instance;
+  firestore.settings(timestampsInSnapshotsEnabled: true);
   initializeDateFormatting();
   runApp(ShiftplanApp());
 }

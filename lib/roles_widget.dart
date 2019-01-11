@@ -23,7 +23,7 @@ class RolesScreenState extends State<RolesScreen> {
   Widget _tileBuilder(BuildContext context, Role role) {
     String sinceLabel = 'Seit ' + DateFormat.yMMM("de_DE").format(role.created);
     return ListTile(
-      title: Text(role.companyLabel),
+      title: Text(role.label),
       trailing: Text(sinceLabel),
     );
   }

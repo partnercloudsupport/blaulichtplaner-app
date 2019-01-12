@@ -354,6 +354,7 @@ class LaunchScreenState extends State<LaunchScreen> {
         preferredSize: const Size.fromHeight(48.0),
         child: DateNavigation(
           initialValue: _selectedDate,
+          fromDate: _initialDate,
           onChanged: (DateTime date) {
             _selectedDate = date;
           },

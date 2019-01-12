@@ -8,7 +8,6 @@ import 'package:blaulichtplaner_app/widgets/date_navigation.dart';
 import 'package:blaulichtplaner_app/widgets/loader.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 
 class Shiftplan extends StatefulWidget {
   final ShiftplanModel plan;
@@ -111,6 +110,8 @@ class ShiftplanState extends State<Shiftplan> {
         preferredSize: const Size.fromHeight(48.0),
         child: DateNavigation(
           initialValue: _selectedDate,
+          fromDate: widget.plan.from,
+          toDate: widget.plan.to,
           onChanged: _selectDayCallback,
         ),
       );

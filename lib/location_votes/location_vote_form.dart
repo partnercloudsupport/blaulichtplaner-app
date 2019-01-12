@@ -206,41 +206,8 @@ class LocationListState extends State<LocationList> {
   Widget _buildLocationCheckbox(int index) {
     Role employeeRole = widget.employeeRoles[index];
     return LocationTile(
-      locationLabel: employeeRole.locationLabel ?? "Unbekannter Standort",
-      companyLabel: employeeRole.companyLabel ?? "Unbekannte Firma",
-      onChanged: (bool value) {
-        if (employeeRole.locationLabel != null &&
-            employeeRole.locationRef != null) {
-          if (value) {
-            userVote.addLocation(
-              employeeRole.reference,
-              employeeRole.locationRef,
-              employeeRole.locationLabel,
-            );
-            widget.addLocation(
-              employeeRole.reference,
-              employeeRole.locationRef,
-              employeeRole.locationLabel,
-            );
-          } else {
-            userVote.deleteLocation(
-              employeeRole.reference,
-              employeeRole.locationRef,
-              employeeRole.locationLabel,
-            );
-            widget.deleteLocation(
-              employeeRole.reference,
-              employeeRole.locationRef,
-              employeeRole.locationLabel,
-            );
-          }
-        } else {
-          print('locationRef and locationLabel not defined');
-        }
-      },
-      initialValue: userVote.locations.indexWhere((UserVoteLocationItem item) =>
-              item.locationRef.path == employeeRole.locationRef.path) >
-          -1,
+      locationLabel:  "Unbekannter Standort",
+      companyLabel:  "Unbekannte Firma",
     );
   }
 

@@ -13,7 +13,7 @@ class WelcomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: new WelcomeForm(successCallback: successCallback),
+      body: WelcomeForm(successCallback: successCallback),
     );
   }
 }
@@ -27,7 +27,7 @@ class WelcomeForm extends StatefulWidget {
   }) : super(key: key);
   @override
   WelcomeFormState createState() {
-    return new WelcomeFormState();
+    return WelcomeFormState();
   }
 }
 
@@ -36,10 +36,10 @@ class WelcomeFormState extends State<WelcomeForm> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
   _handleGoogleLogin() async {
-    setState(() {
-      _saving = true;
-    });
     try {
+      setState(() {
+        _saving = true;
+      });
       final GoogleSignIn _googleSignIn = GoogleSignIn(
         scopes: [
           'email',
@@ -53,130 +53,117 @@ class WelcomeFormState extends State<WelcomeForm> {
           idToken: googleAuth.idToken,
         );
         print("signed in " + user.displayName);
-      } else {
-        setState(() {
-          _saving = false;
-        });
       }
     } catch (e) {
       print(e);
+    } finally {
       setState(() {
         _saving = false;
       });
-    } finally {}
+    }
   }
 
   _handleEmailSignIn(String email, String password) async {
-    setState(() {
-      _saving = true;
-    });
     try {
-      FirebaseUser user = await _auth.signInWithEmailAndPassword(
+      setState(() {
+        _saving = true;
+      });
+      await _auth.signInWithEmailAndPassword(
         email: email,
         password: password,
       );
-      if (user != null) {
-        print("signed in " + user.displayName);
-      } else {
-        setState(() {
-          _saving = false;
-        });
-      }
     } catch (e) {
       print(e);
       Scaffold.of(context).showSnackBar(
         SnackBar(
-          content: Text('Login hat nicht geklappt'),
+          content: Text(
+              'Fehler beim Login. Bitte überprüfen Sie Ihre Daten und die Internetverbindung.'),
         ),
       );
+    } finally {
       setState(() {
         _saving = false;
       });
-    } finally {}
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Container(
       color: Colors.white,
+      constraints: BoxConstraints.expand(),
       child: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              Text(
-                'Willkommen beim Blaulichtplaner',
-                style: TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold),
-              ),
-              Text(
-                  'Bitte loggen Sie sich ein oder erstellen Sie einen Benutzer.'),
-              LoaderWidget(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[
-                    Card(
-                      child: Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: <Widget>[
-                            Text(
-                              'Einloggen',
-                              style: TextStyle(
-                                  fontWeight: FontWeight.bold, fontSize: 18.0),
-                            ),
-                            EmailLoginForm(emailLogin: _handleEmailSignIn),
-                            FlatButton(
-                              onPressed: _handleGoogleLogin,
-                              child: Text("Mit Google-Konto anmelden"),
-                            ),
-                          ],
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: 16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                LoaderWidget(
+                  child: Padding(
+                    padding: EdgeInsets.all(16.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: <Widget>[
+                        Center(
+                          child: Text(
+                            'Willkommen beim Blaulichtplaner',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                                fontSize: 20.0, fontWeight: FontWeight.bold),
+                          ),
                         ),
-                      ),
+                        Center(
+                          child: Text(
+                            'Bitte loggen Sie sich ein oder erstellen Sie einen Benutzer.',
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                        Padding(
+                          padding: EdgeInsets.only(top: 16),
+                          child: Text(
+                            'Einloggen',
+                            style: TextStyle(
+                                fontWeight: FontWeight.bold, fontSize: 18.0),
+                          ),
+                        ),
+                        EmailLoginForm(emailLogin: _handleEmailSignIn),
+                        FlatButton(
+                          onPressed: _handleGoogleLogin,
+                          child: Text("Mit Google-Konto anmelden"),
+                        ),
+                        Text(
+                          'Registrieren',
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold, fontSize: 18.0),
+                        ),
+                        FlatButton(
+                          onPressed: _handleGoogleLogin,
+                          child: Text('Mit Google-Konto registrieren'),
+                        ),
+                        FlatButton(
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (BuildContext context) =>
+                                    EmailRegistrationScreen(
+                                      successCallback: widget.successCallback,
+                                    ),
+                              ),
+                            );
+                          },
+                          child: Text('Mit E-Mail und Passwort registerieren'),
+                        )
+                      ],
                     ),
-                    Card(
-                      child: Padding(
-                        padding: EdgeInsets.all(16.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: <Widget>[
-                            Text(
-                              'Registrieren',
-                              style: TextStyle(
-                                  fontWeight: FontWeight.bold, fontSize: 18.0),
-                            ),
-                            FlatButton(
-                              onPressed: _handleGoogleLogin,
-                              child: Text('Mit Google-Konto registrieren'),
-                            ),
-                            FlatButton(
-                              onPressed: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (BuildContext context) =>
-                                        EmailRegistrationScreen(
-                                          successCallback:
-                                              widget.successCallback,
-                                        ),
-                                  ),
-                                );
-                              },
-                              child:
-                                  Text('Mit E-Mail und Passwort registerieren'),
-                            )
-                          ],
-                        ),
-                      ),
-                    )
-                  ],
+                  ),
+                  loading: _saving,
+                  padding: EdgeInsets.only(top: 16.0),
                 ),
-                loading: _saving,
-                padding: EdgeInsets.only(top: 16.0),
-              ),
-            ],
-            mainAxisAlignment: MainAxisAlignment.center,
+              ],
+              mainAxisAlignment: MainAxisAlignment.center,
+            ),
           ),
         ),
       ),

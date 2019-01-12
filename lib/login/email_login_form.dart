@@ -11,40 +11,9 @@ class EmailLoginForm extends StatefulWidget {
 }
 
 class EmailLoginFormState extends State<EmailLoginForm> {
-  String _password;
-  String _email;
   TextEditingController _passwordController;
   TextEditingController _emailController;
   GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  _passwordListener() {
-    setState(() {
-      _password = _passwordController.text;
-    });
-  }
-
-  _emailListener() {
-    setState(() {
-      _email = _emailController.text;
-    });
-  }
-
-  void initState() {
-    super.initState();
-    _passwordController = TextEditingController()
-      ..addListener(_passwordListener);
-    _emailController = TextEditingController()..addListener(_emailListener);
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
-    _emailController
-      ..removeListener(_emailListener)
-      ..dispose();
-    _passwordController
-      ..removeListener(_passwordListener)
-      ..dispose();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -55,6 +24,7 @@ class EmailLoginFormState extends State<EmailLoginForm> {
         children: <Widget>[
           TextFormField(
             decoration: InputDecoration(helperText: 'E-Mail'),
+            keyboardType: TextInputType.emailAddress,
             controller: _emailController,
             validator: (String value) {
               if (value.isEmpty) {
@@ -65,8 +35,8 @@ class EmailLoginFormState extends State<EmailLoginForm> {
           TextFormField(
             decoration: InputDecoration(helperText: 'Passwort'),
             controller: _passwordController,
-            validator: (String value){
-              if(value.isEmpty){
+            validator: (String value) {
+              if (value.isEmpty) {
                 return 'Bitte Passwort eingeben!';
               }
             },
@@ -76,7 +46,7 @@ class EmailLoginFormState extends State<EmailLoginForm> {
             color: Colors.blue,
             onPressed: () {
               if (_formKey.currentState.validate()) {
-                widget.emailLogin(_email, _password);
+                widget.emailLogin(_emailController.text, _passwordController.text);
               }
             },
             child: Text(

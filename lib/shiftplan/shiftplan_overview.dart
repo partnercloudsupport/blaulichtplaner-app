@@ -38,23 +38,23 @@ class ShiftplanOverviewState extends State<ShiftplanOverview> {
     if (widget.hasEmployeeRoles()) {
       print("Listening for shiftplans");
       for (Role role in widget.employeeRoles) {
-        Query query = role.companyRef
+        Query query = role.reference
             .collection('shiftplans')
             .where('status', isEqualTo: 'public')
             .orderBy('to');
         _subs.add(query.snapshots().listen((snapshot) {
           setState(() {
             for (final doc in snapshot.documentChanges) {
-              print(role.companyLabel);
+              print(role.label);
               if (doc.type == DocumentChangeType.added) {
                 _shiftplans.add(ShiftplanModel.fromSnapshot(
-                    doc.document, role.companyLabel));
+                    doc.document, role.label));
               } else if (doc.type == DocumentChangeType.modified) {
                 _shiftplans.modify(ShiftplanModel.fromSnapshot(
-                    doc.document, role.companyLabel));
+                    doc.document, role.label));
               } else if (doc.type == DocumentChangeType.removed) {
                 _shiftplans.remove(ShiftplanModel.fromSnapshot(
-                    doc.document, role.companyLabel));
+                    doc.document, role.label));
               }
             }
             _initialized = true;

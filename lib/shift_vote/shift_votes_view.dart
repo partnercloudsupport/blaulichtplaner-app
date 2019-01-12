@@ -70,7 +70,7 @@ class ShiftVotesViewState extends State<ShiftVotesView> {
         }));
         final queryStream = firestore
             .collection("shifts")
-            .where("companyRef", isEqualTo: role.companyRef)
+            .where("companyRef", isEqualTo: role.reference)
             .where("acceptBid", isEqualTo: true)
             .where("manned", isEqualTo: false)
             .where("from", isGreaterThanOrEqualTo: DateTime.now())

@@ -11,8 +11,8 @@ class EmailLoginForm extends StatefulWidget {
 }
 
 class EmailLoginFormState extends State<EmailLoginForm> {
-  TextEditingController _passwordController;
-  TextEditingController _emailController;
+  TextEditingController _passwordController = TextEditingController();
+  TextEditingController _emailController = TextEditingController();
   GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
   @override
@@ -46,7 +46,8 @@ class EmailLoginFormState extends State<EmailLoginForm> {
             color: Colors.blue,
             onPressed: () {
               if (_formKey.currentState.validate()) {
-                widget.emailLogin(_emailController.text, _passwordController.text);
+                widget.emailLogin(
+                    _emailController.text, _passwordController.text);
               }
             },
             child: Text(

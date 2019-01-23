@@ -34,7 +34,7 @@ class GoogleRegistrationScreenState extends State<GoogleRegistrationScreen> {
       UserUpdateInfo info = UserUpdateInfo();
       info.displayName =
           '${_registrationModel.firstName} ${_registrationModel.lastName}';
-      await FirebaseAuth.instance.updateProfile(info);
+      await widget.user.updateProfile(info);
       if (!widget.user.isEmailVerified) {
         await widget.user.sendEmailVerification();
       }

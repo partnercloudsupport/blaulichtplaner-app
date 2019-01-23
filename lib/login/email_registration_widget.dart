@@ -40,7 +40,7 @@ class EmailRegistrationScreenState extends State<EmailRegistrationScreen> {
       UserUpdateInfo info = UserUpdateInfo();
       info.displayName =
           '${_registrationModel.firstName} ${_registrationModel.lastName}';
-      await FirebaseAuth.instance.updateProfile(info);
+      await _user.updateProfile(info);
       if (!_user.isEmailVerified) {
         await _user.sendEmailVerification();
       }

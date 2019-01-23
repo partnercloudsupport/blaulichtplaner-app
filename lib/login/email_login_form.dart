@@ -42,17 +42,20 @@ class EmailLoginFormState extends State<EmailLoginForm> {
             },
             obscureText: true,
           ),
-          RaisedButton(
-            color: Colors.blue,
-            onPressed: () {
-              if (_formKey.currentState.validate()) {
-                widget.emailLogin(
-                    _emailController.text, _passwordController.text);
-              }
-            },
-            child: Text(
-              'Anmelden',
-              style: TextStyle(color: Colors.white),
+          Padding(
+            padding: EdgeInsets.only(top: 8),
+            child: RaisedButton(
+              color: Colors.blue,
+              onPressed: () {
+                if (_formKey.currentState.validate()) {
+                  widget.emailLogin(
+                      _emailController.text, _passwordController.text);
+                }
+              },
+              child: Text(
+                'Anmelden',
+                style: TextStyle(color: Colors.white),
+              ),
             ),
           )
         ],

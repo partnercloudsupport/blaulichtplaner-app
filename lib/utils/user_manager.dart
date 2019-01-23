@@ -7,7 +7,7 @@ class Role {
   String role;
   String type;
   DocumentReference employeeRef;
-  DateTime created;
+  Timestamp created;
 
   Role.fromSnapshot(Map<String, dynamic> data) {
     label = data["label"];

@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'package:async/async.dart';
 import 'package:blaulichtplaner_app/assignment/assignment_service.dart';
 import 'package:blaulichtplaner_app/evaluation/evaluation_editor.dart';
 import 'package:blaulichtplaner_app/utils/user_manager.dart';

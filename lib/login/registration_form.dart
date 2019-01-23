@@ -260,6 +260,7 @@ class _EmailRegistrationFormState extends State<EmailRegistrationForm> {
           TextFormField(
             decoration: InputDecoration(helperText: 'E-Mail'),
             controller: _emailController,
+            keyboardType: TextInputType.emailAddress,
             validator: (String value) {
               if (value.isEmpty) {
                 return 'Bitte E-Mail-Adresse eingeben!';

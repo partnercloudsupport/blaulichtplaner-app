@@ -6,9 +6,16 @@ typedef void OnChangedDate(DateTime date);
 class DateNavigation extends StatefulWidget {
   final OnChangedDate onChanged;
   final DateTime initialValue;
+  final DateTime fromDate;
+  final DateTime toDate;
 
-  const DateNavigation({Key key, @required this.onChanged, this.initialValue})
-      : super(key: key);
+  const DateNavigation({
+    Key key,
+    @required this.onChanged,
+    @required this.initialValue,
+    @required this.fromDate,
+    this.toDate,
+  }) : super(key: key);
   @override
   DateNavigationState createState() {
     return new DateNavigationState();
@@ -17,21 +24,22 @@ class DateNavigation extends StatefulWidget {
 
 class DateNavigationState extends State<DateNavigation> {
   DateTime _selectedDate;
-  DateTime _initialDate;
+  DateTime _fromDate;
+  DateTime _toDate;
 
   @override
   void initState() {
-    _initialDate = widget.initialValue ?? DateTime.now();
-    _selectedDate = _initialDate;
+    _fromDate = widget.fromDate ?? DateTime.now();
+    _selectedDate = widget.initialValue ?? DateTime.now();
+    _toDate = widget.toDate ?? DateTime.now().add(Duration(days: 365));
     super.initState();
   }
 
   _subtractDay() {
     setState(() {
       _selectedDate =
-          (_selectedDate.subtract(Duration(days: 1)).compareTo(_initialDate) >=
-                  0)
-              ? _initialDate
+          (_selectedDate.subtract(Duration(days: 1)).compareTo(_fromDate) >= 0)
+              ? _fromDate
               : _selectedDate.subtract(Duration(days: 1));
     });
     widget.onChanged(_selectedDate);
@@ -47,8 +55,8 @@ class DateNavigationState extends State<DateNavigation> {
   _selectDay() {
     showDatePicker(
             context: context,
-            firstDate: _initialDate.subtract(Duration(days: 1)),
-            lastDate: DateTime.now().add(Duration(days: 365)),
+            firstDate: _fromDate.subtract(Duration(days: 1)),
+            lastDate: _toDate,
             initialDate: _selectedDate)
         .then((DateTime date) {
       setState(() {
@@ -61,8 +69,7 @@ class DateNavigationState extends State<DateNavigation> {
   @override
   Widget build(BuildContext context) {
     bool showMinusButton =
-        (_selectedDate.subtract(Duration(days: 1)).compareTo(_initialDate) >=
-            0);
+        (_selectedDate.subtract(Duration(days: 1)).compareTo(_fromDate) >= 0);
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceAround,
       crossAxisAlignment: CrossAxisAlignment.center,

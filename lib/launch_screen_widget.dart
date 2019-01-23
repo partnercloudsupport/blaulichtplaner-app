@@ -186,10 +186,6 @@ class LaunchScreenState extends State<LaunchScreen> {
     }
   }
 
-  bool _hasEmployeeRoles() =>
-      userManager.rolesForType("employee") != null &&
-      userManager.rolesForType("employee").isNotEmpty;
-
   void _logout() async {
     FirebaseUser user = await _auth.currentUser();
     if (user != null) {
@@ -208,19 +204,19 @@ class LaunchScreenState extends State<LaunchScreen> {
     switch (selectedTab) {
       case 0:
         return AssignmentView(
-            employeeRoles: userManager.rolesForType("employee"),
+            employeeRoles: userManager.employeeRoles(),
             upcomingShifts: upcomingShifts);
       case 1:
         return ShiftplanOverview(
-          employeeRoles: userManager.rolesForType("employee"),
+          employeeRoles: userManager.employeeRoles(),
         );
       case 2:
         return LocationVotesView(
-          employeeRoles: userManager.rolesForType("employee"),
+          employeeRoles: userManager.employeeRoles(),
         );
       case 3:
         return ShiftVotesView(
-          employeeRoles: userManager.rolesForType("employee"),
+          employeeRoles: userManager.employeeRoles(),
           filter: _selectedFilterOption,
           selectedDate: _selectDate ? _selectedDate : null,
         );
@@ -257,14 +253,14 @@ class LaunchScreenState extends State<LaunchScreen> {
         return <Widget>[
           IconButton(
             icon: Icon(Icons.add),
-            onPressed: _hasEmployeeRoles()
+            onPressed: userManager.hasEmployeeRoles()
                 ? () {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
                         builder: (BuildContext context) {
                           return LocationVoteEditor(
-                            employeeRoles: userManager.rolesForType("employee"),
+                            employeeRoles: userManager.employeeRoles(),
                             userVote: UserVote(),
                           );
                         },
@@ -377,7 +373,7 @@ class LaunchScreenState extends State<LaunchScreen> {
           );
         },
         logoutCallback: _logout,
-        employeeRoles: userManager.rolesForType("employee"),
+        employeeRoles: userManager.employeeRoles(),
       ),
       body: _createBody(),
       bottomNavigationBar: BottomNavigationBar(

@@ -66,7 +66,7 @@ class AssignmentViewState extends State<AssignmentView> {
         Query query = firestore
             .collection("assignments")
             .where("status", isEqualTo: "public")
-            .where("employeeRef", isEqualTo: role.reference);
+            .where("employeeRef", isEqualTo: role.employeeRef);
         if (widget.upcomingShifts) {
           query = query
               .where("to", isGreaterThanOrEqualTo: DateTime.now())
@@ -77,6 +77,8 @@ class AssignmentViewState extends State<AssignmentView> {
               .where("to", isLessThanOrEqualTo: DateTime.now())
               .orderBy("to", descending: true);
         }
+        print("Assignments query: $query");
+        
         subs.add(query.snapshots().listen((snapshot) {
           setState(() {
             for (final doc in snapshot.documentChanges) {

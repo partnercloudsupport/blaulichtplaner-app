@@ -35,14 +35,21 @@ class UserManager {
   void initWithDocuments(FirebaseUser user, List<DocumentSnapshot> docs) {
     _user = user;
     for (final doc in docs) {
-      final type = doc.data["type"];
-      List<Role> typeRoles = _userRoles.putIfAbsent(type, () => []);
-      typeRoles.add(Role.fromSnapshot(doc.data));
+      final role = doc.data["role"];
+      List<Role> typeRoles = _userRoles.putIfAbsent(role, () => []);
+      Role userRole = Role.fromSnapshot(doc.data);
+      print("Adding role: ${userRole.type}, employeeRef: ${userRole.employeeRef}");
+      typeRoles.add(userRole);
     }
   }
 
-  List<Role> rolesForType(String type) {
-    return _userRoles.containsKey(type) ? _userRoles[type] : [];
+  List<Role> employeeRoles() {
+    return _userRoles.containsKey("employee") ? _userRoles["employee"] : [];
+  }
+
+  bool hasEmployeeRoles() {
+    List<Role> roles = employeeRoles();
+    return roles.isNotEmpty;
   }
 
   void clearRoles() {
@@ -51,7 +58,7 @@ class UserManager {
 
   @deprecated
   Role getRoleForTypeAndReference(String type, DocumentReference reference) {
-    final roles = rolesForType(type);
+    final roles = employeeRoles();
     return roles.firstWhere((role) => role.reference == reference);
   }
 }

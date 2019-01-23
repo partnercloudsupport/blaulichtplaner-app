@@ -1,4 +1,3 @@
-
 import 'package:blaulichtplaner_app/assignment/assignment_view.dart';
 import 'package:blaulichtplaner_app/invitation/invitation_view.dart';
 import 'package:blaulichtplaner_app/location_votes/location_vote.dart';
@@ -9,6 +8,7 @@ import 'package:blaulichtplaner_app/login/welcome_widget.dart';
 import 'package:blaulichtplaner_app/shift_vote/shift_votes_view.dart';
 import 'package:blaulichtplaner_app/shiftplan/shiftplan_overview.dart';
 import 'package:blaulichtplaner_app/utils/user_manager.dart';
+import 'package:blaulichtplaner_app/utils/utils.dart';
 import 'package:blaulichtplaner_app/widgets/date_navigation.dart';
 import 'package:blaulichtplaner_app/widgets/drawer.dart';
 import 'package:blaulichtplaner_app/widgets/loader.dart';
@@ -143,10 +143,17 @@ class LaunchScreenState extends State<LaunchScreen> {
     super.initState();
     _initialDate = _selectedDate = DateTime.now();
 
-    _auth.onAuthStateChanged.listen((user) {
+    _auth.onAuthStateChanged.listen((user) async {
       print("onAuthStateChanged: $user");
-      _updateUserData(user);
-      _isRegistered(user);
+      try {
+        await _updateUserData(user);
+        await _isRegistered(user);
+      } catch (e) {
+        showErrorDialog(this.context, e);
+        setState(() {
+          _initialized = true;
+        });
+      }
     });
   }
 
@@ -156,7 +163,8 @@ class LaunchScreenState extends State<LaunchScreen> {
       Firestore firestore = Firestore.instance;
       DocumentReference userRef = firestore.document("users/${user.uid}");
       final docQuery = await firestore
-          .collection("roles").where("userRef",isEqualTo: userRef)
+          .collection("roles")
+          .where("userRef", isEqualTo: userRef)
           .getDocuments();
 
       userManager.initWithDocuments(user, docQuery.documents);

@@ -32,13 +32,36 @@ class UserManager {
 
   UserManager._();
 
-  void initWithDocuments(FirebaseUser user, List<DocumentSnapshot> docs) {
-    _user = user;
+  ///  returns true if the user is registered
+  Future<bool> updateUserData(FirebaseUser user) async {
+    clearRoles();
+    if (user != null) {
+      _user = user;
+      Firestore firestore = Firestore.instance;
+      DocumentReference userRef = firestore.document("users/${user.uid}");
+      if ((await userRef.get()).exists) {
+        final docQuery = await firestore
+            .collection("roles")
+            .where("userRef", isEqualTo: userRef)
+            .getDocuments();
+        _initWithDocuments(docQuery.documents);
+        return true;
+      } else {
+        return false;
+      }
+    } else {
+      _user = null;
+      return false;
+    }
+  }
+
+  void _initWithDocuments(List<DocumentSnapshot> docs) {
     for (final doc in docs) {
       final role = doc.data["role"];
       List<Role> typeRoles = _userRoles.putIfAbsent(role, () => []);
       Role userRole = Role.fromSnapshot(doc.data);
-      print("Adding role: ${userRole.type}, employeeRef: ${userRole.employeeRef}");
+      print(
+          "Adding role: ${userRole.type}, employeeRef: ${userRole.employeeRef}");
       typeRoles.add(userRole);
     }
   }

@@ -2,8 +2,8 @@ import 'package:blaulichtplaner_app/shift_vote/shift_vote.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class ShiftplanModel {
-  DateTime from;
-  DateTime to;
+  Timestamp from;
+  Timestamp to;
   String status;
   String label;
   String companyLabel;
@@ -15,6 +15,16 @@ class ShiftplanModel {
     to = snapshot.data["to"];
     status = snapshot.data["status"];
     label = snapshot.data["label"];
+  }
+
+  DateTime startOfPlan() {
+    DateTime fromDateTime = from.toDate();
+    return fromDateTime.subtract(Duration(days: fromDateTime.weekday - 1));
+  }
+
+  DateTime endOfPlan() {
+    DateTime toDateTime = to.toDate();
+    return toDateTime.add(Duration(days: 7 - toDateTime.weekday));
   }
 }
 
@@ -86,10 +96,6 @@ class ShiftHolder {
   List<Shift> get shifts => _shifts;
 
   List<Shift> getShiftsBetween(DateTime from, DateTime to) {
-    return _shifts
-        .where((Shift a) =>
-            (a.from.isAfter(from) || a.from.isAtSameMomentAs(from)) &&
-            (a.from.isBefore(to) || a.from.isAtSameMomentAs(to)))
-        .toList();
+    return _shifts.where((Shift a) => a.isFromBetween(from, to)).toList();
   }
 }

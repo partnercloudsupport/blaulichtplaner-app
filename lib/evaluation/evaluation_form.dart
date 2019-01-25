@@ -1,22 +1,29 @@
 import 'package:blaulichtplaner_app/widgets/date_time_picker.dart';
 import 'package:blaulichtplaner_app/widgets/loader.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
 class EvaluationModel {
-  DateTime originalFrom;
-  DateTime originalTo;
-  DateTime actualFrom;
-  DateTime actualTo;
+  Timestamp originalFrom;
+  Timestamp originalTo;
+  Timestamp actualFrom;
+  Timestamp actualTo;
   int reasonOvertime = 0;
   String remarks;
   List<AssignmentTask> tasks = [];
+
+  bool isOvertime() {
+    return actualTo != null &&
+        originalTo != null &&
+        actualTo.toDate().isAfter(originalTo.toDate());
+  }
 }
 
 class AssignmentTask {
   String type = "assignment";
   String reference;
   String remarks;
-  DateTime taskTime = DateTime.now();
+  Timestamp taskTime = Timestamp.now();
 
   AssignmentTask(this.reference);
 }
@@ -157,11 +164,11 @@ class EvaluationFormState extends State<EvaluationForm> {
       ),
       DateTimePickerWidget(
         fixedDates: false,
-        originalDateTime: model.originalFrom,
-        dateTime: model.actualFrom,
+        originalDateTime: model.originalFrom?.toDate(),
+        dateTime: model.actualFrom?.toDate(),
         dateTimeChanged: (dateTime) {
           setState(() {
-            model.actualFrom = dateTime;
+            model.actualFrom = Timestamp.fromDate(dateTime);
           });
         },
       ),
@@ -174,21 +181,22 @@ class EvaluationFormState extends State<EvaluationForm> {
       ),
       DateTimePickerWidget(
           fixedDates: false,
-          originalDateTime: model.originalTo,
-          dateTime: model.actualTo,
+          originalDateTime: model.originalTo?.toDate(),
+          dateTime: model.actualTo?.toDate(),
           dateTimeChanged: (dateTime) {
             setState(() {
-              model.actualTo = dateTime;
+              model.actualTo = Timestamp.fromDate(dateTime);
             });
           }),
       OvertimeWidget(
-          changeCallback: (value) {
-            setState(() {
-              model.reasonOvertime = value;
-            });
-          },
-          startValue: model.reasonOvertime,
-          overtime: model.actualTo.isAfter(model.originalTo)),
+        changeCallback: (value) {
+          setState(() {
+            model.reasonOvertime = value;
+          });
+        },
+        startValue: model.reasonOvertime,
+        overtime: model.isOvertime(),
+      ),
       Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: <Widget>[
         Text("Einsatznummern"),
         IconButton(
@@ -225,7 +233,7 @@ class EvaluationFormState extends State<EvaluationForm> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: <Widget>[
               RaisedButton(
-                onPressed: DateTime.now().isAfter(model.actualTo)
+                onPressed: DateTime.now().isAfter(model.actualTo?.toDate())
                     ? () {
                         setState(() {
                           _saving = true;

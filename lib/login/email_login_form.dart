@@ -4,8 +4,11 @@ typedef void EmailLoginHandler(String email, String password);
 
 class EmailLoginForm extends StatefulWidget {
   final EmailLoginHandler emailLogin;
+  final bool loginInProgress;
 
-  const EmailLoginForm({Key key, @required this.emailLogin}) : super(key: key);
+  EmailLoginForm(
+      {Key key, @required this.emailLogin, @required this.loginInProgress})
+      : super(key: key);
   @override
   State<StatefulWidget> createState() => EmailLoginFormState();
 }
@@ -42,22 +45,28 @@ class EmailLoginFormState extends State<EmailLoginForm> {
             },
             obscureText: true,
           ),
-          Padding(
-            padding: EdgeInsets.only(top: 8),
-            child: RaisedButton(
-              color: Colors.blue,
-              onPressed: () {
-                if (_formKey.currentState.validate()) {
-                  widget.emailLogin(
-                      _emailController.text, _passwordController.text);
-                }
-              },
-              child: Text(
-                'Anmelden',
-                style: TextStyle(color: Colors.white),
+          Visibility(
+            visible: !widget.loginInProgress,
+            child: Padding(
+              padding: EdgeInsets.only(top: 8),
+              child: RaisedButton(
+                color: Colors.blue,
+                onPressed: () {
+                  if (_formKey.currentState.validate()) {
+                    widget.emailLogin(
+                        _emailController.text, _passwordController.text);
+                  }
+                },
+                child: Text(
+                  'Anmelden',
+                  style: TextStyle(color: Colors.white),
+                ),
               ),
             ),
-          )
+          ),
+          Visibility(
+              visible: widget.loginInProgress,
+              child: Center(child: CircularProgressIndicator()))
         ],
       ),
     );

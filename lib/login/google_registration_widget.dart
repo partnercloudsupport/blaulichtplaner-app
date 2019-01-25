@@ -1,4 +1,5 @@
 import 'package:blaulichtplaner_app/api_service.dart';
+import 'package:blaulichtplaner_app/login/registration_service.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -8,9 +9,7 @@ import '../widgets/loader.dart';
 
 class GoogleRegistrationScreen extends StatefulWidget {
   final FirebaseUser user;
-  final Function successCallback;
-  GoogleRegistrationScreen({Key key, @required this.user, this.successCallback})
-      : super(key: key);
+  GoogleRegistrationScreen({Key key, @required this.user}) : super(key: key);
 
   @override
   State<StatefulWidget> createState() => GoogleRegistrationScreenState();
@@ -50,8 +49,8 @@ class GoogleRegistrationScreenState extends State<GoogleRegistrationScreen> {
 
   _saveDatabaseHandler() async {
     try {
-      _registrationModel.termsAccepted = DateTime.now();
-      _registrationModel.privacyPolicyAccepted = DateTime.now();
+      _registrationModel.termsAccepted = Timestamp.now();
+      _registrationModel.privacyPolicyAccepted = Timestamp.now();
       await Firestore.instance
           .collection('registrations')
           .document(widget.user.uid)
@@ -108,7 +107,7 @@ class GoogleRegistrationScreenState extends State<GoogleRegistrationScreen> {
             _saving = true;
           });
           await _saveDatabaseHandler();
-          widget.successCallback();
+          Navigator.pop(context, RegistrationResult(widget.user));
           break;
       }
     }
@@ -133,7 +132,6 @@ class GoogleRegistrationScreenState extends State<GoogleRegistrationScreen> {
             onChangedLastName: (String val) {
               _registrationModel.lastName = val;
             },
-            
           ),
         ),
       ),

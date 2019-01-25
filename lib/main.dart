@@ -24,7 +24,7 @@ class ShiftplanApp extends StatelessWidget {
       ),
       home: LaunchScreen(),
       debugShowMaterialGrid: false,
-      debugShowCheckedModeBanner: true,
+      debugShowCheckedModeBanner: false,
     );
   }
 }

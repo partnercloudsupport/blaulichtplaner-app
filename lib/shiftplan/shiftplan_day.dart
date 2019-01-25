@@ -16,8 +16,10 @@ class ShiftplanDay extends StatelessWidget {
     } else {
       return ListView.builder(
         itemBuilder: (BuildContext context, int index) {
+          DateTime fromDateTime = shifts[index].from.toDate();
+          DateTime toDateTime = shifts[index].to.toDate();
           String timeLabel =
-              'Schicht ${timeFormatter.format(shifts[index].from)} bis ${timeFormatter.format(shifts[index].to)}';
+              'Schicht ${timeFormatter.format(fromDateTime)} bis ${timeFormatter.format(toDateTime)}';
           return Card(
             color: Colors.greenAccent,
             child: Column(

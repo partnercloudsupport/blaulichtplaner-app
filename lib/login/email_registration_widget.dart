@@ -1,4 +1,5 @@
 import 'package:blaulichtplaner_app/api_service.dart';
+import 'package:blaulichtplaner_app/login/registration_service.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:http/http.dart';
@@ -7,10 +8,6 @@ import '../widgets/loader.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class EmailRegistrationScreen extends StatefulWidget {
-  final Function successCallback;
-
-  const EmailRegistrationScreen({Key key, @required this.successCallback})
-      : super(key: key);
   @override
   State<StatefulWidget> createState() {
     return EmailRegistrationScreenState();
@@ -18,7 +15,6 @@ class EmailRegistrationScreen extends StatefulWidget {
 }
 
 class EmailRegistrationScreenState extends State<EmailRegistrationScreen> {
-  FirebaseUser _user;
   int _currentStep = 0;
   bool _saving = false;
   RegistrationModel _registrationModel;
@@ -29,38 +25,6 @@ class EmailRegistrationScreenState extends State<EmailRegistrationScreen> {
 
   String _password;
   String _email;
-
-  _emailRegistrationHandler() async {
-    try {
-      _user = await FirebaseAuth.instance.createUserWithEmailAndPassword(
-        email: _email,
-        password: _password,
-      );
-      _registrationModel = RegistrationModel.fromUser(_user);
-      UserUpdateInfo info = UserUpdateInfo();
-      info.displayName =
-          '${_registrationModel.firstName} ${_registrationModel.lastName}';
-      await _user.updateProfile(info);
-      if (!_user.isEmailVerified) {
-        await _user.sendEmailVerification();
-      }
-      _registrationModel.termsAccepted = DateTime.now();
-      _registrationModel.privacyPolicyAccepted = DateTime.now();
-      await Firestore.instance
-          .collection('registrations')
-          .document(_user.uid)
-          .setData(_registrationModel.createData());
-      RegistrationRequest request = RegistrationRequest(IOClient());
-      await request.performPostRequest(
-        _user.uid,
-        "",
-        "user",
-        {"token": _registrationModel.token},
-      );
-    } catch (e) {
-      print(e.toString());
-    }
-  }
 
   _validate() {
     switch (_currentStep) {
@@ -103,18 +67,22 @@ class EmailRegistrationScreenState extends State<EmailRegistrationScreen> {
           setState(() {
             _saving = true;
           });
-          await _emailRegistrationHandler();
-          widget.successCallback();
-          Navigator.pop(context);
+          FirebaseUser user = await registerWithEmailAndPassword(
+              _registrationModel, _email, _password);
+          Navigator.pop(context, RegistrationResult(user));
           break;
       }
     }
   }
 
   _onStepCancel() {
-    setState(() {
-      _currentStep -= _currentStep > 0 ? 1 : 0;
-    });
+    if (_currentStep == 0) {
+      Navigator.maybePop(context);
+    } else {
+      setState(() {
+        _currentStep -= _currentStep > 0 ? 1 : 0;
+      });
+    }
   }
 
   @override

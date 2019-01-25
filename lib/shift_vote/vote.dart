@@ -5,9 +5,9 @@ import 'package:blaulichtplaner_app/shift_vote/shift_vote.dart';
 
 abstract class Vote {
   bool isBid;
-  DateTime from;
-  DateTime to;
-  DateTime created;
+  Timestamp from;
+  Timestamp to;
+  Timestamp created;
   DocumentReference shiftplanRef;
   DocumentReference shiftRef;
   DocumentReference employeeRef;
@@ -45,7 +45,7 @@ class Bid extends Vote {
   Bid();
 
   Bid.fromShift(Shift shift, Role role) {
-    created = DateTime.now();
+    created = Timestamp.now();
     shiftplanRef = shift.shiftplanRef;
     shiftRef = shift.shiftRef;
     employeeRef = role.reference;
@@ -71,7 +71,7 @@ class Rejection extends Vote {
   Rejection();
 
   Rejection.fromShift(Shift shift, Role role) {
-    created = DateTime.now();
+    created = Timestamp.now();
     shiftplanRef = shift.shiftplanRef;
     shiftRef = shift.shiftRef;
     employeeRef = role.reference;

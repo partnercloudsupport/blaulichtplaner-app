@@ -5,8 +5,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 class AssignmentModel {
   DocumentReference selfRef;
-  DateTime from;
-  DateTime to;
+  Timestamp from;
+  Timestamp to;
   String workAreaLabel;
   String locationLabel;
   DocumentReference shiftRef;
@@ -23,11 +23,20 @@ class AssignmentModel {
     shiftplanRef = snapshot.data["shiftplanRef"];
     employeeRef = snapshot.data["employeeRef"];
   }
+
+  Duration toFromDifference() {
+    return to.toDate().difference(from.toDate());
+  }
+
+  bool fromIsBefore(DateTime dateTime) {
+    return from != null && from.toDate().isBefore(dateTime);
+  }
 }
 
 class AssignmentService {
   static void initModelWithEvaluation(
-      EvaluationModel model, Map<String, dynamic> data) {
+      EvaluationModel model, DocumentSnapshot snapshot) {
+    Map<String, dynamic> data = snapshot.data;
     model.actualFrom = data["actualFrom"];
     model.actualTo = data["actualTo"];
     model.reasonOvertime = data["reasonOvertime"];
@@ -89,7 +98,7 @@ class AssignmentService {
     if (query.documents.isNotEmpty) {
       final doc = query.documents.first;
       knownEvaluation = doc.reference;
-      initModelWithEvaluation(model, doc.data);
+      initModelWithEvaluation(model, doc);
     }
     return saveEvaluation(knownEvaluation, assignment, model, true);
   }
@@ -100,7 +109,7 @@ class AssignmentService {
     if (knownEvaluation == null) {
       knownEvaluation = await Firestore.instance
           .collection("evaluations")
-          .add({"created": DateTime.now()});
+          .add({"created": Timestamp.now()});
     }
 
     return Firestore.instance.runTransaction((transaction) async {

@@ -52,7 +52,7 @@ class ShiftVotesViewState extends State<ShiftVotesView> {
       for (final role in widget.employeeRoles) {
         final votesQueryStream = firestore
             .collection("shiftVotes")
-            .where("employeeRef", isEqualTo: role.reference)
+            .where("employeeRef", isEqualTo: role.employeeRef)
             .where("from", isGreaterThanOrEqualTo: DateTime.now())
             .snapshots();
         subs.add(votesQueryStream.listen((snapshot) {
@@ -151,9 +151,9 @@ class ShiftVotesViewState extends State<ShiftVotesView> {
     final dateFormatter = DateFormat.EEEE("de_DE").add_yMd();
     final timeFormatter = DateFormat.Hm("de_DE");
 
-    String dateTimeLabel = dateFormatter.format(shiftVote.from);
+    String dateTimeLabel = dateFormatter.format(shiftVote.from?.toDate());
 
-    final shiftDuration = shiftVote.to.difference(shiftVote.from);
+    final shiftDuration = shiftVote.shiftDuration();
     int shiftHours = shiftDuration.inHours;
     final minutesDuration = shiftDuration - Duration(hours: shiftHours);
     int shiftMinutes = minutesDuration.inMinutes;
@@ -162,9 +162,9 @@ class ShiftVotesViewState extends State<ShiftVotesView> {
         "h" +
         (shiftMinutes > 0 ? (" " + shiftMinutes.toString() + "m") : "");
 
-    String timeTimeLabel = timeFormatter.format(shiftVote.from) +
+    String timeTimeLabel = timeFormatter.format(shiftVote.from?.toDate()) +
         " - " +
-        timeFormatter.format(shiftVote.to) +
+        timeFormatter.format(shiftVote.to?.toDate()) +
         " (" +
         shiftDurationLabel +
         ")";

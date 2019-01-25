@@ -110,8 +110,8 @@ class ShiftplanState extends State<Shiftplan> {
         preferredSize: const Size.fromHeight(48.0),
         child: DateNavigation(
           initialValue: _selectedDate,
-          fromDate: widget.plan.from,
-          toDate: widget.plan.to,
+          fromDate: widget.plan.from.toDate(),
+          toDate: widget.plan.to.toDate(),
           onChanged: _selectDayCallback,
         ),
       );

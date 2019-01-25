@@ -38,7 +38,7 @@ class EvaluationEditorState extends State<EvaluationEditor> {
     if (query.documents.isNotEmpty) {
       final doc = query.documents.first;
       knownEvaluation = doc.reference;
-      AssignmentService.initModelWithEvaluation(model, doc.data);
+      AssignmentService.initModelWithEvaluation(model, doc);
     }
     setState(() {
       _initialized = true;

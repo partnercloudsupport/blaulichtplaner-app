@@ -99,7 +99,7 @@ class UserVoteService {
           return;
         }
       } catch (e) {
-        print(e);
+        print("location vote $e");
       }
     } else {
       print('Can not get user');

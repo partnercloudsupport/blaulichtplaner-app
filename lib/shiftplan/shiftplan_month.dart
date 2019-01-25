@@ -10,10 +10,12 @@ class ShiftBadge extends StatelessWidget {
   const ShiftBadge({Key key, this.onTap, this.shift}) : super(key: key);
   @override
   Widget build(BuildContext context) {
-    String from = shift.from.minute == 0
-        ? DateFormat('H').format(shift.from)
-        : DateFormat('H:mm').format(shift.from);
-    String to = DateFormat('H:mm').format(shift.to);
+    DateTime fromDateTime = shift.from.toDate();
+    DateTime toDateTime = shift.to.toDate();
+    String from = fromDateTime.minute == 0
+        ? DateFormat('H').format(fromDateTime)
+        : DateFormat('H:mm').format(fromDateTime);
+    String to = DateFormat('H:mm').format(toDateTime);
     return Padding(
       padding: const EdgeInsets.only(bottom: 1.0),
       child: Container(
@@ -183,8 +185,8 @@ class ShiftplanMonth extends StatelessWidget {
 
   Future<Widget> _month() async {
     List<Widget> rows = [];
-    DateTime from = plan.from.subtract(Duration(days: plan.from.weekday - 1));
-    DateTime to = plan.to.add(Duration(days: 7 - plan.to.weekday));
+    DateTime from = plan.startOfPlan();
+    DateTime to = plan.endOfPlan();
 
     for (int i = 0; i < (to.difference(from).inDays / 7); i++) {
       rows.add(_week(from.add(Duration(days: i * 7))));

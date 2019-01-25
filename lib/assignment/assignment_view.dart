@@ -69,12 +69,12 @@ class AssignmentViewState extends State<AssignmentView> {
             .where("employeeRef", isEqualTo: role.employeeRef);
         if (widget.upcomingShifts) {
           query = query
-              .where("to", isGreaterThanOrEqualTo: DateTime.now())
+              .where("to", isGreaterThanOrEqualTo: Timestamp.now())
               .orderBy("to");
         } else {
           query = query
               .where("evaluated", isEqualTo: false)
-              .where("to", isLessThanOrEqualTo: DateTime.now())
+              .where("to", isLessThanOrEqualTo: Timestamp.now())
               .orderBy("to", descending: true);
         }
         print("Assignments query: $query");
@@ -112,9 +112,9 @@ class AssignmentViewState extends State<AssignmentView> {
     final dateFormatter = DateFormat.EEEE("de_DE").add_yMd();
     final timeFormatter = DateFormat.Hm("de_DE");
 
-    String dateTimeLabel = dateFormatter.format(assignment.from);
+    String dateTimeLabel = dateFormatter.format(assignment.from?.toDate());
 
-    final shiftDuration = assignment.to.difference(assignment.from);
+    final shiftDuration = assignment.toFromDifference();
     int shiftHours = shiftDuration.inHours;
     final minutesDuration = shiftDuration - Duration(hours: shiftHours);
     int shiftMinutes = minutesDuration.inMinutes;
@@ -123,9 +123,9 @@ class AssignmentViewState extends State<AssignmentView> {
         "h" +
         (shiftMinutes > 0 ? (" " + shiftMinutes.toString() + "m") : "");
 
-    String timeTimeLabel = timeFormatter.format(assignment.from) +
+    String timeTimeLabel = timeFormatter.format(assignment.from?.toDate()) +
         " - " +
-        timeFormatter.format(assignment.to) +
+        timeFormatter.format(assignment.to?.toDate()) +
         " (" +
         shiftDurationLabel +
         ")";
@@ -140,7 +140,7 @@ class AssignmentViewState extends State<AssignmentView> {
       Padding(
         padding: EdgeInsets.only(
             left: 16.0,
-            bottom: assignment.from.isBefore(DateTime.now()) ? 0 : 8),
+            bottom: assignment.fromIsBefore(DateTime.now()) ? 0 : 8),
         child: Wrap(
           children: <Widget>[
             Chip(
@@ -164,7 +164,7 @@ class AssignmentViewState extends State<AssignmentView> {
       ),
     ];
 
-    if (assignment.from.isBefore(DateTime.now())) {
+    if (assignment.fromIsBefore(DateTime.now())) {
       cardChildren.add(
         LoaderWidget(
           loading: loadableAssignment.loading,
@@ -175,7 +175,7 @@ class AssignmentViewState extends State<AssignmentView> {
               children: <Widget>[
                 FlatButton(
                   child: Text('Finalisieren'),
-                  onPressed: DateTime.now().isAfter(assignment.to)
+                  onPressed: DateTime.now().isAfter(assignment.to?.toDate())
                       ? () {
                           setState(() {
                             loadableAssignment.loading = true;
@@ -223,8 +223,8 @@ class AssignmentViewState extends State<AssignmentView> {
     if (index == 0) {
       return null;
     }
-    DateTime from = _assignments[index - 1].data.to;
-    DateTime to = _assignments[index].data.from;
+    DateTime from = _assignments[index - 1].data.to?.toDate();
+    DateTime to = _assignments[index].data.from?.toDate();
     Duration diff = to.difference(from);
     if (diff.inMinutes > 0) {
       String label = "";

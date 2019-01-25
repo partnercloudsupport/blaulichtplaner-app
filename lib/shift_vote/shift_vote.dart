@@ -9,7 +9,7 @@ class ShiftVote {
 
   ShiftVote({this.shift, this.vote});
 
-  DateTime get from {
+  Timestamp get from {
     if (shift != null) {
       return shift.from;
     } else {
@@ -17,7 +17,7 @@ class ShiftVote {
     }
   }
 
-  DateTime get to {
+  Timestamp get to {
     if (shift != null) {
       return shift.to;
     } else {
@@ -55,6 +55,10 @@ class ShiftVote {
     } else {
       return vote.shiftRef;
     }
+  }
+
+  Duration shiftDuration() {
+    return to.toDate().difference(from.toDate());
   }
 
   bool hasShift() => shift != null;
@@ -201,9 +205,7 @@ class ShiftVoteHolder {
   Function _filterDate(DateTime selectedDate) {
     return (ShiftVote shiftVote) {
       if (selectedDate != null) {
-        return (shiftVote.shift.from.day == selectedDate.day) &&
-            (shiftVote.shift.from.month == selectedDate.month) &&
-            (shiftVote.shift.from.year == selectedDate.year);
+        return (shiftVote.shift.isFromEqual(selectedDate));
       } else {
         return true;
       }
@@ -256,8 +258,8 @@ class ShiftVoteHolder {
 class Shift {
   String id;
   DocumentReference shiftRef;
-  DateTime from;
-  DateTime to;
+  Timestamp from;
+  Timestamp to;
   String workAreaLabel;
   String locationLabel;
   DocumentReference shiftplanRef;
@@ -280,5 +282,27 @@ class Shift {
     status = snapshot.data["status"];
     manned = snapshot.data["manned"];
     requiredEmployees = snapshot.data["requiredEmployees"];
+  }
+
+  bool isFromEqual(DateTime dateTime) {
+    if (from != null) {
+      DateTime fromDateTime = from.toDate();
+      return (fromDateTime.day == dateTime.day) &&
+          (fromDateTime.month == dateTime.month) &&
+          (fromDateTime.year == dateTime.year);
+    } else {
+      return false;
+    }
+  }
+
+  bool isFromBetween(DateTime checkFrom, DateTime checkTo) {
+    if (from != null) {
+      DateTime myFrom = from.toDate();
+      return (myFrom.isAfter(checkFrom) ||
+              myFrom.isAtSameMomentAs(checkFrom)) &&
+          (myFrom.isBefore(checkTo) || myFrom.isAtSameMomentAs(checkTo));
+    } else {
+      return false;
+    }
   }
 }

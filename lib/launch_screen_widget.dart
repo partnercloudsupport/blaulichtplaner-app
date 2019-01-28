@@ -30,6 +30,7 @@ class LaunchScreen extends StatefulWidget {
 
 class LaunchScreenState extends State<LaunchScreen> {
   bool _initialized = false;
+  bool _loginInProgress = false;
   FirebaseUser _user;
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
@@ -76,9 +77,12 @@ class LaunchScreenState extends State<LaunchScreen> {
   }
 
   _login(FirebaseUser user) async {
-    // TODO show progress 
+    setState(() {
+      _loginInProgress = true;
+    });
     bool registered = await userManager.updateUserData(user);
     setState(() {
+      _loginInProgress = false;
       if (registered) {
         _user = user;
       } else {
@@ -127,7 +131,7 @@ class LaunchScreenState extends State<LaunchScreen> {
   @override
   Widget build(BuildContext context) {
     return LoaderBodyWidget(
-      loading: !_initialized,
+      loading: !_initialized || _loginInProgress,
       child: BlaulichtplanerApp(
         user: _user,
         logoutCallback: _logout,

@@ -1,4 +1,5 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:blaulichtplaner_lib/blaulichtplaner.dart';
+
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:nanoid/nanoid.dart';
@@ -10,8 +11,8 @@ class RegistrationModel {
   String firstName = '';
   String lastName = '';
   String email = '';
-  Timestamp privacyPolicyAccepted;
-  Timestamp termsAccepted;
+  DateTime privacyPolicyAccepted;
+  DateTime termsAccepted;
   String token;
 
   RegistrationModel.fromUser(FirebaseUser user) {

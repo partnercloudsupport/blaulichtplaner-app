@@ -1,12 +1,14 @@
 import 'dart:async';
 
 import 'package:blaulichtplaner_app/evaluation/evaluation_form.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:blaulichtplaner_app/firestore/firestore_flutter.dart';
+import 'package:blaulichtplaner_lib/blaulichtplaner.dart';
+
 
 class AssignmentModel {
   DocumentReference selfRef;
-  Timestamp from;
-  Timestamp to;
+  DateTime from;
+  DateTime to;
   String workAreaLabel;
   String locationLabel;
   DocumentReference shiftRef;
@@ -25,11 +27,11 @@ class AssignmentModel {
   }
 
   Duration toFromDifference() {
-    return to.toDate().difference(from.toDate());
+    return to.difference(from);
   }
 
   bool fromIsBefore(DateTime dateTime) {
-    return from != null && from.toDate().isBefore(dateTime);
+    return from != null && from.isBefore(dateTime);
   }
 }
 
@@ -88,7 +90,7 @@ class AssignmentService {
   }
 
   static Future finishAssignment(AssignmentModel assignment) async {
-    final query = await Firestore.instance
+    final query = await FirestoreImpl.instance
         .collection("evaluations")
         .where("assignmentRef", isEqualTo: assignment.selfRef)
         .getDocuments();
@@ -107,12 +109,12 @@ class AssignmentService {
       AssignmentModel assignment, EvaluationModel model, bool finish) async {
     final data = _createData(model, finish, assignment);
     if (knownEvaluation == null) {
-      knownEvaluation = await Firestore.instance
+      knownEvaluation = await FirestoreImpl.instance
           .collection("evaluations")
-          .add({"created": Timestamp.now()});
+          .add({"created": DateTime.now()});
     }
 
-    return Firestore.instance.runTransaction((transaction) async {
+    return FirestoreImpl.instance.runTransaction((transaction) async {
       print(knownEvaluation.path);
 
       await transaction.update(knownEvaluation, data);

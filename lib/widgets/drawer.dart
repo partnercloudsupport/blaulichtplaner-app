@@ -1,14 +1,14 @@
 import 'package:blaulichtplaner_app/about_widget.dart';
 import 'package:blaulichtplaner_app/roles_widget.dart';
-import 'package:blaulichtplaner_app/utils/user_manager.dart';
+import 'package:blaulichtplaner_lib/blaulichtplaner.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class DrawerWidget extends StatelessWidget {
-  final FirebaseUser user;
+  final BlpUser user;
   final Function logoutCallback;
   final Function invitationCallback;
-  final List<Role> employeeRoles;
+  final List<UserRole> employeeRoles;
 
   DrawerWidget({
     Key key,
@@ -19,8 +19,8 @@ class DrawerWidget extends StatelessWidget {
   }) : super(key: key);
 
   Widget _buildImage() {
-    if (user.photoUrl != null) {
-      return CircleAvatar(backgroundImage: NetworkImage(user.photoUrl));
+    if (user.photoURL != null) {
+      return CircleAvatar(backgroundImage: NetworkImage(user.photoURL));
     } else {
       return Icon(Icons.account_circle);
     }

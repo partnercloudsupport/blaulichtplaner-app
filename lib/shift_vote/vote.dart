@@ -1,19 +1,6 @@
 import 'dart:async';
-import 'package:blaulichtplaner_app/utils/user_manager.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:blaulichtplaner_app/shift_vote/shift_vote.dart';
-
-abstract class Vote {
-  bool isBid;
-  Timestamp from;
-  Timestamp to;
-  Timestamp created;
-  DocumentReference shiftplanRef;
-  DocumentReference shiftRef;
-  DocumentReference employeeRef;
-  String employeeLabel;
-  DocumentReference selfRef;
-}
+import 'package:blaulichtplaner_app/firestore/firestore_flutter.dart';
+import 'package:blaulichtplaner_lib/blaulichtplaner.dart';
 
 class VoteService {
   Future<DocumentReference> save(Vote vote) async {
@@ -29,7 +16,7 @@ class VoteService {
       await vote.selfRef.setData(data);
       return vote.selfRef;
     } else {
-      final collection = Firestore.instance.collection("shiftVotes");
+      final collection = FirestoreImpl.instance.collection("shiftVotes");
       final ref = await collection.add(data);
       return ref;
     }
@@ -40,54 +27,3 @@ class VoteService {
   }
 }
 
-class Bid extends Vote {
-  bool isBid = true;
-  Bid();
-
-  Bid.fromShift(Shift shift, Role role) {
-    created = Timestamp.now();
-    shiftplanRef = shift.shiftplanRef;
-    shiftRef = shift.shiftRef;
-    employeeRef = role.reference;
-    employeeLabel = role.label;
-    from = shift.from;
-    to = shift.to;
-  }
-
-  Bid.fromSnapshot(DocumentSnapshot document) {
-    shiftRef = document.data["shiftRef"];
-    shiftplanRef = document.data["shiftplanRef"];
-    employeeRef = document.data["employeeRef"];
-    selfRef = document.reference;
-    from = document.data["from"];
-    to = document.data["to"];
-    created = document.data["created"];
-    employeeLabel = document.data["employeeLabel"];
-  }
-}
-
-class Rejection extends Vote {
-  bool isBid = false;
-  Rejection();
-
-  Rejection.fromShift(Shift shift, Role role) {
-    created = Timestamp.now();
-    shiftplanRef = shift.shiftplanRef;
-    shiftRef = shift.shiftRef;
-    employeeRef = role.reference;
-    employeeLabel = role.label;
-    from = shift.from;
-    to = shift.to;
-  }
-
-  Rejection.fromSnapshot(DocumentSnapshot document) {
-    shiftRef = document.data["shiftRef"];
-    shiftplanRef = document.data["shiftplanRef"];
-    employeeRef = document.data["employeeRef"];
-    selfRef = document.reference;
-    from = document.data["from"];
-    to = document.data["to"];
-    created = document.data["created"];
-    employeeLabel = document.data["employeeLabel"];
-  }
-}

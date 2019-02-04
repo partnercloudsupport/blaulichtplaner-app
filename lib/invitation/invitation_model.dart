@@ -1,4 +1,5 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:blaulichtplaner_lib/blaulichtplaner.dart';
+
 
 class InvitationModel {
   DocumentReference selfRef;

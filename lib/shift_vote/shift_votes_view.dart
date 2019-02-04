@@ -1,11 +1,11 @@
 import 'dart:async';
 
+import 'package:blaulichtplaner_app/firestore/firestore_flutter.dart';
 import 'package:blaulichtplaner_app/shift_vote/vote.dart';
-import 'package:blaulichtplaner_app/shift_vote/shift_vote.dart';
-import 'package:blaulichtplaner_app/utils/user_manager.dart';
 import 'package:blaulichtplaner_app/utils/utils.dart';
 import 'package:blaulichtplaner_app/widgets/loader.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:blaulichtplaner_lib/blaulichtplaner.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:intl/intl.dart';
@@ -14,7 +14,7 @@ import 'package:blaulichtplaner_app/widgets/no_employee.dart';
 enum FilterOptions { allShifts, withoutBid, withBid, notInterested }
 
 class ShiftVotesView extends StatefulWidget {
-  final List<Role> employeeRoles;
+  final List<CompanyEmployeeRole> employeeRoles;
   final FilterOptions filter;
   final DateTime selectedDate;
 
@@ -37,8 +37,9 @@ class ShiftVotesView extends StatefulWidget {
 
 class ShiftVotesViewState extends State<ShiftVotesView> {
   final List<StreamSubscription> subs = [];
-  final ShiftVoteHolder _shiftVoteHolder = ShiftVoteHolder();
+  ShiftVoteHolder _shiftVoteHolder;
   bool _initialized = false;
+  List<ShiftVote> shiftVotes;
 
   @override
   void initState() {
@@ -47,9 +48,13 @@ class ShiftVotesViewState extends State<ShiftVotesView> {
   }
 
   void _initDataListeners() {
-    final firestore = Firestore.instance;
+    _shiftVoteHolder = ShiftVoteHolder(widget.employeeRoles, FirestoreImpl.instance, () {});
+    throw Exception("not implemented");
+    /*
+    final firestore = FirestoreImpl.instance;
     if (widget.hasEmployeeRoles()) {
       for (final role in widget.employeeRoles) {
+        
         final votesQueryStream = firestore
             .collection("shiftVotes")
             .where("employeeRef", isEqualTo: role.employeeRef)
@@ -92,7 +97,7 @@ class ShiftVotesViewState extends State<ShiftVotesView> {
       setState(() {
         _initialized = true;
       });
-    }
+    }*/
   }
 
   @override
@@ -145,13 +150,12 @@ class ShiftVotesViewState extends State<ShiftVotesView> {
   }
 
   Widget _listElementBuilder(BuildContext context, int index) {
-    ShiftVote shiftVote = _shiftVoteHolder.filterShiftVotes(
-        widget.filter, widget.selectedDate)[index];
+    ShiftVote shiftVote = shiftVotes[index];
 
     final dateFormatter = DateFormat.EEEE("de_DE").add_yMd();
     final timeFormatter = DateFormat.Hm("de_DE");
 
-    String dateTimeLabel = dateFormatter.format(shiftVote.from?.toDate());
+    String dateTimeLabel = dateFormatter.format(shiftVote.from);
 
     final shiftDuration = shiftVote.shiftDuration();
     int shiftHours = shiftDuration.inHours;
@@ -162,15 +166,15 @@ class ShiftVotesViewState extends State<ShiftVotesView> {
         "h" +
         (shiftMinutes > 0 ? (" " + shiftMinutes.toString() + "m") : "");
 
-    String timeTimeLabel = timeFormatter.format(shiftVote.from?.toDate()) +
+    String timeTimeLabel = timeFormatter.format(shiftVote.from) +
         " - " +
-        timeFormatter.format(shiftVote.to?.toDate()) +
+        timeFormatter.format(shiftVote.to) +
         " (" +
         shiftDurationLabel +
         ")";
 
     List<FlatButton> buttons = [];
-    if (shiftVote.hasBid()) {
+    if (shiftVote.isBid) {
       buttons.add(FlatButton(
         child: Text('Bewerbung löschen'),
         onPressed: () async {
@@ -184,7 +188,7 @@ class ShiftVotesViewState extends State<ShiftVotesView> {
           }
         },
       ));
-    } else if (shiftVote.hasRejection()) {
+    } else if (shiftVote.isRejected) {
       buttons.add(FlatButton(
         child: Text('Ablehnung löschen'),
         onPressed: () async {
@@ -203,46 +207,34 @@ class ShiftVotesViewState extends State<ShiftVotesView> {
         textColor: Colors.red,
         child: Text('Ablehnen'),
         onPressed: () async {
-          final role = UserManager.get()
-              .getRoleForTypeAndReference("employee", shiftVote.shiftplanRef);
-          if (role != null) {
-            await VoteService()
-                .save(Rejection.fromShift(shiftVote.shift, role));
-            Scaffold.of(context).showSnackBar(SnackBar(
-              content: Text('Ablehnung gespeichert.'),
-            ));
-          } else {
-            Scaffold.of(context).showSnackBar(SnackBar(
-              content: Text('Sie können sich nicht bewerben.'),
-            ));
-          }
+          EmployeeShiftVoteSave action =
+              EmployeeShiftVoteSave(FirestoreImpl.instance);
+          await action.performAction(ShiftVoteAction(shiftVote, false));
+          Scaffold.of(context).showSnackBar(SnackBar(
+            content: Text('Ablehnung gespeichert.'),
+          ));
         },
       ));
       buttons.add(FlatButton(
         child: Text('Bewerben'),
         onPressed: () async {
-          final role = UserManager.get()
-              .getRoleForTypeAndReference("employee", shiftVote.shiftplanRef);
-          if (role != null) {
-            await VoteService().save(Bid.fromShift(shiftVote.shift, role));
-            Scaffold.of(context).showSnackBar(SnackBar(
-              content: Text('Bewerbung gespeichert.'),
-            ));
-          } else {
-            Scaffold.of(context).showSnackBar(SnackBar(
-              content: Text('Sie können sich nicht bewerben.'),
-            ));
-          }
+          EmployeeShiftVoteSave action =
+              EmployeeShiftVoteSave(FirestoreImpl.instance);
+          await action.performAction(ShiftVoteAction(shiftVote, false));
+
+          Scaffold.of(context).showSnackBar(SnackBar(
+            content: Text('Bewerbung gespeichert.'),
+          ));
         },
       ));
     }
 
     IconData icon = Icons.help;
     Color color = Colors.grey;
-    if (shiftVote.hasBid()) {
+    if (shiftVote.isBid) {
       icon = Icons.check;
       color = Colors.green;
-    } else if (shiftVote.hasRejection()) {
+    } else if (shiftVote.isRejected) {
       icon = Icons.close;
       color = Colors.red;
     }
@@ -315,20 +307,23 @@ class ShiftVotesViewState extends State<ShiftVotesView> {
     }
   }
 
+  List<ShiftVote> filterShiftVotes() {
+    // TODO
+    return 
+        _shiftVoteHolder.shiftVotes;
+  }
+
   @override
   Widget build(BuildContext context) {
+    shiftVotes = filterShiftVotes();
+
     if (widget.hasEmployeeRoles()) {
       return LoaderBodyWidget(
         loading: !_initialized,
         child: ListView.builder(
-            itemCount: _shiftVoteHolder
-                .filterShiftVotes(widget.filter, widget.selectedDate)
-                .length,
-            itemBuilder: _listElementBuilder),
+            itemCount: shiftVotes.length, itemBuilder: _listElementBuilder),
         fallbackText: _fallbackText(),
-        empty: _shiftVoteHolder
-            .filterShiftVotes(widget.filter, widget.selectedDate)
-            .isEmpty,
+        empty: shiftVotes.isEmpty,
       );
     } else {
       return NoEmployee();

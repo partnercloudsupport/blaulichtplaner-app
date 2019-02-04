@@ -1,21 +1,11 @@
-import 'package:blaulichtplaner_app/assignment/assignment_view.dart';
+import 'package:blaulichtplaner_app/authentication.dart';
 import 'package:blaulichtplaner_app/blaulichtplaner_app.dart';
-import 'package:blaulichtplaner_app/invitation/invitation_view.dart';
-import 'package:blaulichtplaner_app/location_votes/location_vote.dart';
-import 'package:blaulichtplaner_app/location_votes/location_vote_editor.dart';
-import 'package:blaulichtplaner_app/location_votes/location_votes_view.dart';
 import 'package:blaulichtplaner_app/login/email_registration_widget.dart';
 import 'package:blaulichtplaner_app/login/google_registration_widget.dart';
 import 'package:blaulichtplaner_app/login/registration_service.dart';
 import 'package:blaulichtplaner_app/login/welcome_widget.dart';
-import 'package:blaulichtplaner_app/shift_vote/shift_votes_view.dart';
-import 'package:blaulichtplaner_app/shiftplan/shiftplan_overview.dart';
-import 'package:blaulichtplaner_app/utils/user_manager.dart';
-import 'package:blaulichtplaner_app/utils/utils.dart';
-import 'package:blaulichtplaner_app/widgets/date_navigation.dart';
-import 'package:blaulichtplaner_app/widgets/drawer.dart';
 import 'package:blaulichtplaner_app/widgets/loader.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:blaulichtplaner_lib/blaulichtplaner.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
@@ -29,12 +19,11 @@ class LaunchScreen extends StatefulWidget {
 }
 
 class LaunchScreenState extends State<LaunchScreen> {
+  final UserManager _userManager = UserManager();
   bool _initialized = false;
   bool _loginInProgress = false;
-  FirebaseUser _user;
   final FirebaseAuth _auth = FirebaseAuth.instance;
-
-  final UserManager userManager = UserManager.get();
+  BlpUser _user;
 
   @override
   void initState() {
@@ -45,18 +34,11 @@ class LaunchScreenState extends State<LaunchScreen> {
   void _initUser() async {
     FirebaseUser currentUser = await _auth.currentUser();
     if (currentUser != null) {
-      bool registered = await userManager.updateUserData(currentUser);
-      setState(() {
-        if (registered) {
-          _user = currentUser;
-        }
-        _initialized = true;
-      });
-    } else {
-      setState(() {
-        _initialized = true;
-      });
+      _user = await _userManager.initUser(currentUser);
     }
+    setState(() {
+      _initialized = true;
+    });
   }
 
   void _logout() async {
@@ -71,8 +53,9 @@ class LaunchScreenState extends State<LaunchScreen> {
       }
     }
     await _auth.signOut();
+    _userManager.logout();
     setState(() {
-      _user = null;
+//      _user = null;
     });
   }
 
@@ -80,14 +63,9 @@ class LaunchScreenState extends State<LaunchScreen> {
     setState(() {
       _loginInProgress = true;
     });
-    bool registered = await userManager.updateUserData(user);
+    _user = await _userManager.initUser(user);
     setState(() {
       _loginInProgress = false;
-      if (registered) {
-        _user = user;
-      } else {
-        // TODO show error or something
-      }
     });
   }
 
@@ -122,7 +100,7 @@ class LaunchScreenState extends State<LaunchScreen> {
           ));
       if (result != null) {
         setState(() {
-          _user = result.user;
+          //_user = result.user;
         });
       }
     }
@@ -132,9 +110,11 @@ class LaunchScreenState extends State<LaunchScreen> {
   Widget build(BuildContext context) {
     return LoaderBodyWidget(
       loading: !_initialized || _loginInProgress,
-      child: BlaulichtplanerApp(
+      child: UserWidget(
         user: _user,
-        logoutCallback: _logout,
+        child: BlaulichtplanerApp(
+          logoutCallback: _logout,
+        ),
       ),
       empty: _user == null,
       fallbackWidget: WelcomeScreen(

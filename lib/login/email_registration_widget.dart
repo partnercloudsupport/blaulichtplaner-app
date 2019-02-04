@@ -5,7 +5,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:http/http.dart';
 import 'registration_form.dart';
 import '../widgets/loader.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:blaulichtplaner_lib/blaulichtplaner.dart';
+
 
 class EmailRegistrationScreen extends StatefulWidget {
   @override

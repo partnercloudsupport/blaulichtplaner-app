@@ -1,16 +1,17 @@
 import 'dart:async';
 import 'package:blaulichtplaner_app/assignment/assignment_service.dart';
 import 'package:blaulichtplaner_app/evaluation/evaluation_editor.dart';
-import 'package:blaulichtplaner_app/utils/user_manager.dart';
+import 'package:blaulichtplaner_app/firestore/firestore_flutter.dart';
 import 'package:blaulichtplaner_app/widgets/loader.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:blaulichtplaner_lib/blaulichtplaner.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:intl/intl.dart';
 import 'package:blaulichtplaner_app/widgets/no_employee.dart';
 
 class AssignmentView extends StatefulWidget {
-  final List<Role> employeeRoles;
+  final List<UserRole> employeeRoles;
   final bool upcomingShifts;
 
   AssignmentView(
@@ -58,7 +59,7 @@ class AssignmentViewState extends State<AssignmentView> {
   }
 
   void _initDataListeners() {
-    final firestore = Firestore.instance;
+    final firestore = FirestoreImpl.instance;
     if (widget.hasEmployeeRoles()) {
       print("Listening for assignments: ${widget.upcomingShifts}");
 
@@ -69,12 +70,12 @@ class AssignmentViewState extends State<AssignmentView> {
             .where("employeeRef", isEqualTo: role.employeeRef);
         if (widget.upcomingShifts) {
           query = query
-              .where("to", isGreaterThanOrEqualTo: Timestamp.now())
+              .where("to", isGreaterThanOrEqualTo: DateTime.now())
               .orderBy("to");
         } else {
           query = query
               .where("evaluated", isEqualTo: false)
-              .where("to", isLessThanOrEqualTo: Timestamp.now())
+              .where("to", isLessThanOrEqualTo: DateTime.now())
               .orderBy("to", descending: true);
         }
         print("Assignments query: $query");
@@ -112,7 +113,7 @@ class AssignmentViewState extends State<AssignmentView> {
     final dateFormatter = DateFormat.EEEE("de_DE").add_yMd();
     final timeFormatter = DateFormat.Hm("de_DE");
 
-    String dateTimeLabel = dateFormatter.format(assignment.from?.toDate());
+    String dateTimeLabel = dateFormatter.format(assignment.from);
 
     final shiftDuration = assignment.toFromDifference();
     int shiftHours = shiftDuration.inHours;
@@ -123,9 +124,9 @@ class AssignmentViewState extends State<AssignmentView> {
         "h" +
         (shiftMinutes > 0 ? (" " + shiftMinutes.toString() + "m") : "");
 
-    String timeTimeLabel = timeFormatter.format(assignment.from?.toDate()) +
+    String timeTimeLabel = timeFormatter.format(assignment.from) +
         " - " +
-        timeFormatter.format(assignment.to?.toDate()) +
+        timeFormatter.format(assignment.to) +
         " (" +
         shiftDurationLabel +
         ")";
@@ -175,7 +176,7 @@ class AssignmentViewState extends State<AssignmentView> {
               children: <Widget>[
                 FlatButton(
                   child: Text('Finalisieren'),
-                  onPressed: DateTime.now().isAfter(assignment.to?.toDate())
+                  onPressed: DateTime.now().isAfter(assignment.to)
                       ? () {
                           setState(() {
                             loadableAssignment.loading = true;
@@ -223,8 +224,8 @@ class AssignmentViewState extends State<AssignmentView> {
     if (index == 0) {
       return null;
     }
-    DateTime from = _assignments[index - 1].data.to?.toDate();
-    DateTime to = _assignments[index].data.from?.toDate();
+    DateTime from = _assignments[index - 1].data.to;
+    DateTime to = _assignments[index].data.from;
     Duration diff = to.difference(from);
     if (diff.inMinutes > 0) {
       String label = "";

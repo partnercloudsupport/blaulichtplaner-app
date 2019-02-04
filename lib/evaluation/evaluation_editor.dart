@@ -2,8 +2,10 @@ import 'dart:async';
 
 import 'package:blaulichtplaner_app/assignment/assignment_service.dart';
 import 'package:blaulichtplaner_app/evaluation/evaluation_form.dart';
+import 'package:blaulichtplaner_app/firestore/firestore_flutter.dart';
 import 'package:blaulichtplaner_app/widgets/loader.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:blaulichtplaner_lib/blaulichtplaner.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 
@@ -31,7 +33,7 @@ class EvaluationEditorState extends State<EvaluationEditor> {
   }
 
   Future initFromPreviousEvaluation(DocumentReference assignmentRef) async {
-    final query = await Firestore.instance
+    final query = await FirestoreImpl.instance
         .collection("evaluations")
         .where("assignmentRef", isEqualTo: assignmentRef)
         .getDocuments();

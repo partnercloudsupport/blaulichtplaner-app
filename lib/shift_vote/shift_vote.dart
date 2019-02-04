@@ -1,7 +1,5 @@
-import 'package:blaulichtplaner_app/shift_vote/shift_votes_view.dart';
-import 'package:blaulichtplaner_app/shift_vote/vote.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:blaulichtplaner_app/utils/user_manager.dart';
+import 'package:blaulichtplaner_lib/blaulichtplaner.dart';
+/*
 
 class ShiftVote {
   Shift shift;
@@ -9,7 +7,7 @@ class ShiftVote {
 
   ShiftVote({this.shift, this.vote});
 
-  Timestamp get from {
+  DateTime get from {
     if (shift != null) {
       return shift.from;
     } else {
@@ -17,7 +15,7 @@ class ShiftVote {
     }
   }
 
-  Timestamp get to {
+  DateTime get to {
     if (shift != null) {
       return shift.to;
     } else {
@@ -58,20 +56,21 @@ class ShiftVote {
   }
 
   Duration shiftDuration() {
-    return to.toDate().difference(from.toDate());
+    return to.difference(from);
   }
 
   bool hasShift() => shift != null;
 
-  bool hasBid() => vote != null ? (vote is Bid) : false;
-  bool hasRejection() => vote != null ? (vote is Rejection) : false;
+  bool hasBid() => vote != null ? (vote.isBid) : false;
+  bool hasRejection() => vote != null ? (!vote.isBid) : false;
 
   bool hasVote() => vote != null;
 
-  get bid => (vote is Bid) ? vote : null;
-  get rejection => (vote is Rejection) ? vote : null;
+  get bid => (vote.isBid) ? vote : null;
+  get rejection => (!vote.isBid) ? vote : null;
 }
-
+*/
+/*
 class ShiftVoteHolder {
   final List<ShiftVote> _shiftVotes = <ShiftVote>[];
 
@@ -254,55 +253,4 @@ class ShiftVoteHolder {
     }
   }
 }
-
-class Shift {
-  String id;
-  DocumentReference shiftRef;
-  Timestamp from;
-  Timestamp to;
-  String workAreaLabel;
-  String locationLabel;
-  DocumentReference shiftplanRef;
-  DocumentReference workAreaRef;
-  String publicNote;
-  String status;
-  bool manned;
-  int requiredEmployees;
-
-  Shift.fromSnapshot(DocumentSnapshot snapshot) {
-    id = snapshot.documentID;
-    shiftRef = snapshot.reference;
-    from = snapshot.data["from"];
-    to = snapshot.data["to"];
-    workAreaLabel = snapshot.data["workAreaLabel"];
-    locationLabel = snapshot.data["locationLabel"];
-    shiftplanRef = snapshot.data["shiftplanRef"];
-    workAreaRef = snapshot.data["workAreaRef"];
-    publicNote = snapshot.data["publicNote"];
-    status = snapshot.data["status"];
-    manned = snapshot.data["manned"];
-    requiredEmployees = snapshot.data["requiredEmployees"];
-  }
-
-  bool isFromEqual(DateTime dateTime) {
-    if (from != null) {
-      DateTime fromDateTime = from.toDate();
-      return (fromDateTime.day == dateTime.day) &&
-          (fromDateTime.month == dateTime.month) &&
-          (fromDateTime.year == dateTime.year);
-    } else {
-      return false;
-    }
-  }
-
-  bool isFromBetween(DateTime checkFrom, DateTime checkTo) {
-    if (from != null) {
-      DateTime myFrom = from.toDate();
-      return (myFrom.isAfter(checkFrom) ||
-              myFrom.isAtSameMomentAs(checkFrom)) &&
-          (myFrom.isBefore(checkTo) || myFrom.isAtSameMomentAs(checkTo));
-    } else {
-      return false;
-    }
-  }
-}
+*/

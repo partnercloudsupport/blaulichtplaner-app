@@ -1,4 +1,5 @@
 import 'package:blaulichtplaner_app/shift_vote/shift_vote.dart';
+import 'package:blaulichtplaner_lib/blaulichtplaner.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
@@ -16,8 +17,8 @@ class ShiftplanDay extends StatelessWidget {
     } else {
       return ListView.builder(
         itemBuilder: (BuildContext context, int index) {
-          DateTime fromDateTime = shifts[index].from.toDate();
-          DateTime toDateTime = shifts[index].to.toDate();
+          DateTime fromDateTime = shifts[index].from;
+          DateTime toDateTime = shifts[index].to;
           String timeLabel =
               'Schicht ${timeFormatter.format(fromDateTime)} bis ${timeFormatter.format(toDateTime)}';
           return Card(

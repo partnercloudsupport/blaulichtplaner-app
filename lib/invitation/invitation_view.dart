@@ -1,20 +1,19 @@
+import 'package:blaulichtplaner_app/authentication.dart';
+import 'package:blaulichtplaner_app/firestore/firestore_flutter.dart';
 import 'package:blaulichtplaner_app/invitation/invitation_model.dart';
 import 'package:blaulichtplaner_app/widgets/loader.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:blaulichtplaner_lib/blaulichtplaner.dart';
+
 import 'package:flutter/material.dart';
 
 class Invitation extends StatefulWidget {
-  final FirebaseUser user;
   final InvitationModel invitationModel;
 
-  const Invitation(
-      {Key key, @required this.invitationModel, @required this.user})
-      : super(key: key);
+  const Invitation({Key key, @required this.invitationModel}) : super(key: key);
 
   @override
   State createState() {
-    return new _InvitationState();
+    return _InvitationState();
   }
 }
 
@@ -25,15 +24,17 @@ class _InvitationState extends State<Invitation> {
       _saving = true;
     });
     try {
+      BlpUser user = UserWidget.of(context).user;
+
       DocumentReference userRef =
-          Firestore.instance.collection('users').document(widget.user.uid);
+          FirestoreImpl.instance.collection('users').document(user.uid);
       QuerySnapshot snapshot = await userRef
           .collection('roles')
           .where('reference', isEqualTo: widget.invitationModel.employeeRef)
           .where('type', isEqualTo: 'employee')
           .getDocuments();
       if (snapshot.documents.isEmpty) {
-        WriteBatch batch = Firestore.instance.batch();
+        WriteBatch batch = FirestoreImpl.instance.batch();
         Map<String, dynamic> roleData = {};
         roleData['role'] = 'user';
         roleData['type'] = 'employee';
@@ -63,7 +64,7 @@ class _InvitationState extends State<Invitation> {
         Map<String, Object> invitationData = {};
         invitationData["accepted"] = true;
         invitationData["acceptedOn"] = DateTime.now();
-        widget.invitationModel.selfRef.updateData(invitationData);
+        widget.invitationModel.selfRef.update(invitationData);
         print("user has already employee role");
         Scaffold.of(context).showSnackBar(SnackBar(
           content: Text(
@@ -136,12 +137,10 @@ class _InvitationState extends State<Invitation> {
 
 class InvitationScreen extends StatelessWidget {
   final Function onSaved;
-  final FirebaseUser user;
 
   const InvitationScreen({
     Key key,
     @required this.onSaved,
-    @required this.user,
   }) : super(key: key);
 
   Widget _streamBuilder(
@@ -156,7 +155,6 @@ class InvitationScreen extends StatelessWidget {
     return ListView.builder(
       itemBuilder: (BuildContext context, int index) {
         return Invitation(
-          user: user,
           invitationModel:
               InvitationModel.fromSnapshot(snapshot.data.documents[index]),
         );
@@ -167,12 +165,13 @@ class InvitationScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    BlpUser user = UserWidget.of(context).user;
     return Scaffold(
       appBar: AppBar(
         title: Text('Einladungslink'),
       ),
       body: StreamBuilder<QuerySnapshot>(
-        stream: Firestore.instance
+        stream: FirestoreImpl.instance
             .collection('invitations')
             .where('email', isEqualTo: user.email)
             .where('accepted', isEqualTo: false)

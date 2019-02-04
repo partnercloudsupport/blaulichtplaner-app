@@ -1,21 +1,20 @@
 import 'package:blaulichtplaner_app/assignment/assignment_view.dart';
+import 'package:blaulichtplaner_app/authentication.dart';
 import 'package:blaulichtplaner_app/invitation/invitation_view.dart';
 import 'package:blaulichtplaner_app/location_votes/location_vote.dart';
 import 'package:blaulichtplaner_app/location_votes/location_vote_editor.dart';
 import 'package:blaulichtplaner_app/location_votes/location_votes_view.dart';
 import 'package:blaulichtplaner_app/shift_vote/shift_votes_view.dart';
 import 'package:blaulichtplaner_app/shiftplan/shiftplan_overview.dart';
-import 'package:blaulichtplaner_app/utils/user_manager.dart';
 import 'package:blaulichtplaner_app/widgets/date_navigation.dart';
 import 'package:blaulichtplaner_app/widgets/drawer.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:blaulichtplaner_lib/blaulichtplaner.dart';
 import 'package:flutter/material.dart';
 
 class BlaulichtplanerApp extends StatefulWidget {
-  final FirebaseUser user;
   final Function logoutCallback;
 
-  const BlaulichtplanerApp({Key key, this.user, this.logoutCallback})
+  const BlaulichtplanerApp({Key key, this.logoutCallback})
       : super(key: key);
 
   @override
@@ -130,7 +129,6 @@ class BlaulichtPlanerAppState extends State<BlaulichtplanerApp> {
   DateTime _initialDate;
   DateTime _selectedDate;
   GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
-  final UserManager userManager = UserManager.get();
 
   @override
   void initState() {
@@ -139,23 +137,23 @@ class BlaulichtPlanerAppState extends State<BlaulichtplanerApp> {
     _selectedDate = DateTime.now();
   }
 
-  Widget _createBody() {
+  Widget _createBody(BlpUser user) {
     switch (selectedTab) {
       case 0:
         return AssignmentView(
-            employeeRoles: userManager.employeeRoles(),
+            employeeRoles: user.employeeRoles(),
             upcomingShifts: upcomingShifts);
       case 1:
         return ShiftplanOverview(
-          employeeRoles: userManager.employeeRoles(),
+          employeeRoles: user.employeeRoles(),
         );
       case 2:
         return LocationVotesView(
-          employeeRoles: userManager.employeeRoles(),
+          employeeRoles: user.employeeRoles(),
         );
       case 3:
         return ShiftVotesView(
-          employeeRoles: userManager.employeeRoles(),
+          employeeRoles: user.companyEmployeeRoles(),
           filter: _selectedFilterOption,
           selectedDate: _selectDate ? _selectedDate : null,
         );
@@ -164,7 +162,7 @@ class BlaulichtPlanerAppState extends State<BlaulichtplanerApp> {
     }
   }
 
-  List<Widget> _createAppBarActions() {
+  List<Widget> _createAppBarActions(BlpUser user) {
     switch (selectedTab) {
       case 0:
         return <Widget>[
@@ -192,21 +190,21 @@ class BlaulichtPlanerAppState extends State<BlaulichtplanerApp> {
         return <Widget>[
           IconButton(
             icon: Icon(Icons.add),
-            onPressed: userManager.hasEmployeeRoles()
+            onPressed: null /* user.hasEmployeeRoles()
                 ? () {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
                         builder: (BuildContext context) {
                           return LocationVoteEditor(
-                            employeeRoles: userManager.employeeRoles(),
+                            employeeRoles: user.employeeRoles(),
                             userVote: UserVote(),
                           );
                         },
                       ),
                     );
                   }
-                : null,
+                : null,*/
           )
         ];
       case 3:
@@ -290,32 +288,33 @@ class BlaulichtPlanerAppState extends State<BlaulichtplanerApp> {
 
   @override
   Widget build(BuildContext context) {
+    BlpUser user = UserWidget.of(context).user;
     return Scaffold(
       key: _scaffoldKey,
       appBar: AppBar(
         title: Text(_createTitle()),
-        actions: _createAppBarActions(),
+        actions: _createAppBarActions(user),
         bottom: _createDateNavigation(),
       ),
       drawer: DrawerWidget(
-        user: widget.user,
+        user: user,
         invitationCallback: () {
           Navigator.push(
             context,
             MaterialPageRoute(
               builder: (BuildContext context) => InvitationScreen(
-                    user: widget.user,
+
                     onSaved: () {
-                      userManager.updateUserData(widget.user);
+                      //user.updateUserData(user);
                     },
                   ),
             ),
           );
         },
         logoutCallback: widget.logoutCallback,
-        employeeRoles: userManager.employeeRoles(),
+        employeeRoles: user.employeeRoles(),
       ),
-      body: _createBody(),
+      body: _createBody(user),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: selectedTab,
         items: [

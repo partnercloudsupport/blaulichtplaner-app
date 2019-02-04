@@ -1,14 +1,14 @@
 import 'package:blaulichtplaner_app/shiftplan/shiftplan_view.dart';
 import 'package:blaulichtplaner_app/shiftplan/shiftplan_model.dart';
 import 'package:blaulichtplaner_app/widgets/loader.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:blaulichtplaner_lib/blaulichtplaner.dart';
+
 import 'package:flutter/material.dart';
-import 'package:blaulichtplaner_app/utils/user_manager.dart';
 import 'package:blaulichtplaner_app/widgets/no_employee.dart';
 import 'dart:async';
 
 class ShiftplanOverview extends StatefulWidget {
-  final List<Role> employeeRoles;
+  final List<UserRole> employeeRoles;
   ShiftplanOverview({
     Key key,
     @required this.employeeRoles,
@@ -37,7 +37,7 @@ class ShiftplanOverviewState extends State<ShiftplanOverview> {
   _initDataListeners() {
     if (widget.hasEmployeeRoles()) {
       print("Listening for shiftplans");
-      for (Role role in widget.employeeRoles) {
+      for (UserRole role in widget.employeeRoles) {
         Query query = role.reference
             .collection('shiftplans')
             .where('status', isEqualTo: 'public')

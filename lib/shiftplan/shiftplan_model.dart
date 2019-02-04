@@ -1,9 +1,10 @@
 import 'package:blaulichtplaner_app/shift_vote/shift_vote.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:blaulichtplaner_lib/blaulichtplaner.dart';
+
 
 class ShiftplanModel {
-  Timestamp from;
-  Timestamp to;
+  DateTime from;
+  DateTime to;
   String status;
   String label;
   String companyLabel;
@@ -18,13 +19,11 @@ class ShiftplanModel {
   }
 
   DateTime startOfPlan() {
-    DateTime fromDateTime = from.toDate();
-    return fromDateTime.subtract(Duration(days: fromDateTime.weekday - 1));
+    return from.subtract(Duration(days: from.weekday - 1));
   }
 
   DateTime endOfPlan() {
-    DateTime toDateTime = to.toDate();
-    return toDateTime.add(Duration(days: 7 - toDateTime.weekday));
+    return to.add(Duration(days: 7 - to.weekday));
   }
 }
 

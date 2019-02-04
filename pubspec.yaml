@@ -10,6 +10,8 @@ dependencies:
   intl: "^0.15.7"
   nanoid: ^0.0.4
   url_launcher: ^3.0.3
+  blaulichtplaner_lib:
+    path: /Users/adrian/devSystem/projects/blp/blaulichtplaner_lib
 
   flutter:
     sdk: flutter

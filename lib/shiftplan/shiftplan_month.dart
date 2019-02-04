@@ -1,5 +1,6 @@
 import 'package:blaulichtplaner_app/shift_vote/shift_vote.dart';
 import 'package:blaulichtplaner_app/shiftplan/shiftplan_model.dart';
+import 'package:blaulichtplaner_lib/blaulichtplaner.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
@@ -10,8 +11,8 @@ class ShiftBadge extends StatelessWidget {
   const ShiftBadge({Key key, this.onTap, this.shift}) : super(key: key);
   @override
   Widget build(BuildContext context) {
-    DateTime fromDateTime = shift.from.toDate();
-    DateTime toDateTime = shift.to.toDate();
+    DateTime fromDateTime = shift.from;
+    DateTime toDateTime = shift.to;
     String from = fromDateTime.minute == 0
         ? DateFormat('H').format(fromDateTime)
         : DateFormat('H:mm').format(fromDateTime);

@@ -1,8 +1,10 @@
 import 'package:blaulichtplaner_app/api_service.dart';
+import 'package:blaulichtplaner_app/firestore/firestore_flutter.dart';
 import 'package:blaulichtplaner_app/login/registration_service.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:blaulichtplaner_lib/blaulichtplaner.dart';
+
 import 'package:http/http.dart';
 import 'registration_form.dart';
 import '../widgets/loader.dart';
@@ -49,9 +51,9 @@ class GoogleRegistrationScreenState extends State<GoogleRegistrationScreen> {
 
   _saveDatabaseHandler() async {
     try {
-      _registrationModel.termsAccepted = Timestamp.now();
-      _registrationModel.privacyPolicyAccepted = Timestamp.now();
-      await Firestore.instance
+      _registrationModel.termsAccepted = DateTime.now();
+      _registrationModel.privacyPolicyAccepted = DateTime.now();
+      await FirestoreImpl.instance
           .collection('registrations')
           .document(widget.user.uid)
           .setData(_registrationModel.createData());

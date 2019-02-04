@@ -1,8 +1,8 @@
 import 'package:blaulichtplaner_app/location_votes/location_vote.dart';
-import 'package:blaulichtplaner_app/utils/user_manager.dart';
 import 'package:blaulichtplaner_app/widgets/date_time_picker.dart';
 import 'package:blaulichtplaner_app/widgets/loader.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:blaulichtplaner_lib/blaulichtplaner.dart';
+
 import 'package:flutter/material.dart';
 
 typedef void SaveLocationVote(BuildContext context, UserVote userVote);
@@ -181,7 +181,7 @@ class ShiftDurationFormFieldState extends FormFieldState<ShiftDuration> {
 
 class LocationList extends StatefulWidget {
   final String errorText;
-  final List<Role> employeeRoles;
+  final List<UserRole> employeeRoles;
   final OnChanged addLocation;
   final OnChanged deleteLocation;
   const LocationList({
@@ -204,7 +204,7 @@ class LocationListState extends State<LocationList> {
   UserVote userVote = UserVote();
 
   Widget _buildLocationCheckbox(int index) {
-    Role employeeRole = widget.employeeRoles[index];
+    UserRole employeeRole = widget.employeeRoles[index];
     return LocationTile(
       locationLabel:  "Unbekannter Standort",
       companyLabel:  "Unbekannte Firma",
@@ -261,7 +261,7 @@ class LocationListFormField extends FormField<int> {
   LocationListFormField({
     Key key,
     int value,
-    List<Role> employeeRoles,
+    List<UserRole> employeeRoles,
     bool enabled,
     Brightness keyboardAppearance,
     EdgeInsets scrollPadding = const EdgeInsets.all(20.0),
@@ -311,7 +311,7 @@ class LocationListFormFieldState extends FormFieldState<int> {
 class LocationVoteForm extends StatefulWidget {
   final UserVote userVote;
   final SaveLocationVote saveLocationVote;
-  final List<Role> employeeRoles;
+  final List<UserRole> employeeRoles;
 
   const LocationVoteForm({
     Key key,
@@ -404,7 +404,7 @@ class DateFormFieldState extends FormFieldState<FromTo> {
 class LocationVoteFormState extends State<LocationVoteForm> {
   final _formKey = GlobalKey<FormState>();
   bool _saving = false;
-  final List<Role> employeeRoles;
+  final List<UserRole> employeeRoles;
   final UserVote userVote;
 
   LocationVoteFormState(this.employeeRoles, this.userVote);

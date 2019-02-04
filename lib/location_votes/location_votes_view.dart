@@ -1,17 +1,18 @@
 import 'dart:async';
+import 'package:blaulichtplaner_app/authentication.dart';
+import 'package:blaulichtplaner_app/firestore/firestore_flutter.dart';
 import 'package:blaulichtplaner_app/location_votes/location_vote.dart';
 import 'package:blaulichtplaner_app/location_votes/location_vote_editor.dart';
 import 'package:blaulichtplaner_app/location_votes/location_vote_service.dart';
-import 'package:blaulichtplaner_app/utils/user_manager.dart';
 import 'package:blaulichtplaner_app/widgets/loader.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:blaulichtplaner_lib/blaulichtplaner.dart';
+
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:blaulichtplaner_app/widgets/no_employee.dart';
 
 class LocationVotesView extends StatefulWidget {
-  final List<Role> employeeRoles;
+  final List<UserRole> employeeRoles;
   LocationVotesView({Key key, @required this.employeeRoles}) : super(key: key);
   bool hasEmployeeRoles() {
     return employeeRoles != null && employeeRoles.isNotEmpty;
@@ -42,9 +43,9 @@ class LocationVotesViewState extends State<LocationVotesView> {
   }
 
   void _initLocationVotes() {
-    final FirebaseUser user = UserManager.get().user;
+    BlpUser user = UserWidget.of(context).user;
 
-    Stream<QuerySnapshot> stream = Firestore.instance
+    Stream<QuerySnapshot> stream = FirestoreImpl.instance
         .collection('users')
         .document(user.uid)
         .collection('votes')
@@ -89,6 +90,8 @@ class LocationVotesViewState extends State<LocationVotesView> {
   }
 
   Widget _itemBuilder(BuildContext context, int index) {
+    BlpUser user = UserWidget.of(context).user;
+
     UserVote userVote = _userVoteHolder.userVotes[index];
     String from = DateFormat.yMd("de_DE").format(userVote.from);
     String to = DateFormat.yMd("de_DE").format(userVote.to);
@@ -111,7 +114,7 @@ class LocationVotesViewState extends State<LocationVotesView> {
               ),
               onPressed: () async {
                 userVote.databaseOperation = DatabaseOperation.deleteData;
-                await UserVoteService().save(userVote);
+                await UserVoteService().save(userVote, user);
               },
               textColor: Colors.red,
             ),

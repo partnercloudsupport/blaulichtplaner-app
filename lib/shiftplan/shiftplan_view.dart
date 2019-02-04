@@ -1,12 +1,14 @@
 import 'dart:async';
 
+import 'package:blaulichtplaner_app/firestore/firestore_flutter.dart';
 import 'package:blaulichtplaner_app/shift_vote/shift_vote.dart';
 import 'package:blaulichtplaner_app/shiftplan/shiftplan_day.dart';
 import 'package:blaulichtplaner_app/shiftplan/shiftplan_model.dart';
 import 'package:blaulichtplaner_app/shiftplan/shiftplan_month.dart';
 import 'package:blaulichtplaner_app/widgets/date_navigation.dart';
 import 'package:blaulichtplaner_app/widgets/loader.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:blaulichtplaner_lib/blaulichtplaner.dart';
+
 import 'package:flutter/material.dart';
 
 class Shiftplan extends StatefulWidget {
@@ -41,9 +43,12 @@ class ShiftplanState extends State<Shiftplan> {
     _initDataListeners();
   }
 
+
   _initDataListeners() {
-    print("Listening for shiftplans");
-    Query query = Firestore.instance
+    throw Exception("not implemented");
+    
+    /*print("Listening for shiftplans");
+    Query query = FirestoreImpl.instance
         .collection('shifts')
         .where('shiftplanRef', isEqualTo: widget.plan.selfRef)
         .where('status', isEqualTo: 'public')
@@ -63,7 +68,7 @@ class ShiftplanState extends State<Shiftplan> {
           _initialized = true;
         });
       },
-    );
+    );*/
   }
 
   @override
@@ -110,8 +115,8 @@ class ShiftplanState extends State<Shiftplan> {
         preferredSize: const Size.fromHeight(48.0),
         child: DateNavigation(
           initialValue: _selectedDate,
-          fromDate: widget.plan.from.toDate(),
-          toDate: widget.plan.to.toDate(),
+          fromDate: widget.plan.from,
+          toDate: widget.plan.to,
           onChanged: _selectDayCallback,
         ),
       );

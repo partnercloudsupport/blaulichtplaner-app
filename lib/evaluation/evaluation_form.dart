@@ -1,13 +1,14 @@
 import 'package:blaulichtplaner_app/widgets/date_time_picker.dart';
 import 'package:blaulichtplaner_app/widgets/loader.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:blaulichtplaner_lib/blaulichtplaner.dart';
+
 import 'package:flutter/material.dart';
 
 class EvaluationModel {
-  Timestamp originalFrom;
-  Timestamp originalTo;
-  Timestamp actualFrom;
-  Timestamp actualTo;
+  DateTime originalFrom;
+  DateTime originalTo;
+  DateTime actualFrom;
+  DateTime actualTo;
   int reasonOvertime = 0;
   String remarks;
   List<AssignmentTask> tasks = [];
@@ -15,7 +16,7 @@ class EvaluationModel {
   bool isOvertime() {
     return actualTo != null &&
         originalTo != null &&
-        actualTo.toDate().isAfter(originalTo.toDate());
+        actualTo.isAfter(originalTo);
   }
 }
 
@@ -23,7 +24,7 @@ class AssignmentTask {
   String type = "assignment";
   String reference;
   String remarks;
-  Timestamp taskTime = Timestamp.now();
+  DateTime taskTime = DateTime.now();
 
   AssignmentTask(this.reference);
 }
@@ -164,11 +165,11 @@ class EvaluationFormState extends State<EvaluationForm> {
       ),
       DateTimePickerWidget(
         fixedDates: false,
-        originalDateTime: model.originalFrom?.toDate(),
-        dateTime: model.actualFrom?.toDate(),
+        originalDateTime: model.originalFrom,
+        dateTime: model.actualFrom,
         dateTimeChanged: (dateTime) {
           setState(() {
-            model.actualFrom = Timestamp.fromDate(dateTime);
+            model.actualFrom = dateTime;
           });
         },
       ),
@@ -181,11 +182,11 @@ class EvaluationFormState extends State<EvaluationForm> {
       ),
       DateTimePickerWidget(
           fixedDates: false,
-          originalDateTime: model.originalTo?.toDate(),
-          dateTime: model.actualTo?.toDate(),
+          originalDateTime: model.originalTo,
+          dateTime: model.actualTo,
           dateTimeChanged: (dateTime) {
             setState(() {
-              model.actualTo = Timestamp.fromDate(dateTime);
+              model.actualTo = dateTime;
             });
           }),
       OvertimeWidget(
@@ -233,7 +234,7 @@ class EvaluationFormState extends State<EvaluationForm> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: <Widget>[
               RaisedButton(
-                onPressed: DateTime.now().isAfter(model.actualTo?.toDate())
+                onPressed: DateTime.now().isAfter(model.actualTo)
                     ? () {
                         setState(() {
                           _saving = true;

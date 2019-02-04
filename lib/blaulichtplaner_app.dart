@@ -297,7 +297,6 @@ class BlaulichtPlanerAppState extends State<BlaulichtplanerApp> {
             context,
             MaterialPageRoute(
               builder: (BuildContext context) => InvitationScreen(
-
                     onSaved: () {
                       //user.updateUserData(user);
                     },

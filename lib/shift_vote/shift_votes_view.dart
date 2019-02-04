@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:blaulichtplaner_app/firestore/firestore_flutter.dart';
 import 'package:blaulichtplaner_app/shift_vote/vote.dart';
 import 'package:blaulichtplaner_app/utils/utils.dart';
@@ -36,7 +34,6 @@ class ShiftVotesView extends StatefulWidget {
 }
 
 class ShiftVotesViewState extends State<ShiftVotesView> {
-  final List<StreamSubscription> subs = [];
   ShiftVoteHolder _shiftVoteHolder;
   bool _initialized = false;
   List<ShiftVote> shiftVotes;
@@ -47,57 +44,17 @@ class ShiftVotesViewState extends State<ShiftVotesView> {
     _initDataListeners();
   }
 
-  void _initDataListeners() {
-    _shiftVoteHolder = ShiftVoteHolder(widget.employeeRoles, FirestoreImpl.instance, () {});
-    throw Exception("not implemented");
-    /*
-    final firestore = FirestoreImpl.instance;
-    if (widget.hasEmployeeRoles()) {
-      for (final role in widget.employeeRoles) {
-        
-        final votesQueryStream = firestore
-            .collection("shiftVotes")
-            .where("employeeRef", isEqualTo: role.employeeRef)
-            .where("from", isGreaterThanOrEqualTo: DateTime.now())
-            .snapshots();
-        subs.add(votesQueryStream.listen((snapshot) {
-          setState(() {
-            for (final doc in snapshot.documentChanges) {
-              if (doc.type == DocumentChangeType.added) {
-                _shiftVoteHolder.addVoteFromSnapshot(doc.document);
-              } else if (doc.type == DocumentChangeType.modified) {
-                _shiftVoteHolder.modifyVoteFromSnapshot(doc.document);
-              } else if (doc.type == DocumentChangeType.removed) {
-                _shiftVoteHolder.removeVoteFromSnapshot(doc.document);
-              }
-            }
-          });
-        }));
-        final queryStream = firestore
-            .collection("shifts")
-            .where("companyRef", isEqualTo: role.reference)
-            .where("acceptBid", isEqualTo: true)
-            .where("manned", isEqualTo: false)
-            .where("from", isGreaterThanOrEqualTo: DateTime.now())
-            .snapshots();
-        subs.add(queryStream.listen((snapshot) {
-          setState(() {
-            for (final doc in snapshot.documentChanges) {
-              if (doc.type == DocumentChangeType.added) {
-                _shiftVoteHolder.addShift(Shift.fromSnapshot(doc.document));
-              } else if (doc.type == DocumentChangeType.modified) {
-                _shiftVoteHolder.modifyShift(Shift.fromSnapshot(doc.document));
-              } else if (doc.type == DocumentChangeType.removed) {
-                _shiftVoteHolder.removeShift(Shift.fromSnapshot(doc.document));
-              }
-            }
-          });
-        }));
-      }
+  void _initDataListeners() async {
+    _shiftVoteHolder =
+        ShiftVoteHolder(widget.employeeRoles, FirestoreImpl.instance, () {
       setState(() {
-        _initialized = true;
+        shiftVotes = _shiftVoteHolder.shiftVotes;
       });
-    }*/
+    });
+    await _shiftVoteHolder.initListeners();
+    setState(() {
+      _initialized = true;
+    });
   }
 
   @override
@@ -106,10 +63,7 @@ class ShiftVotesViewState extends State<ShiftVotesView> {
     setState(() {
       _initialized = false;
     });
-    for (final sub in subs) {
-      sub.cancel();
-    }
-    subs.clear();
+    _shiftVoteHolder.cancelSubscriptions();
     _shiftVoteHolder.clear();
     _initDataListeners();
   }
@@ -117,9 +71,7 @@ class ShiftVotesViewState extends State<ShiftVotesView> {
   @override
   void dispose() {
     super.dispose();
-    for (final sub in subs) {
-      sub.cancel();
-    }
+    _shiftVoteHolder.cancelSubscriptions();
   }
 
   Widget createInfoBox(String text, IconData iconData) {
@@ -309,8 +261,7 @@ class ShiftVotesViewState extends State<ShiftVotesView> {
 
   List<ShiftVote> filterShiftVotes() {
     // TODO
-    return 
-        _shiftVoteHolder.shiftVotes;
+    return _shiftVoteHolder.shiftVotes;
   }
 
   @override

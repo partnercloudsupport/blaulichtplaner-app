@@ -148,10 +148,6 @@ class BlaulichtPlanerAppState extends State<BlaulichtplanerApp> {
           employeeRoles: user.employeeRoles(),
         );
       case 2:
-        return LocationVotesView(
-          employeeRoles: user.employeeRoles(),
-        );
-      case 3:
         return ShiftVotesView(
           employeeRoles: user.companyEmployeeRoles(),
           filter: _selectedFilterOption,
@@ -261,8 +257,6 @@ class BlaulichtPlanerAppState extends State<BlaulichtplanerApp> {
             ? "Aktuelle Dienstpläne"
             : "Vergangene Dienstpläne";
       case 2:
-        return "Zeiträume";
-      case 3:
         return _createShiftBidTitle();
       default:
         return "Blaulichtplaner";
@@ -325,10 +319,6 @@ class BlaulichtPlanerAppState extends State<BlaulichtplanerApp> {
           BottomNavigationBarItem(
             icon: Icon(Icons.table_chart),
             title: Text('Dienstpäne'),
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.timelapse),
-            title: Text("Zeiträume"),
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.date_range),

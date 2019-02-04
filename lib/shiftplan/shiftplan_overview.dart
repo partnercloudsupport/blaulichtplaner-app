@@ -46,15 +46,14 @@ class ShiftplanOverviewState extends State<ShiftplanOverview> {
           setState(() {
             for (final doc in snapshot.documentChanges) {
               print(role.label);
+              ShiftplanModel shiftplanModel = ShiftplanModel.fromSnapshot(
+                  doc.document, role.label, role.employeeRef);
               if (doc.type == DocumentChangeType.added) {
-                _shiftplans.add(ShiftplanModel.fromSnapshot(
-                    doc.document, role.label));
+                _shiftplans.add(shiftplanModel);
               } else if (doc.type == DocumentChangeType.modified) {
-                _shiftplans.modify(ShiftplanModel.fromSnapshot(
-                    doc.document, role.label));
+                _shiftplans.modify(shiftplanModel);
               } else if (doc.type == DocumentChangeType.removed) {
-                _shiftplans.remove(ShiftplanModel.fromSnapshot(
-                    doc.document, role.label));
+                _shiftplans.remove(shiftplanModel);
               }
             }
             _initialized = true;

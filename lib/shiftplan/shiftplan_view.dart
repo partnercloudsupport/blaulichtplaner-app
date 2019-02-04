@@ -43,11 +43,8 @@ class ShiftplanState extends State<Shiftplan> {
     _initDataListeners();
   }
 
-
   _initDataListeners() {
-    throw Exception("not implemented");
-    
-    /*print("Listening for shiftplans");
+    print("Listening for shiftplans");
     Query query = FirestoreImpl.instance
         .collection('shifts')
         .where('shiftplanRef', isEqualTo: widget.plan.selfRef)
@@ -57,18 +54,19 @@ class ShiftplanState extends State<Shiftplan> {
       (snapshot) {
         setState(() {
           for (final doc in snapshot.documentChanges) {
+            Shift shift = Shift.fromSnapshot(doc.document, widget.plan.employeeRef);
             if (doc.type == DocumentChangeType.added) {
-              _shifts.add(Shift.fromSnapshot(doc.document));
+              _shifts.add(shift);
             } else if (doc.type == DocumentChangeType.modified) {
-              _shifts.modify(Shift.fromSnapshot(doc.document));
+              _shifts.modify(shift);
             } else if (doc.type == DocumentChangeType.removed) {
-              _shifts.remove(Shift.fromSnapshot(doc.document));
+              _shifts.remove(shift);
             }
           }
           _initialized = true;
         });
       },
-    );*/
+    );
   }
 
   @override

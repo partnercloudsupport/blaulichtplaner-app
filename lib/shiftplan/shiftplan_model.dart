@@ -1,6 +1,4 @@
-import 'package:blaulichtplaner_app/shift_vote/shift_vote.dart';
 import 'package:blaulichtplaner_lib/blaulichtplaner.dart';
-
 
 class ShiftplanModel {
   DateTime from;
@@ -9,8 +7,9 @@ class ShiftplanModel {
   String label;
   String companyLabel;
   DocumentReference selfRef;
+  DocumentReference employeeRef;
 
-  ShiftplanModel.fromSnapshot(DocumentSnapshot snapshot, this.companyLabel) {
+  ShiftplanModel.fromSnapshot(DocumentSnapshot snapshot, this.companyLabel, this.employeeRef) {
     selfRef = snapshot.reference;
     from = snapshot.data["from"];
     to = snapshot.data["to"];

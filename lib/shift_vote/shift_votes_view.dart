@@ -1,5 +1,4 @@
 import 'package:blaulichtplaner_app/firestore/firestore_flutter.dart';
-import 'package:blaulichtplaner_app/shift_vote/vote.dart';
 import 'package:blaulichtplaner_app/utils/utils.dart';
 import 'package:blaulichtplaner_app/widgets/loader.dart';
 import 'package:blaulichtplaner_lib/blaulichtplaner.dart';
@@ -131,7 +130,10 @@ class ShiftVotesViewState extends State<ShiftVotesView> {
         child: Text('Bewerbung löschen'),
         onPressed: () async {
           try {
-            await VoteService().delete(shiftVote.vote);
+            EmployeeShiftVoteDelete action =
+                EmployeeShiftVoteDelete(FirestoreImpl.instance);
+            await action.performAction(shiftVote);
+
             Scaffold.of(context).showSnackBar(SnackBar(
               content: Text('Bewerbung gelöscht.'),
             ));
@@ -145,7 +147,10 @@ class ShiftVotesViewState extends State<ShiftVotesView> {
         child: Text('Ablehnung löschen'),
         onPressed: () async {
           try {
-            await VoteService().delete(shiftVote.vote);
+            EmployeeShiftVoteDelete action =
+                EmployeeShiftVoteDelete(FirestoreImpl.instance);
+            await action.performAction(shiftVote);
+
             Scaffold.of(context).showSnackBar(SnackBar(
               content: Text('Ablehnung gelöscht.'),
             ));

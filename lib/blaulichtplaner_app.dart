@@ -1,9 +1,6 @@
 import 'package:blaulichtplaner_app/assignment/assignment_view.dart';
 import 'package:blaulichtplaner_app/authentication.dart';
 import 'package:blaulichtplaner_app/invitation/invitation_view.dart';
-import 'package:blaulichtplaner_app/location_votes/location_vote.dart';
-import 'package:blaulichtplaner_app/location_votes/location_vote_editor.dart';
-import 'package:blaulichtplaner_app/location_votes/location_votes_view.dart';
 import 'package:blaulichtplaner_app/shift_vote/shift_votes_view.dart';
 import 'package:blaulichtplaner_app/shiftplan/shiftplan_overview.dart';
 import 'package:blaulichtplaner_app/widgets/date_navigation.dart';
@@ -128,7 +125,6 @@ class BlaulichtPlanerAppState extends State<BlaulichtplanerApp> {
   bool _selectDate = false;
   DateTime _initialDate;
   DateTime _selectedDate;
-  GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
   void initState() {
@@ -284,7 +280,6 @@ class BlaulichtPlanerAppState extends State<BlaulichtplanerApp> {
   Widget build(BuildContext context) {
     BlpUser user = UserWidget.of(context).user;
     return Scaffold(
-      key: _scaffoldKey,
       appBar: AppBar(
         title: Text(_createTitle()),
         actions: _createAppBarActions(user),

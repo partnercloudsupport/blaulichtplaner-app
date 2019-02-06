@@ -78,7 +78,6 @@ class AssignmentViewState extends State<AssignmentView> {
               .where("to", isLessThanOrEqualTo: DateTime.now())
               .orderBy("to", descending: true);
         }
-        print("Assignments query: $query");
         
         subs.add(query.snapshots().listen((snapshot) {
           setState(() {

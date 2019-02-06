@@ -7,14 +7,12 @@ class DrawerWidget extends StatelessWidget {
   final BlpUser user;
   final Function logoutCallback;
   final Function invitationCallback;
-  final List<UserRole> employeeRoles;
 
   DrawerWidget({
     Key key,
     @required this.user,
     @required this.logoutCallback,
-    @required this.invitationCallback,
-    @required this.employeeRoles,
+    @required this.invitationCallback
   }) : super(key: key);
 
   Widget _buildImage() {

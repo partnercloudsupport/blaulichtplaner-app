@@ -7,19 +7,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:intl/intl.dart';
 import 'package:blaulichtplaner_app/widgets/no_employee.dart';
-
-enum FilterOptions { allShifts, withoutBid, withBid, notInterested }
+import 'package:logging/logging.dart';
 
 class ShiftVotesView extends StatefulWidget {
   final List<CompanyEmployeeRole> employeeRoles;
-  final FilterOptions filter;
-  final DateTime selectedDate;
+  final FilterConfig filterConfig;
 
   ShiftVotesView({
     Key key,
     @required this.employeeRoles,
-    @required this.filter,
-    this.selectedDate,
+    @required this.filterConfig,
   });
 
   bool hasEmployeeRoles() {
@@ -177,7 +174,7 @@ class ShiftVotesViewState extends State<ShiftVotesView> {
         onPressed: () async {
           EmployeeShiftVoteSave action =
               EmployeeShiftVoteSave(FirestoreImpl.instance);
-          await action.performAction(ShiftVoteAction(shiftVote, false));
+          await action.performAction(ShiftVoteAction(shiftVote, true));
 
           Scaffold.of(context).showSnackBar(SnackBar(
             content: Text('Bewerbung gespeichert.'),
@@ -252,27 +249,26 @@ class ShiftVotesViewState extends State<ShiftVotesView> {
   }
 
   _fallbackText() {
-    switch (widget.filter) {
-      case FilterOptions.allShifts:
-        return 'Keine Schichten verfügbar';
-      case FilterOptions.notInterested:
-        return 'Keine abgelehnten Schichten';
-      case FilterOptions.withBid:
-        return 'Keine Schichten mit Bewerbung';
-      case FilterOptions.withoutBid:
-        return 'Keine offenen Dienste';
+    switch (widget.filterConfig.option) {
+      case FilterOption.rejected:
+        return 'Keine abgelehnten Dienste';
+      case FilterOption.accepted:
+        return 'Keine Dienste mit Bewerbung';
+      case FilterOption.withoutVote:
+        return 'Keine unbesetzten Dienste';
     }
   }
 
   List<ShiftVote> filterShiftVotes() {
-    // TODO
-    return _shiftVoteHolder.shiftVotes;
+    List<ShiftVote> unfilteredShiftVotes = _shiftVoteHolder.shiftVotes;
+    List<ShiftVote> filteredShifts =
+        unfilteredShiftVotes.where(widget.filterConfig.filter).toList();
+    return filteredShifts;
   }
 
   @override
   Widget build(BuildContext context) {
     shiftVotes = filterShiftVotes();
-
     if (widget.hasEmployeeRoles()) {
       return LoaderBodyWidget(
         loading: !_initialized,

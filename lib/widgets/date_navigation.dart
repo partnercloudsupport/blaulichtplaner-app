@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:blaulichtplaner_lib/blaulichtplaner.dart';
 
 typedef void OnChangedDate(DateTime date);
 
@@ -29,20 +30,26 @@ class DateNavigationState extends State<DateNavigation> {
 
   @override
   void initState() {
-    _fromDate = widget.fromDate ?? DateTime.now();
-    _selectedDate = widget.initialValue ?? DateTime.now();
-    _toDate = widget.toDate ?? DateTime.now().add(Duration(days: 365));
+    _fromDate = widget.fromDate ?? today();
+    _selectedDate = widget.initialValue ?? today();
+    _toDate = widget.toDate ?? today().add(Duration(days: 365));
     super.initState();
   }
 
+  _previousDay() => _selectedDate.subtract(Duration(days: 1));
+
   _subtractDay() {
     setState(() {
-      _selectedDate =
-          (_selectedDate.subtract(Duration(days: 1)).compareTo(_fromDate) >= 0)
-              ? _fromDate
-              : _selectedDate.subtract(Duration(days: 1));
+      DateTime previousDay = _previousDay();
+      _selectedDate = hasPreviousDay() ? previousDay : _fromDate;
     });
     widget.onChanged(_selectedDate);
+  }
+
+  bool hasPreviousDay() {
+    DateTime previousDay = _previousDay();
+    return previousDay.isAfter(_fromDate) ||
+        previousDay.isAtSameMomentAs(_fromDate);
   }
 
   _addDay() {
@@ -52,24 +59,23 @@ class DateNavigationState extends State<DateNavigation> {
     widget.onChanged(_selectedDate);
   }
 
-  _selectDay() {
-    showDatePicker(
-            context: context,
-            firstDate: _fromDate.subtract(Duration(days: 1)),
-            lastDate: _toDate,
-            initialDate: _selectedDate)
-        .then((DateTime date) {
+  _selectDay() async {
+    DateTime pickedDate = await showDatePicker(
+        context: context,
+        firstDate: _fromDate.subtract(Duration(days: 1)),
+        lastDate: _toDate,
+        initialDate: _selectedDate);
+    if (pickedDate != null) {
       setState(() {
-        _selectedDate = date;
+        _selectedDate = pickedDate;
       });
       widget.onChanged(_selectedDate);
-    });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    bool showMinusButton =
-        (_selectedDate.subtract(Duration(days: 1)).compareTo(_fromDate) >= 0);
+    bool showMinusButton = hasPreviousDay();
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceAround,
       crossAxisAlignment: CrossAxisAlignment.center,

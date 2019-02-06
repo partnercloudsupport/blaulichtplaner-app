@@ -103,14 +103,7 @@ class ShiftVotesTabWidget extends StatefulWidget {
 class _ShiftVotesTabState extends State<ShiftVotesTabWidget> {
   FilterConfig _filterConfig = FilterConfig();
   bool _selectDate = false;
-  DateTime _initialDate;
-
-  @override
-  void initState() {
-    super.initState();
-    _initialDate = today();
-    _filterConfig.selectedDate = today();
-  }
+  DateTime _initialDate = today();
 
   String _createTitle() {
     switch (_filterConfig.option) {

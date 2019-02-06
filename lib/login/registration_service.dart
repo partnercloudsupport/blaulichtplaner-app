@@ -1,8 +1,6 @@
 import 'package:blaulichtplaner_app/api_service.dart';
 import 'package:blaulichtplaner_app/firestore/firestore_flutter.dart';
 import 'package:blaulichtplaner_app/login/registration_form.dart';
-import 'package:blaulichtplaner_lib/blaulichtplaner.dart';
-
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:http/http.dart';
 

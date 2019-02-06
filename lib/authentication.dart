@@ -72,8 +72,9 @@ class UserManager {
         .getDocuments();
 
     for (DocumentSnapshot snapshot in querySnapshot.documents) {
-      String type = snapshot.get("type");
-      String role = snapshot.get("role");
+      Map<String, dynamic> data = snapshot.data;
+      String type = data["type"];
+      String role = data["role"];
       RoleType key = RoleType(role, type);
       _user.addRole(key, UserRole.fromSnapshot(snapshot));
     }

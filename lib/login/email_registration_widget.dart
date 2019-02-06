@@ -1,11 +1,9 @@
-import 'package:blaulichtplaner_app/api_service.dart';
 import 'package:blaulichtplaner_app/login/registration_service.dart';
-import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:http/http.dart';
-import 'registration_form.dart';
+import 'package:flutter/material.dart';
+
 import '../widgets/loader.dart';
-import 'package:blaulichtplaner_lib/blaulichtplaner.dart';
+import 'registration_form.dart';
 
 
 class EmailRegistrationScreen extends StatefulWidget {

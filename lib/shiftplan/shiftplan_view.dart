@@ -1,14 +1,12 @@
 import 'dart:async';
 
 import 'package:blaulichtplaner_app/firestore/firestore_flutter.dart';
-import 'package:blaulichtplaner_app/shift_vote/shift_vote.dart';
 import 'package:blaulichtplaner_app/shiftplan/shiftplan_day.dart';
 import 'package:blaulichtplaner_app/shiftplan/shiftplan_model.dart';
 import 'package:blaulichtplaner_app/shiftplan/shiftplan_month.dart';
 import 'package:blaulichtplaner_app/widgets/date_navigation.dart';
 import 'package:blaulichtplaner_app/widgets/loader.dart';
 import 'package:blaulichtplaner_lib/blaulichtplaner.dart';
-
 import 'package:flutter/material.dart';
 
 class Shiftplan extends StatefulWidget {

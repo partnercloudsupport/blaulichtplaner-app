@@ -1,4 +1,3 @@
-import 'package:blaulichtplaner_app/shift_vote/shift_vote.dart';
 import 'package:blaulichtplaner_app/shiftplan/shiftplan_model.dart';
 import 'package:blaulichtplaner_lib/blaulichtplaner.dart';
 import 'package:flutter/material.dart';

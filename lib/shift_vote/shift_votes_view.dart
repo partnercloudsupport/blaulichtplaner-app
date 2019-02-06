@@ -1,13 +1,11 @@
 import 'package:blaulichtplaner_app/firestore/firestore_flutter.dart';
 import 'package:blaulichtplaner_app/utils/utils.dart';
 import 'package:blaulichtplaner_app/widgets/loader.dart';
+import 'package:blaulichtplaner_app/widgets/no_employee.dart';
 import 'package:blaulichtplaner_lib/blaulichtplaner.dart';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:intl/intl.dart';
-import 'package:blaulichtplaner_app/widgets/no_employee.dart';
-import 'package:logging/logging.dart';
 
 class ShiftVotesView extends StatefulWidget {
   final List<CompanyEmployeeRole> employeeRoles;

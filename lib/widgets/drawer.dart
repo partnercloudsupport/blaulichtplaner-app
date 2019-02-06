@@ -34,7 +34,7 @@ class DrawerWidget extends StatelessWidget {
             child: Column(
               children: <Widget>[
                 Padding(
-                  padding:  EdgeInsets.all(8.0),
+                  padding: EdgeInsets.all(8.0),
                   child: Image.asset(
                     "assets/blp-logo.png",
                     width: 64,
@@ -61,9 +61,11 @@ class DrawerWidget extends StatelessWidget {
             title: Text("Zugeordnete Firmen"),
             onTap: () {
               Navigator.pop(context);
-
-              Navigator.push(context,
-                  MaterialPageRoute(builder: (context) => RolesScreen()));
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => RolesScreen(
+                          companyRoles: user.companyEmployeeRoles())));
             },
           ),
           Divider(),

@@ -43,7 +43,7 @@ class LocationVotesViewState extends State<LocationVotesView> {
   }
 
   void _initLocationVotes() {
-    BlpUser user = UserWidget.of(context).user;
+    BlpUser user = UserManager.instance.user;
 
     Stream<QuerySnapshot> stream = FirestoreImpl.instance
         .collection('users')
@@ -90,7 +90,7 @@ class LocationVotesViewState extends State<LocationVotesView> {
   }
 
   Widget _itemBuilder(BuildContext context, int index) {
-    BlpUser user = UserWidget.of(context).user;
+    BlpUser user = UserManager.instance.user;
 
     UserVote userVote = _userVoteHolder.userVotes[index];
     String from = DateFormat.yMd("de_DE").format(userVote.from);

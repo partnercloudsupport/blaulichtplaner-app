@@ -19,7 +19,7 @@ class LaunchScreen extends StatefulWidget {
 }
 
 class LaunchScreenState extends State<LaunchScreen> {
-  final UserManager _userManager = UserManager();
+  final UserManager _userManager = UserManager.instance;
   bool _initialized = false;
   bool _loginInProgress = false;
   final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -110,11 +110,8 @@ class LaunchScreenState extends State<LaunchScreen> {
   Widget build(BuildContext context) {
     return LoaderBodyWidget(
       loading: !_initialized || _loginInProgress,
-      child: UserWidget(
-        user: _user,
-        child: BlaulichtplanerApp(
-          logoutCallback: _logout,
-        ),
+      child: BlaulichtplanerApp(
+        logoutCallback: _logout,
       ),
       empty: _user == null,
       fallbackWidget: WelcomeScreen(

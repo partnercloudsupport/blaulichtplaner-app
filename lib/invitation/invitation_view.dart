@@ -24,7 +24,7 @@ class _InvitationState extends State<Invitation> {
       _saving = true;
     });
     try {
-      BlpUser user = UserWidget.of(context).user;
+      BlpUser user = UserManager.instance.user;
 
       DocumentReference userRef =
           FirestoreImpl.instance.collection('users').document(user.uid);
@@ -165,7 +165,7 @@ class InvitationScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    BlpUser user = UserWidget.of(context).user;
+    BlpUser user = UserManager.instance.user;
     return Scaffold(
       appBar: AppBar(
         title: Text('Einladungslink'),

@@ -38,7 +38,7 @@ class LocationVoteEditorState extends State<LocationVoteEditor> {
         child: LocationVoteForm(
           userVote: userVote,
           saveLocationVote: (BuildContext context, UserVote userVote) async {
-            BlpUser user = UserWidget.of(context).user;
+            BlpUser user = UserManager.instance.user;
 
             UserVoteService service = UserVoteService();
             try {

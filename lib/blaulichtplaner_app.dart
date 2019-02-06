@@ -277,7 +277,7 @@ class BlaulichtPlanerAppState extends State<BlaulichtplanerApp> {
   }
 
   Widget _createDrawer(BlpUser user) {
-    
+
     return DrawerWidget(
       user: user,
       invitationCallback: () {
@@ -299,7 +299,7 @@ class BlaulichtPlanerAppState extends State<BlaulichtplanerApp> {
 
   @override
   Widget build(BuildContext context) {
-    BlpUser user = UserWidget.of(context).user;
+    BlpUser user = UserManager.instance.user;
     return Scaffold(
       appBar: AppBar(
         title: Text(_createTitle()),

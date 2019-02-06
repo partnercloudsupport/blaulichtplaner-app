@@ -1,11 +1,16 @@
 import 'package:blaulichtplaner_app/firestore/firestore_flutter.dart';
 import 'package:blaulichtplaner_lib/blaulichtplaner.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/widgets.dart';
 
 class UserManager {
+  static final UserManager instance = UserManager._();
+
+  UserManager._();
+
   final Firestore _firestore = FirestoreImpl.instance;
   BlpUser _user;
+
+  BlpUser get user => _user;
 
   _decideValue(String value, String fallback) {
     if (value != null && value.isNotEmpty) {
@@ -76,22 +81,5 @@ class UserManager {
 
   void logout() {
     _user = null;
-  }
-}
-
-class UserWidget extends InheritedWidget {
-  final BlpUser user;
-
-  UserWidget({Key key, @required Widget child, @required this.user})
-      : super(key: key, child: child);
-
-  @override
-  bool updateShouldNotify(InheritedWidget oldWidget) {
-    print("updateShouldNotify!!");
-    return true;
-  }
-
-  static UserWidget of(BuildContext context) {
-    return context.inheritFromWidgetOfExactType(UserWidget);
   }
 }

@@ -1,7 +1,6 @@
 import 'package:blaulichtplaner_app/about_widget.dart';
 import 'package:blaulichtplaner_app/roles_widget.dart';
 import 'package:blaulichtplaner_lib/blaulichtplaner.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class DrawerWidget extends StatelessWidget {
@@ -31,6 +30,23 @@ class DrawerWidget extends StatelessWidget {
     return Drawer(
       child: ListView(
         children: <Widget>[
+          Center(
+            child: Column(
+              children: <Widget>[
+                Padding(
+                  padding:  EdgeInsets.all(8.0),
+                  child: Image.asset(
+                    "assets/blp-logo.png",
+                    width: 64,
+                  ),
+                ),
+                Text(
+                  "Blaulichtplaner",
+                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.w700),
+                )
+              ],
+            ),
+          ),
           ListTile(
             leading: _buildImage(),
             title: Text(user.displayName ?? 'Profil'),

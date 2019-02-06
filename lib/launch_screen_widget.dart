@@ -55,7 +55,7 @@ class LaunchScreenState extends State<LaunchScreen> {
     await _auth.signOut();
     _userManager.logout();
     setState(() {
-//      _user = null;
+      _user = null;
     });
   }
 

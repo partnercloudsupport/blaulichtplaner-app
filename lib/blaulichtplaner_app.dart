@@ -11,8 +11,7 @@ import 'package:flutter/material.dart';
 class BlaulichtplanerApp extends StatefulWidget {
   final Function logoutCallback;
 
-  const BlaulichtplanerApp({Key key, this.logoutCallback})
-      : super(key: key);
+  const BlaulichtplanerApp({Key key, this.logoutCallback}) : super(key: key);
 
   @override
   State<StatefulWidget> createState() {
@@ -181,8 +180,9 @@ class BlaulichtPlanerAppState extends State<BlaulichtplanerApp> {
       case 2:
         return <Widget>[
           IconButton(
-            icon: Icon(Icons.add),
-            onPressed: null /* user.hasEmployeeRoles()
+              icon: Icon(Icons.add),
+              onPressed:
+                  null /* user.hasEmployeeRoles()
                 ? () {
                     Navigator.push(
                       context,
@@ -197,7 +197,7 @@ class BlaulichtPlanerAppState extends State<BlaulichtplanerApp> {
                     );
                   }
                 : null,*/
-          )
+              )
         ];
       case 3:
         return <Widget>[
@@ -276,6 +276,27 @@ class BlaulichtPlanerAppState extends State<BlaulichtplanerApp> {
     }
   }
 
+  Widget _createDrawer(BlpUser user) {
+    
+    return DrawerWidget(
+      user: user,
+      invitationCallback: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (BuildContext context) => InvitationScreen(
+                  onSaved: () {
+                    //user.updateUserData(user);
+                  },
+                ),
+          ),
+        );
+      },
+      logoutCallback: widget.logoutCallback,
+      employeeRoles: user.employeeRoles(),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     BlpUser user = UserWidget.of(context).user;
@@ -285,23 +306,7 @@ class BlaulichtPlanerAppState extends State<BlaulichtplanerApp> {
         actions: _createAppBarActions(user),
         bottom: _createDateNavigation(),
       ),
-      drawer: DrawerWidget(
-        user: user,
-        invitationCallback: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (BuildContext context) => InvitationScreen(
-                    onSaved: () {
-                      //user.updateUserData(user);
-                    },
-                  ),
-            ),
-          );
-        },
-        logoutCallback: widget.logoutCallback,
-        employeeRoles: user.employeeRoles(),
-      ),
+      drawer: _createDrawer(user),
       body: _createBody(user),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: selectedTab,

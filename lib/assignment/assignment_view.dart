@@ -1,14 +1,13 @@
 import 'dart:async';
-import 'package:blaulichtplaner_app/assignment/assignment_service.dart';
+
 import 'package:blaulichtplaner_app/evaluation/evaluation_editor.dart';
 import 'package:blaulichtplaner_app/firestore/firestore_flutter.dart';
 import 'package:blaulichtplaner_app/widgets/loader.dart';
+import 'package:blaulichtplaner_app/widgets/no_employee.dart';
 import 'package:blaulichtplaner_lib/blaulichtplaner.dart';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:intl/intl.dart';
-import 'package:blaulichtplaner_app/widgets/no_employee.dart';
 
 class AssignmentView extends StatefulWidget {
   final List<UserRole> employeeRoles;
@@ -61,8 +60,6 @@ class AssignmentViewState extends State<AssignmentView> {
   void _initDataListeners() {
     final firestore = FirestoreImpl.instance;
     if (widget.hasEmployeeRoles()) {
-      print("Listening for assignments: ${widget.upcomingShifts}");
-
       for (final role in widget.employeeRoles) {
         Query query = firestore
             .collection("assignments")
@@ -78,7 +75,7 @@ class AssignmentViewState extends State<AssignmentView> {
               .where("to", isLessThanOrEqualTo: DateTime.now())
               .orderBy("to", descending: true);
         }
-        
+
         subs.add(query.snapshots().listen((snapshot) {
           setState(() {
             for (final doc in snapshot.documentChanges) {
@@ -104,6 +101,17 @@ class AssignmentViewState extends State<AssignmentView> {
         }));
       }
     }
+  }
+
+  void _finishEvaluation(Loadable<AssignmentModel> loadableAssignment) async {
+    setState(() {
+      loadableAssignment.loading = true;
+    });
+    EvaluationModel evaluationModel =
+        await EvaluationQuery(FirestoreImpl.instance)
+            .getEvaluationForAssignment(loadableAssignment.data);
+    EvaluationSave(FirestoreImpl.instance)
+        .performAction(EvaluationAction(evaluationModel, true));
   }
 
   Widget _assignmentBuilder(BuildContext context, int index) {
@@ -177,10 +185,7 @@ class AssignmentViewState extends State<AssignmentView> {
                   child: Text('Finalisieren'),
                   onPressed: DateTime.now().isAfter(assignment.to)
                       ? () {
-                          setState(() {
-                            loadableAssignment.loading = true;
-                          });
-                          AssignmentService.finishAssignment(assignment);
+                          _finishEvaluation(loadableAssignment);
                         }
                       : null,
                 ),

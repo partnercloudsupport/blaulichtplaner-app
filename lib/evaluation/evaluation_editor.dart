@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:blaulichtplaner_app/assignment/assignment_service.dart';
 import 'package:blaulichtplaner_app/evaluation/evaluation_form.dart';
 import 'package:blaulichtplaner_app/firestore/firestore_flutter.dart';
 import 'package:blaulichtplaner_app/widgets/loader.dart';
@@ -21,47 +20,42 @@ class EvaluationEditor extends StatefulWidget {
 }
 
 class EvaluationEditorState extends State<EvaluationEditor> {
-  final model = EvaluationModel();
+  EvaluationModel model;
   bool _initialized = false;
-  DocumentReference knownEvaluation;
 
   @override
   void initState() {
     super.initState();
-    AssignmentService.initModelWithAssignment(model, widget.assignment);
-    initFromPreviousEvaluation(widget.assignment.selfRef);
+    _initFromPreviousEvaluation();
   }
 
-  Future initFromPreviousEvaluation(DocumentReference assignmentRef) async {
-    final query = await FirestoreImpl.instance
-        .collection("evaluations")
-        .where("assignmentRef", isEqualTo: assignmentRef)
-        .getDocuments();
-    if (query.documents.isNotEmpty) {
-      final doc = query.documents.first;
-      knownEvaluation = doc.reference;
-      AssignmentService.initModelWithEvaluation(model, doc);
-    }
+  Future _initFromPreviousEvaluation() async {
+    EvaluationQuery evaluationQuery = EvaluationQuery(FirestoreImpl.instance);
+    model = await evaluationQuery.getEvaluationForAssignment(widget.assignment);
     setState(() {
       _initialized = true;
     });
   }
 
+  void _saveEvaluation(bool finish) async {
+    await EvaluationSave(FirestoreImpl.instance)
+        .performAction(EvaluationAction(model, finish));
+    Navigator.pop(context);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(title: Text("Dienstauswertung")),
-        body: LoaderWidget(
-          loading: !_initialized,
-          child: SingleChildScrollView(
-              child: EvaluationForm(
+      appBar: AppBar(title: Text("Dienstauswertung")),
+      body: LoaderWidget(
+        loading: !_initialized,
+        child: SingleChildScrollView(
+          child: EvaluationForm(
             model: model,
-                onSave: (finish) async {
-                  await AssignmentService.saveEvaluation(
-                      knownEvaluation, widget.assignment, model, finish);
-                  Navigator.pop(context);
-                },
-              )),
-        ));
+            onSave: _saveEvaluation,
+          ),
+        ),
+      ),
+    );
   }
 }

@@ -1,55 +1,43 @@
 import 'package:blaulichtplaner_lib/blaulichtplaner.dart';
 import 'package:cloud_firestore/cloud_firestore.dart' as fs;
 
-dynamic _wrapValue(dynamic value) {
-  if (value is fs.DocumentReference) {
-    return _DocumentReferenceImpl(value);
-  } else if (value is Map) {
-    return _wrapValues(Map.castFrom(value));
-  } else if (value is fs.Timestamp) {
-    return value.toDate();
-  } else {
-    return value;
+class DataWrapperImpl extends DataWrapper {
+  @override
+  dynamic wrapValue(dynamic value) {
+    if (value is fs.DocumentReference) {
+      return _DocumentReferenceImpl(value);
+    } else if (value is Map) {
+      return wrapMap(Map.castFrom(value));
+    } else if (value is List) {
+      return wrapList(List.castFrom(value));
+    } else if (value is fs.Timestamp) {
+      return value.toDate();
+    } else {
+      return value;
+    }
+  }
+
+  @override
+  dynamic unwrapValue(dynamic value) {
+    if (value is _DocumentReferenceImpl) {
+      return value._documentReference;
+    } else if (value == FieldValue.DELETE) {
+      return fs.FieldValue.delete();
+    } else if (value == FieldValue.SERVER_TIMESTAMP) {
+      return fs.FieldValue.serverTimestamp();
+    } else if (value is Map) {
+      return unwrapMap(value);
+    } else if (value is DateTime) {
+      return fs.Timestamp.fromDate(value);
+    } else if (value is List) {
+      return unwrapList(value);
+    } else {
+      return value;
+    }
   }
 }
 
-/// wraps Firestore library values into this API values
-///
-/// returns a new Map
-Map<String, dynamic> _wrapValues(Map<String, dynamic> data) {
-  Map<String, dynamic> result = {};
-  data.forEach((key, value) {
-    result[key] = _wrapValue(value);
-  });
-  return result;
-}
-
-dynamic _unwrapValue(dynamic value) {
-  if (value is _DocumentReferenceImpl) {
-    return value._documentReference;
-  } else if (value == FieldValue.DELETE) {
-    return fs.FieldValue.delete();
-  } else if (value == FieldValue.SERVER_TIMESTAMP) {
-    return fs.FieldValue.serverTimestamp();
-  } else if (value is Map) {
-    return _unwarpValues(value);
-  } else if (value is DateTime) {
-    return fs.Timestamp.fromDate(value);
-  } else {
-    return value;
-  }
-}
-
-/// unwraps this API values into Firestore internal values
-///
-/// returns a new Map
-Map<String, dynamic> _unwarpValues(Map<String, dynamic> data) {
-  Map<String, dynamic> result = {};
-  data.forEach((key, value) {
-    result[key] = _unwrapValue(value);
-  });
-  return result;
-}
+final DataWrapper _dataWrapper = DataWrapperImpl();
 
 class _DocumentSnapshotImpl extends DocumentSnapshot {
   final fs.DocumentSnapshot _documentSnapshot;
@@ -58,7 +46,7 @@ class _DocumentSnapshotImpl extends DocumentSnapshot {
 
   @override
   Map<String, dynamic> get data {
-    return _wrapValues(_documentSnapshot.data);
+    return _dataWrapper.wrapMap(_documentSnapshot.data);
   }
 
   @override
@@ -160,7 +148,8 @@ class _DocumentReferenceImpl extends DocumentReference {
 
   @override
   Future<void> setData(Map<String, dynamic> data, {bool merge = false}) {
-    return _documentReference.setData(_unwarpValues(data), merge: merge);
+    return _documentReference.setData(_dataWrapper.unwrapMap(data),
+        merge: merge);
   }
 
   @override
@@ -172,7 +161,7 @@ class _DocumentReferenceImpl extends DocumentReference {
 
   @override
   Future<void> update(Map<String, dynamic> data) {
-    return _documentReference.updateData(_unwarpValues(data));
+    return _documentReference.updateData(_dataWrapper.unwrapMap(data));
   }
 }
 
@@ -186,7 +175,7 @@ class _CollectionReferenceImpl extends _QueryImpl
   @override
   Future<DocumentReference> add(Map<String, dynamic> document) async {
     return _DocumentReferenceImpl(
-        await _collectionReference.add(_unwarpValues(document)));
+        await _collectionReference.add(_dataWrapper.unwrapMap(document)));
   }
 
   @override
@@ -230,13 +219,14 @@ class _QueryImpl extends Query {
       arrayContains,
       bool isNull}) {
     return _QueryImpl(_query.where(field,
-        isEqualTo: _unwrapValue(isEqualTo),
-        isGreaterThan: _unwrapValue(isGreaterThan),
-        isGreaterThanOrEqualTo: _unwrapValue(isGreaterThanOrEqualTo),
-        isLessThan: _unwrapValue(isLessThan),
-        isLessThanOrEqualTo: _unwrapValue(isLessThanOrEqualTo),
-        isNull: _unwrapValue(isNull),
-        arrayContains: _unwrapValue(arrayContains)));
+        isEqualTo: _dataWrapper.unwrapValue(isEqualTo),
+        isGreaterThan: _dataWrapper.unwrapValue(isGreaterThan),
+        isGreaterThanOrEqualTo:
+            _dataWrapper.unwrapValue(isGreaterThanOrEqualTo),
+        isLessThan: _dataWrapper.unwrapValue(isLessThan),
+        isLessThanOrEqualTo: _dataWrapper.unwrapValue(isLessThanOrEqualTo),
+        isNull: _dataWrapper.unwrapValue(isNull),
+        arrayContains: _dataWrapper.unwrapValue(arrayContains)));
   }
 }
 
@@ -293,7 +283,7 @@ class _Transaction extends Transaction {
       DocumentReference documentReference, Map<String, dynamic> data) async {
     await _transaction.set(
         (documentReference as _DocumentReferenceImpl)._documentReference,
-        _unwarpValues(data));
+        _dataWrapper.unwrapMap(data));
   }
 
   @override
@@ -301,7 +291,7 @@ class _Transaction extends Transaction {
       DocumentReference documentReference, Map<String, dynamic> data) async {
     await _transaction.update(
         (documentReference as _DocumentReferenceImpl)._documentReference,
-        _unwarpValues(data));
+        _dataWrapper.unwrapMap(data));
   }
 }
 

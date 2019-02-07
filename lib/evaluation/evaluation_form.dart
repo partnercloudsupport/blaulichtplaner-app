@@ -1,31 +1,7 @@
 import 'package:blaulichtplaner_app/widgets/date_time_picker.dart';
 import 'package:blaulichtplaner_app/widgets/loader.dart';
+import 'package:blaulichtplaner_lib/blaulichtplaner.dart';
 import 'package:flutter/material.dart';
-
-class EvaluationModel {
-  DateTime originalFrom;
-  DateTime originalTo;
-  DateTime actualFrom;
-  DateTime actualTo;
-  int reasonOvertime = 0;
-  String remarks;
-  List<AssignmentTask> tasks = [];
-
-  bool isOvertime() {
-    return actualTo != null &&
-        originalTo != null &&
-        actualTo.isAfter(originalTo);
-  }
-}
-
-class AssignmentTask {
-  String type = "assignment";
-  String reference;
-  String remarks;
-  DateTime taskTime = DateTime.now();
-
-  AssignmentTask(this.reference);
-}
 
 typedef void SaveEvaluation(bool finish);
 

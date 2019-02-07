@@ -22,7 +22,7 @@ class Shiftplan extends StatefulWidget {
 
 class ShiftplanState extends State<Shiftplan> {
   bool _initialized = false;
-  bool _selectMonth = false;
+  bool _selectMonth = true;
   DateTime _selectedDate = DateTime.now();
   StreamSubscription _sub;
   ShiftHolder _shifts = new ShiftHolder();
@@ -78,7 +78,6 @@ class ShiftplanState extends State<Shiftplan> {
   }
 
   Widget _buildBody() {
-    print(_selectMonth);
     if (_selectMonth) {
       return ShiftplanMonth(
         plan: widget.plan,

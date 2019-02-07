@@ -126,6 +126,8 @@ class _ShiftVotesTabState extends State<ShiftVotesTabWidget> {
             _selectDate = !_selectDate;
             if (!_selectDate) {
               _filterConfig.selectedDate = null;
+            } else {
+              _filterConfig.selectedDate = DateTime.now();
             }
           });
         },

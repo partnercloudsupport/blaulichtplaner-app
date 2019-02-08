@@ -92,7 +92,7 @@ class ShiftplanOverviewState extends State<ShiftplanOverview> {
                     context,
                     MaterialPageRoute(
                       builder: (BuildContext context) =>
-                          Shiftplan(plan: _shiftplans.plans[index]),
+                          ShiftplanWidget(plan: _shiftplans.plans[index]),
                     ),
                   );
                 },

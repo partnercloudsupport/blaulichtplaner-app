@@ -19,7 +19,7 @@ class DateTimePickerWidget extends StatelessWidget {
   DateTimePickerWidget(
       {Key key,
       @required this.dateTime,
-      @required this.dateTimeChanged,
+       this.dateTimeChanged,
       this.fixedDates = true,
       this.originalDateTime})
       : super(key: key);
@@ -89,7 +89,7 @@ class DateTimePickerWidget extends StatelessWidget {
               ],
             ),
           ),
-          onTap: _createFromDateTapHandler(context),
+          onTap: dateTimeChanged != null ? _createFromDateTapHandler(context) : null,
         ),
       ),
       Expanded(
@@ -102,7 +102,7 @@ class DateTimePickerWidget extends StatelessWidget {
               style: inputTextStyle,
             ),
           ),
-          onTap: _createFromTimeTapHandler(context),
+          onTap: dateTimeChanged != null ? _createFromTimeTapHandler(context) : null,
         ),
       ),
     ];

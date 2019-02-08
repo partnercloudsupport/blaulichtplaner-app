@@ -9,18 +9,18 @@ import 'package:blaulichtplaner_app/widgets/loader.dart';
 import 'package:blaulichtplaner_lib/blaulichtplaner.dart';
 import 'package:flutter/material.dart';
 
-class Shiftplan extends StatefulWidget {
+class ShiftplanWidget extends StatefulWidget {
   final ShiftplanModel plan;
 
-  const Shiftplan({Key key, this.plan}) : super(key: key);
+  const ShiftplanWidget({Key key, this.plan}) : super(key: key);
 
   @override
   State<StatefulWidget> createState() {
-    return ShiftplanState();
+    return ShiftplanWidgetState();
   }
 }
 
-class ShiftplanState extends State<Shiftplan> {
+class ShiftplanWidgetState extends State<ShiftplanWidget> {
   bool _initialized = false;
   bool _selectMonth = true;
   DateTime _selectedDate = DateTime.now();
@@ -34,7 +34,7 @@ class ShiftplanState extends State<Shiftplan> {
   }
 
   @override
-  void didUpdateWidget(Shiftplan oldWidget) {
+  void didUpdateWidget(ShiftplanWidget oldWidget) {
     super.didUpdateWidget(oldWidget);
     _cancelDataListeners();
     _shifts.clear();

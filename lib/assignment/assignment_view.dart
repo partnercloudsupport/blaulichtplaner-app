@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:blaulichtplaner_app/evaluation/evaluation_editor.dart';
 import 'package:blaulichtplaner_app/firestore/firestore_flutter.dart';
+import 'package:blaulichtplaner_app/shift/shift_view.dart';
 import 'package:blaulichtplaner_app/widgets/loader.dart';
 import 'package:blaulichtplaner_app/widgets/no_employee.dart';
 import 'package:blaulichtplaner_lib/blaulichtplaner.dart';
@@ -207,12 +208,19 @@ class AssignmentViewState extends State<AssignmentView> {
       );
     }
     Widget card = Card(
+        child: InkWell(
+      onTap: () {
+        Navigator.of(context)
+            .push(MaterialPageRoute(builder: (BuildContext context) {
+          return ShiftViewWidget(shiftRef: assignment.shiftRef, employeeRef: assignment.employeeRef,);
+        }));
+      },
       child: Column(
         mainAxisSize: MainAxisSize.max,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: cardChildren,
       ),
-    );
+    ));
     Widget timeDiff = _timeDiffBuilder(index);
     if (timeDiff != null) {
       return Column(

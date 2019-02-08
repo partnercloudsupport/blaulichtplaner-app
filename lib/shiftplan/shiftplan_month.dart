@@ -1,3 +1,4 @@
+import 'package:blaulichtplaner_app/shift/shift_view.dart';
 import 'package:blaulichtplaner_app/shiftplan/shiftplan_model.dart';
 import 'package:blaulichtplaner_lib/blaulichtplaner.dart';
 import 'package:flutter/material.dart';
@@ -62,8 +63,7 @@ class ShiftBadge extends StatelessWidget {
   }
 }
 
-class ShiftplanMonth extends StatelessWidget {
-  final _keys = const ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'];
+class ShiftplanMonth extends StatefulWidget {
   final Function selectDay;
   final ShiftHolder shiftHolder;
   final ShiftplanModel plan;
@@ -74,6 +74,15 @@ class ShiftplanMonth extends StatelessWidget {
       @required this.shiftHolder,
       @required this.plan})
       : super(key: key);
+
+  @override
+  ShiftplanMonthState createState() {
+    return ShiftplanMonthState();
+  }
+}
+
+class ShiftplanMonthState extends State<ShiftplanMonth> {
+  final _keys = const ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'];
 
   Widget _caption() {
     List<Widget> elements = <Widget>[];
@@ -112,14 +121,14 @@ class ShiftplanMonth extends StatelessWidget {
         ),
       ];
       List<Shift> shifts =
-          shiftHolder.getShiftsBetween(day, day.add(Duration(days: 1)));
+          widget.shiftHolder.getShiftsBetween(day, day.add(Duration(days: 1)));
       if (shifts.length > 2) {
         shifts = shifts.sublist(0, 2);
         shifts.forEach((Shift shift) {
           shiftBadges.add(ShiftBadge(
             shift: shift,
             onTap: () {
-              selectDay(day);
+              widget.selectDay(day);
             },
           ));
         });
@@ -144,11 +153,19 @@ class ShiftplanMonth extends StatelessWidget {
         ));
       } else {
         shifts.forEach((Shift shift) {
-          shiftBadges.add(ShiftBadge(
-            shift: shift,
+          shiftBadges.add(InkWell(
             onTap: () {
-              selectDay(day);
+              Navigator.of(context)
+                  .push(MaterialPageRoute(builder: (BuildContext context) {
+                return ShiftViewWidget(
+                  shiftRef: shift.shiftRef,
+                  employeeRef: shift.employeeRef,
+                );
+              }));
             },
+            child: ShiftBadge(
+              shift: shift,
+            ),
           ));
         });
       }
@@ -158,7 +175,7 @@ class ShiftplanMonth extends StatelessWidget {
           flex: 1,
           child: GestureDetector(
             onTap: () {
-              selectDay(day);
+              widget.selectDay(day);
             },
             child: Container(
               height: 150.0,
@@ -183,10 +200,10 @@ class ShiftplanMonth extends StatelessWidget {
     return Row(children: row);
   }
 
-  Future<Widget> _month() async {
+  Widget _month() {
     List<Widget> rows = [];
-    DateTime from = plan.startOfPlan();
-    DateTime to = plan.endOfPlan();
+    DateTime from = widget.plan.startOfPlan();
+    DateTime to = widget.plan.endOfPlan();
 
     for (int i = 0; i < (to.difference(from).inDays / 7); i++) {
       rows.add(_week(from.add(Duration(days: i * 7))));
@@ -199,21 +216,7 @@ class ShiftplanMonth extends StatelessWidget {
   Widget build(BuildContext context) {
     return SingleChildScrollView(
       child: Column(
-        children: [
-          _caption(),
-          FutureBuilder(
-            future: _month(),
-            builder: (BuildContext context, AsyncSnapshot<Widget> snapshot) {
-              if (!snapshot.hasData) {
-                return Padding(
-                  padding: EdgeInsets.only(top: 50, bottom: 10),
-                  child: CircularProgressIndicator(),
-                );
-              }
-              return snapshot.data;
-            },
-          )
-        ],
+        children: [_caption(), _month()],
       ),
     );
   }

@@ -27,11 +27,14 @@ class BlaulichtPlanerAppState extends State<BlaulichtplanerApp> {
 
   @override
   void initState() {
+    super.initState();
     user = UserManager.instance.user;
     _initMessaging();
   }
 
   void _initMessaging() async {
+    print("init messaging");
+    
     Firestore firestore = FirestoreImpl.instance;
     String token = await _firebaseMessaging.getToken();
     print(' gotten $token');
@@ -48,6 +51,10 @@ class BlaulichtPlanerAppState extends State<BlaulichtplanerApp> {
     if (!tokenExits) {
       collection.add({'token': token, 'created': DateTime.now()});
     }
+
+    _firebaseMessaging.configure(onMessage: (Map<String, dynamic> message) {
+      print("New message: $message");
+    });
 
     _firebaseMessaging.onTokenRefresh.listen((String token) {
       print(' output $token');

@@ -6,8 +6,10 @@ import 'package:blaulichtplaner_app/shift_vote/shift_votes_tab.dart';
 import 'package:blaulichtplaner_app/shiftplan/shiftplan_overview_tab.dart';
 import 'package:blaulichtplaner_app/widgets/drawer.dart';
 import 'package:blaulichtplaner_lib/blaulichtplaner.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 class BlaulichtplanerApp extends StatefulWidget {
   final Function logoutCallback;
@@ -22,6 +24,9 @@ class BlaulichtplanerApp extends StatefulWidget {
 
 class BlaulichtPlanerAppState extends State<BlaulichtplanerApp> {
   final FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
+  final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+      FlutterLocalNotificationsPlugin();
+
   int selectedTab = 0;
   BlpUser user;
 
@@ -30,11 +35,78 @@ class BlaulichtPlanerAppState extends State<BlaulichtplanerApp> {
     super.initState();
     user = UserManager.instance.user;
     _initMessaging();
+    _initLocalNotification();
+  }
+
+  _initLocalNotification() {
+    var initializationSettingsAndroid =
+        new AndroidInitializationSettings('app_icon');
+    var initializationSettingsIOS = new IOSInitializationSettings(
+        onDidReceiveLocalNotification: onDidRecieveLocalNotification);
+    var initializationSettings = new InitializationSettings(
+        initializationSettingsAndroid, initializationSettingsIOS);
+    flutterLocalNotificationsPlugin.initialize(initializationSettings,
+        onSelectNotification: onSelectNotification);
+  }
+
+  Future onSelectNotification(String payload) async {
+    if (payload != null) {
+      debugPrint('notification payload: ' + payload);
+    }
+  }
+
+  Future onDidRecieveLocalNotification(
+      int id, String title, String body, String payload) async {
+    // display a dialog with the notification details, tap ok to go to another page
+    showDialog(
+      context: context,
+      builder: (BuildContext context) => new CupertinoAlertDialog(
+            title: new Text(title),
+            content: new Text(body),
+            actions: [
+              CupertinoDialogAction(
+                isDefaultAction: true,
+                child: new Text('Ok'),
+                onPressed: () async {},
+              )
+            ],
+          ),
+    );
+  }
+
+  @override
+  void didUpdateWidget(BlaulichtplanerApp oldWidget) {
+    // TODO: implement didUpdateWidget
+    super.didUpdateWidget(oldWidget);
+    _initMessaging();
+  }
+
+  void _showNotification(String title, String body) async {
+    print('show notification $title $body');
+
+    try {
+      var androidPlatformChannelSpecifics = new AndroidNotificationDetails(
+          'de.grundid.blaulichtplanner', 'notification', 'description',
+          importance: Importance.Max, priority: Priority.High);
+      print('android platform specific done');
+      var iOSPlatformChannelSpecifics = new IOSNotificationDetails();
+      print('IOS specific done');
+
+      var platformChannelSpecifics = new NotificationDetails(
+          androidPlatformChannelSpecifics, iOSPlatformChannelSpecifics);
+      print('platformChannelSpecifics specific done');
+
+      Future result = await flutterLocalNotificationsPlugin
+          .show(0, title, body, platformChannelSpecifics, payload: 'item x');
+      print('message sent $result');
+    } catch (e) {
+      print('the errors was $e');
+    }
   }
 
   void _initMessaging() async {
     print("init messaging");
-    
+
     Firestore firestore = FirestoreImpl.instance;
     String token = await _firebaseMessaging.getToken();
     print(' gotten $token');
@@ -53,7 +125,16 @@ class BlaulichtPlanerAppState extends State<BlaulichtplanerApp> {
     }
 
     _firebaseMessaging.configure(onMessage: (Map<String, dynamic> message) {
-      print("New message: $message");
+      try {
+        print("something else: ${message.keys}");
+        Map<String, dynamic> notification =
+            Map.castFrom(message['notification']);
+        print('this is the $notification');
+
+        _showNotification(notification['title'], notification['body']);
+      } catch (e) {
+        print(e);
+      }
     });
 
     _firebaseMessaging.onTokenRefresh.listen((String token) {

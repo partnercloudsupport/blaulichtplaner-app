@@ -7,9 +7,9 @@
 	<key>AD_UNIT_ID_FOR_INTERSTITIAL_TEST</key>
 	<string>ca-app-pub-3940256099942544/4411468910</string>
 	<key>CLIENT_ID</key>
-	<string>946323987274-odc090qqaiu9c1mde0ctqquslkfk9a6u.apps.googleusercontent.com</string>
+	<string>946323987274-k57te3hn3ncgi2e5mh1mbfg6a1b0b94g.apps.googleusercontent.com</string>
 	<key>REVERSED_CLIENT_ID</key>
-	<string>com.googleusercontent.apps.946323987274-odc090qqaiu9c1mde0ctqquslkfk9a6u</string>
+	<string>com.googleusercontent.apps.946323987274-k57te3hn3ncgi2e5mh1mbfg6a1b0b94g</string>
 	<key>API_KEY</key>
 	<string>AIzaSyB0KTT01k-zn5ccm7S6TaPiWqFcdnWg_MU</string>
 	<key>GCM_SENDER_ID</key>
@@ -17,7 +17,7 @@
 	<key>PLIST_VERSION</key>
 	<string>1</string>
 	<key>BUNDLE_ID</key>
-	<string>de.grundid.blaulichtplanerApp</string>
+	<string>de.grundid.blaulichtplaner</string>
 	<key>PROJECT_ID</key>
 	<string>blaulichtplaner</string>
 	<key>STORAGE_BUCKET</key>
@@ -33,7 +33,7 @@
 	<key>IS_SIGNIN_ENABLED</key>
 	<true></true>
 	<key>GOOGLE_APP_ID</key>
-	<string>1:946323987274:ios:a57b0b8f4ff54905</string>
+	<string>1:946323987274:ios:4502c1593b855c26</string>
 	<key>DATABASE_URL</key>
 	<string>https://blaulichtplaner.firebaseio.com</string>
 </dict>

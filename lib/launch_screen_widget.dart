@@ -88,10 +88,10 @@ class LaunchScreenState extends State<LaunchScreen> {
     GoogleSignInAccount account = await googleSignIn.signIn();
     if (account != null) {
       GoogleSignInAuthentication googleAuth = await account.authentication;
-      FirebaseUser newUser = await _auth.signInWithGoogle(
+      FirebaseUser newUser = await _auth.signInWithCredential(GoogleAuthProvider.getCredential(
         accessToken: googleAuth.accessToken,
         idToken: googleAuth.idToken,
-      );
+      ));
       RegistrationResult result = await Navigator.push(
           context,
           MaterialPageRoute(

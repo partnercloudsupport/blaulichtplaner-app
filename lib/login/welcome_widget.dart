@@ -131,10 +131,10 @@ class LoginFormState extends State<LoginForm> {
       GoogleSignInAccount googleUser = await _googleSignIn.signIn();
       if (googleUser != null) {
         GoogleSignInAuthentication googleAuth = await googleUser.authentication;
-        FirebaseUser user = await _auth.signInWithGoogle(
+        FirebaseUser user = await _auth.signInWithCredential(GoogleAuthProvider.getCredential(
           accessToken: googleAuth.accessToken,
           idToken: googleAuth.idToken,
-        );
+        ));
         print("signed in " + user.displayName);
         widget.loginCallback(user);
       }

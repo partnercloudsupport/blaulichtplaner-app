@@ -1,4 +1,4 @@
-package de.grundid.blaulichtplanerapp;
+package de.grundid.blaulichtplaner;
 
 import android.os.Bundle;
 import io.flutter.app.FlutterActivity;

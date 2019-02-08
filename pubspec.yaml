@@ -11,6 +11,7 @@ dependencies:
   nanoid: ^0.0.4
   url_launcher: ^3.0.3
   firebase_messaging: ^3.0.1
+  flutter_local_notifications: ^0.5.0
   blaulichtplaner_lib:
 #    path: /Users/adrian/devSystem/projects/blp/blaulichtplaner_lib
     git: git://github.com/Blaulichtplaner/blaulichtplaner_lib.git

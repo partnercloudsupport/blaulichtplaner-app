@@ -36,6 +36,7 @@ class BlaulichtPlanerAppState extends State<BlaulichtplanerApp> {
     user = UserManager.instance.user;
     _initMessaging();
     _initLocalNotification();
+    _firebaseMessaging.requestNotificationPermissions();
   }
 
   _initLocalNotification() {

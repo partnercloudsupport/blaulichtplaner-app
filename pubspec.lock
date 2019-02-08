@@ -32,9 +32,11 @@ packages:
   blaulichtplaner_lib:
     dependency: "direct main"
     description:
-      path: "/Users/adrian/devSystem/projects/blp/blaulichtplaner_lib"
-      relative: false
-    source: path
+      path: "."
+      ref: HEAD
+      resolved-ref: "6efd01f162a25154494311dc01f07788ef3ee0cd"
+      url: "git://github.com/Blaulichtplaner/blaulichtplaner_lib.git"
+    source: git
     version: "1.0.0"
   boolean_selector:
     dependency: transitive

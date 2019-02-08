@@ -1,11 +1,13 @@
 import 'package:blaulichtplaner_app/assignment/assignment_tab.dart';
 import 'package:blaulichtplaner_app/authentication.dart';
+import 'package:blaulichtplaner_app/firestore/firestore_flutter.dart';
 import 'package:blaulichtplaner_app/invitation/invitation_view.dart';
 import 'package:blaulichtplaner_app/shift_vote/shift_votes_tab.dart';
 import 'package:blaulichtplaner_app/shiftplan/shiftplan_overview_tab.dart';
 import 'package:blaulichtplaner_app/widgets/drawer.dart';
 import 'package:blaulichtplaner_lib/blaulichtplaner.dart';
 import 'package:flutter/material.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 
 class BlaulichtplanerApp extends StatefulWidget {
   final Function logoutCallback;
@@ -19,7 +21,38 @@ class BlaulichtplanerApp extends StatefulWidget {
 }
 
 class BlaulichtPlanerAppState extends State<BlaulichtplanerApp> {
+  final FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
   int selectedTab = 0;
+  BlpUser user;
+
+  @override
+  void initState() {
+    user = UserManager.instance.user;
+    _initMessaging();
+  }
+
+  void _initMessaging() async {
+    Firestore firestore = FirestoreImpl.instance;
+    String token = await _firebaseMessaging.getToken();
+    print(' gotten $token');
+    CollectionReference collection =
+        firestore.collection('users').document(user.uid).collection('tokens');
+
+    QuerySnapshot querySnapshot = await collection.getDocuments();
+
+    bool tokenExits = querySnapshot.documents.firstWhere(
+            (snapshot) => snapshot.data['token'] == token,
+            orElse: () => null) !=
+        null;
+
+    if (!tokenExits) {
+      collection.add({'token': token, 'created': DateTime.now()});
+    }
+
+    _firebaseMessaging.onTokenRefresh.listen((String token) {
+      print(' output $token');
+    });
+  }
 
   Widget _createWidget(
       BlpUser user, BottomNavigationBar bottomNavigationBar, Widget drawer) {
@@ -68,7 +101,6 @@ class BlaulichtPlanerAppState extends State<BlaulichtplanerApp> {
 
   @override
   Widget build(BuildContext context) {
-    BlpUser user = UserManager.instance.user;
     BottomNavigationBar bottomNavigationBar = BottomNavigationBar(
       currentIndex: selectedTab,
       items: [

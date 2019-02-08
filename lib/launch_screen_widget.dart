@@ -10,6 +10,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+
 
 class LaunchScreen extends StatefulWidget {
   LaunchScreen({Key key}) : super(key: key);
@@ -109,9 +111,11 @@ class LaunchScreenState extends State<LaunchScreen> {
   @override
   Widget build(BuildContext context) {
     return LoaderBodyWidget(
+
       loading: !_initialized || _loginInProgress,
       child: BlaulichtplanerApp(
         logoutCallback: _logout,
+
       ),
       empty: _user == null,
       fallbackWidget: WelcomeScreen(

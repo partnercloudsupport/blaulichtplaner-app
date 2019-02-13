@@ -77,7 +77,6 @@ class BlaulichtPlanerAppState extends State<BlaulichtplanerApp> {
 
   @override
   void didUpdateWidget(BlaulichtplanerApp oldWidget) {
-    // TODO: implement didUpdateWidget
     super.didUpdateWidget(oldWidget);
     _initMessaging();
   }
@@ -86,22 +85,21 @@ class BlaulichtPlanerAppState extends State<BlaulichtplanerApp> {
     print('show notification $title $body');
 
     try {
-      var androidPlatformChannelSpecifics = new AndroidNotificationDetails(
-          'de.grundid.blaulichtplanner', 'notification', 'description',
-          importance: Importance.Max, priority: Priority.High);
-      print('android platform specific done');
-      var iOSPlatformChannelSpecifics = new IOSNotificationDetails();
-      print('IOS specific done');
-
-      var platformChannelSpecifics = new NotificationDetails(
+      AndroidNotificationDetails androidPlatformChannelSpecifics =
+          AndroidNotificationDetails(
+              'de.grundid.blaulichtplanner',
+              'Dienstplaner Benachrichtigungen',
+              'Benachrichtigungen über kommende Dienste und weitere Informationen',
+              importance: Importance.Max,
+              priority: Priority.High);
+      IOSNotificationDetails iOSPlatformChannelSpecifics =
+          IOSNotificationDetails(presentAlert: true);
+      NotificationDetails platformChannelSpecifics = NotificationDetails(
           androidPlatformChannelSpecifics, iOSPlatformChannelSpecifics);
-      print('platformChannelSpecifics specific done');
-
-      Future result = await flutterLocalNotificationsPlugin
-          .show(0, title, body, platformChannelSpecifics, payload: 'item x');
-      print('message sent $result');
+      await flutterLocalNotificationsPlugin
+          .show(0, title, body, platformChannelSpecifics);
     } catch (e) {
-      print('the errors was $e');
+      print('notifications error: $e');
     }
   }
 
@@ -111,40 +109,43 @@ class BlaulichtPlanerAppState extends State<BlaulichtplanerApp> {
     Firestore firestore = FirestoreImpl.instance;
     String token = await _firebaseMessaging.getToken();
     print(' gotten $token');
-    CollectionReference collection =
-        firestore.collection('users').document(user.uid).collection('tokens');
-
-    QuerySnapshot querySnapshot = await collection.getDocuments();
-
-    bool tokenExits = querySnapshot.documents.firstWhere(
-            (snapshot) => snapshot.data['token'] == token,
-            orElse: () => null) !=
-        null;
-
-    if (!tokenExits) {
-      collection.add({'token': token, 'created': DateTime.now()});
-    }
+    await _updateTokenIfNecessary(firestore, token);
 
     _firebaseMessaging.configure(onMessage: (Map<String, dynamic> message) {
       try {
-        print("something else: ${message.keys}");
         Map<String, dynamic> notification =
             Map.castFrom(message['notification']);
         print('this is the $notification');
-
         _showNotification(notification['title'], notification['body']);
       } catch (e) {
         print(e);
       }
     }, onLaunch: (Map<String, dynamic> content) {
       print("OnLaunch: $content");
-    }, onResume: (Map<String, dynamic> content){
+    }, onResume: (Map<String, dynamic> content) {
       print("OnResume: $content");
     });
 
     _firebaseMessaging.onTokenRefresh.listen((String token) {
-      print(' output $token');
+      print(' token refresh $token');
+      // TODO update token in DB
     });
+  }
+
+  Future _updateTokenIfNecessary(Firestore firestore, String token) async {
+    CollectionReference collection =
+        firestore.collection('users').document(user.uid).collection('tokens');
+    
+    QuerySnapshot querySnapshot = await collection.getDocuments();
+    
+    bool tokenExits = querySnapshot.documents.firstWhere(
+            (snapshot) => snapshot.data['token'] == token,
+            orElse: () => null) !=
+        null;
+    
+    if (!tokenExits) {
+      collection.add({'token': token, 'created': DateTime.now()});
+    }
   }
 
   Widget _createWidget(

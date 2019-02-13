@@ -113,8 +113,10 @@ class BlaulichtPlanerAppState extends State<BlaulichtplanerApp> {
 
     _firebaseMessaging.configure(onMessage: (Map<String, dynamic> message) {
       try {
+        print("onMessage ${message}");
         Map<String, dynamic> notification =
-            Map.castFrom(message['notification']);
+            Map.castFrom(message['data']);
+          
         print('this is the $notification');
         _showNotification(notification['title'], notification['body']);
       } catch (e) {

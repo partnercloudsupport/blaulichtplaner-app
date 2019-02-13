@@ -130,7 +130,7 @@ class BlaulichtPlanerAppState extends State<BlaulichtplanerApp> {
     });
 
     _firebaseMessaging.onTokenRefresh.listen((String token) {
-      // TODO update token in DB
+      _updateTokenIfNecessary(firestore,token);
     });
   }
 

@@ -4,6 +4,7 @@ import 'package:blaulichtplaner_app/firestore/firestore_flutter.dart';
 import 'package:blaulichtplaner_app/invitation/invitation_view.dart';
 import 'package:blaulichtplaner_app/shift_vote/shift_votes_tab.dart';
 import 'package:blaulichtplaner_app/shiftplan/shiftplan_overview_tab.dart';
+import 'package:blaulichtplaner_app/utils/utils.dart';
 import 'package:blaulichtplaner_app/widgets/drawer.dart';
 import 'package:blaulichtplaner_lib/blaulichtplaner.dart';
 import 'package:flutter/cupertino.dart';
@@ -96,8 +97,8 @@ class BlaulichtPlanerAppState extends State<BlaulichtplanerApp> {
           IOSNotificationDetails(presentAlert: true);
       NotificationDetails platformChannelSpecifics = NotificationDetails(
           androidPlatformChannelSpecifics, iOSPlatformChannelSpecifics);
-      await flutterLocalNotificationsPlugin
-          .show(0, title, body, platformChannelSpecifics);
+      await flutterLocalNotificationsPlugin.show(
+          0, title, body, platformChannelSpecifics);
     } catch (e) {
       print('notifications error: $e');
     }
@@ -109,14 +110,14 @@ class BlaulichtPlanerAppState extends State<BlaulichtplanerApp> {
     Firestore firestore = FirestoreImpl.instance;
     String token = await _firebaseMessaging.getToken();
     print(' gotten $token');
+
     await _updateTokenIfNecessary(firestore, token);
 
     _firebaseMessaging.configure(onMessage: (Map<String, dynamic> message) {
       try {
         print("onMessage ${message}");
-        Map<String, dynamic> notification =
-            Map.castFrom(message['data']);
-          
+        Map<String, dynamic> notification = Map.castFrom(message['data']);
+
         print('this is the $notification');
         _showNotification(notification['title'], notification['body']);
       } catch (e) {
@@ -129,7 +130,6 @@ class BlaulichtPlanerAppState extends State<BlaulichtplanerApp> {
     });
 
     _firebaseMessaging.onTokenRefresh.listen((String token) {
-      print(' token refresh $token');
       // TODO update token in DB
     });
   }
@@ -137,16 +137,19 @@ class BlaulichtPlanerAppState extends State<BlaulichtplanerApp> {
   Future _updateTokenIfNecessary(Firestore firestore, String token) async {
     CollectionReference collection =
         firestore.collection('users').document(user.uid).collection('tokens');
-    
+
     QuerySnapshot querySnapshot = await collection.getDocuments();
-    
+
     bool tokenExits = querySnapshot.documents.firstWhere(
             (snapshot) => snapshot.data['token'] == token,
             orElse: () => null) !=
         null;
-    
+
     if (!tokenExits) {
-      collection.add({'token': token, 'created': DateTime.now()});
+      DeviceInfo deviceInfo = await getDeviceInfo();
+
+      collection.add({'token': token, 'created': DateTime.now(), 'model': deviceInfo.model, 'version': deviceInfo.version, 'name': deviceInfo.name});
+
     }
   }
 

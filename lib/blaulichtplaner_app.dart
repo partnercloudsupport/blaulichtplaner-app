@@ -136,6 +136,10 @@ class BlaulichtPlanerAppState extends State<BlaulichtplanerApp> {
       } catch (e) {
         print(e);
       }
+    }, onLaunch: (Map<String, dynamic> content) {
+      print("OnLaunch: $content");
+    }, onResume: (Map<String, dynamic> content){
+      print("OnResume: $content");
     });
 
     _firebaseMessaging.onTokenRefresh.listen((String token) {

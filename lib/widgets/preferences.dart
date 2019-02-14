@@ -12,83 +12,101 @@ class Preferences extends StatefulWidget {
 }
 
 class PreferencesState extends State<Preferences> {
+  final List<SettingConfig> configs = [
+    SettingConfig('Benachrichtigung: ', 'Benachrichtigung via Mobile phone',
+        'notifications'),
+    SettingConfig('Email-Benachrichtigung: ', 'Benachrichtigung via Email',
+        'emailNotifications'),
+  ];
   BlpUser user = UserManager.instance.user;
+
   bool emailNotificationValueState;
   bool notificationsValueState;
-  DocumentSnapshot settingsSnapShot;
+  DocumentReference notificationsReference;
 
-  @override
-  void initState() {
-    super.initState();
-    _getDocumentReference();
+    @override
+    void initState() {
+      super.initState();
+      notificationsReference = _getDocumentReference();
+    }
+
+    _getDocumentReference() {
+      Firestore firestore = FirestoreImpl.instance;
+      DocumentReference notificationsReference = firestore
+          .collection('users')
+          .document(user.uid)
+          .collection('settings')
+          .document('notifications');
+      _updateNotificationListener(notificationsReference);
+      return notificationsReference;
+    }
+
+  _notificationSettingsUpdater(String notificationName, bool value) {
+    notificationsReference.setData({notificationName: value}, merge: true);
   }
 
-  _getFireBaseUpdates() async {}
+  _updateNotificationListener(reference) {
+    reference.snapshots.listen(
+      (DocumentSnapshot snapshot) {
+        if (snapshot.exists) {
+          setState(
+            () {
+              for (SettingConfig item in configs) {
+                bool value = snapshot.data[item.settingName];
+                if (value != null) {
+                  item.value = value;
+                }
+              }
+            },
+          );
+        } else {
+          setState(() {
+            for (SettingConfig item in configs) {
+              item.value = true;
+            }
+          });
+        }
+      },
+    );
+  }
 
-  _getDocumentReference({bool emailValue, bool notificationsValue}) async {
-    Firestore firestore = FirestoreImpl.instance;
-    DocumentReference notificationsReference = firestore
-        .collection('users')
-        .document(user.uid)
-        .collection('settings')
-        .document('notifications');
-    DocumentSnapshot snapshot = await notificationsReference.document;
-
-    if (emailValue != null) {
-      notificationsReference.update({'emailNotifications': emailValue});
+    _settingsListBuilder() {
+      List<Widget> notificationSettingList = configs.map(_settingRow).toList();
+      return ListView(
+        padding: const EdgeInsets.all(0),
+        children: notificationSettingList,
+      );
     }
-    if (notificationsValue != null) {
-      notificationsReference.update({'notifications': notificationsValue});
-    }
 
-    notificationsReference.snapshots.listen((DocumentSnapshot snapshot) {
-      setState(() {
-        settingsSnapShot = snapshot;
-        emailNotificationValueState = settingsSnapShot.data['emailNotifications'];
-        notificationsValueState = settingsSnapShot.data['notifications'];
-      });
-    });
+  Widget _settingRow(SettingConfig config) {
+    return ListTile(
+      title: Text(config.title),
+      subtitle: Text(config.subTitle),
+      trailing: Checkbox(
+          value: config.value,
+          onChanged: (value) {
+            _notificationSettingsUpdater(config.settingName, value);
+          }),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    // TODO: implement build
     return Scaffold(
-      appBar: AppBar(title: Text('Benachrichtigungen')),
+      appBar: AppBar(title: Text('Benachrichtigung Einstellungen')),
       body: LoaderWidget(
-        padding: EdgeInsets.all(0),
-        loading: settingsSnapShot == null,
-        child: Column(
-          children: <Widget>[
-            Container(
-              child: Column(
-                children: <Widget>[
-                  ListTile(
-                    title: Text('Benachrichtigung: '),
-                    subtitle: Text('Benachrichtigung via Mobile phone'),
-                    trailing: Checkbox(
-                        tristate: true,
-                        value: notificationsValueState,
-                        onChanged: (value) {
-                          _getDocumentReference(notificationsValue: !notificationsValueState);
-                        }),
-                  ),
-                  ListTile(
-                    title: Text('Email-Benachrichtigung: '),
-                    subtitle: Text('Benachrichtigung via Email'),
-                    trailing: Checkbox(
-                      tristate: true,
-                        value:  emailNotificationValueState,
-                        onChanged: (value) {
-                          _getDocumentReference(emailValue: !emailNotificationValueState);
-                        }),
-                  )
-                ],
-              ),
-            )
-          ],
-        ),
-      ),
+          padding: EdgeInsets.all(0),
+          loading: notificationsReference == null,
+          child: _settingsListBuilder()),
     );
   }
+}
+
+class SettingConfig {
+  final String title;
+  final String subTitle;
+  final String settingName;
+  bool value = true;
+
+  SettingConfig(this.title, this.subTitle, this.settingName);
 }

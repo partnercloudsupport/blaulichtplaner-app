@@ -28,20 +28,21 @@ class _NotificationViewState extends State<NotificationView> with RouteAware {
     notificationsReference = _getDocumentReference();
   }
 
-  CollectionReference _getDocumentReference() {
+  CollectionReference _getDocumentReference({String where}) {
     Firestore firestore = FirestoreImpl.instance;
     CollectionReference notificationsReference = firestore
         .collection('users')
         .document(user.uid)
         .collection('notifications');
 
-    _updateNotificationListener(notificationsReference);
+    _updateNotificationListener(
+        notificationsReference, where == null ? 'read' : where);
     return notificationsReference;
   }
 
-  _updateNotificationListener(CollectionReference reference) {
+  _updateNotificationListener(CollectionReference reference, where) {
     listenerSubscription = reference
-        .where('read', isEqualTo: false)
+        .where(where, isEqualTo: false)
         .orderBy('send', descending: true)
         .snapshots()
         .listen(
@@ -52,9 +53,10 @@ class _NotificationViewState extends State<NotificationView> with RouteAware {
               empty = false;
               loading = false;
               notifications = snapshot.documents;
+              print('got the ${notifications.length}');
             }
             if (snapshot.documents.length == 0) {
-              empty = false;
+              empty = true;
             }
           },
         );
@@ -77,7 +79,8 @@ class _NotificationViewState extends State<NotificationView> with RouteAware {
   @override
   void didUpdateWidget(NotificationView oldWidget) {
     listenerSubscription?.cancel();
-    _updateNotificationListener(notificationsReference);
+    _updateNotificationListener(notificationsReference, 'read');
+    _updateNotificationListener(notificationsReference, 'requestShow');
   }
 
   Widget _notificationListBuilder() {
@@ -114,7 +117,6 @@ class _NotificationViewState extends State<NotificationView> with RouteAware {
     for (DocumentReference item in seenNotification) {
       item.setData({'read': true}, merge: true);
     }
-
     print('state is updated');
   }
 
@@ -126,8 +128,23 @@ class _NotificationViewState extends State<NotificationView> with RouteAware {
         loading: loading,
         empty: empty,
         fallbackWidget: Center(
-            child: Container(
-                child: Text('Es gibt keine neuen Benachrichtigungen'))),
+            child: Column(
+          children: <Widget>[
+            Padding(
+              padding: EdgeInsets.symmetric(vertical: 100),
+            ),
+            Text('Es gibt keine neuen Benachrichtigungen'),
+            RaisedButton(
+              onPressed: () {
+
+                  notificationsReference =
+                      _getDocumentReference(where: 'requestShow');
+             
+              },
+              child: Text('show older notifications?'),
+            )
+          ],
+        )),
         child: _notificationListBuilder(),
       ),
     );

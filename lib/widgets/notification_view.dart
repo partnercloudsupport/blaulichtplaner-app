@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:blaulichtplaner_app/authentication.dart';
 import 'package:blaulichtplaner_app/firestore/firestore_flutter.dart';
+import 'package:blaulichtplaner_app/main.dart';
 import 'package:blaulichtplaner_app/widgets/loader.dart';
 import 'package:blaulichtplaner_lib/blaulichtplaner.dart';
 import 'package:flutter/material.dart';
@@ -11,8 +12,9 @@ class NotificationView extends StatefulWidget {
   _NotificationViewState createState() => _NotificationViewState();
 }
 
-class _NotificationViewState extends State<NotificationView> {
+class _NotificationViewState extends State<NotificationView> with RouteAware {
   List<DocumentSnapshot> notifications = [];
+  List<DocumentReference> seenNotification = [];
   bool empty = true;
   bool loading = true;
 
@@ -38,8 +40,11 @@ class _NotificationViewState extends State<NotificationView> {
   }
 
   _updateNotificationListener(CollectionReference reference) {
-    listenerSubscription =
-        reference.where('read', isEqualTo: false).orderBy('read', descending: true).snapshots().listen(
+    listenerSubscription = reference
+        .where('read', isEqualTo: false)
+//        .orderBy('read', descending: true)
+        .snapshots()
+        .listen(
       (QuerySnapshot snapshot) {
         setState(
           () {
@@ -47,6 +52,9 @@ class _NotificationViewState extends State<NotificationView> {
               empty = false;
               loading = false;
               notifications = snapshot.documents;
+            }
+            if (snapshot.documents.length == 0) {
+              empty = true;
             }
           },
         );
@@ -61,6 +69,12 @@ class _NotificationViewState extends State<NotificationView> {
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    routeObserver.subscribe(this, ModalRoute.of(context));
+  }
+
+  @override
   void didUpdateWidget(NotificationView oldWidget) {
     listenerSubscription?.cancel();
     _updateNotificationListener(notificationsReference);
@@ -71,6 +85,7 @@ class _NotificationViewState extends State<NotificationView> {
       itemCount: notifications.length,
       itemBuilder: (context, i) {
         DocumentSnapshot snapshot = notifications[i];
+        seenNotification.add(snapshot.reference);
         Map<String, dynamic> content = Map.castFrom(snapshot.data['content']);
         bool read = snapshot.data['read'];
 
@@ -95,13 +110,24 @@ class _NotificationViewState extends State<NotificationView> {
   }
 
   @override
+  void didPop() {
+    for (DocumentReference item in seenNotification) {
+      item.setData({'read': true}, merge: true);
+    }
+
+    print('state is updated');
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text('Benachrichtigungen')),
       body: LoaderBodyWidget(
         loading: loading,
         empty: empty,
-        fallbackWidget: Text('Es gibt keine neuen Benachrichtigungen'),
+        fallbackWidget: Center(
+            child: Container(
+                child: Text('Es gibt keine neuen Benachrichtigungen'))),
         child: _notificationListBuilder(),
       ),
     );

@@ -42,7 +42,7 @@ class _NotificationViewState extends State<NotificationView> with RouteAware {
   _updateNotificationListener(CollectionReference reference) {
     listenerSubscription = reference
         .where('read', isEqualTo: false)
-//        .orderBy('read', descending: true)
+        .orderBy('send', descending: true)
         .snapshots()
         .listen(
       (QuerySnapshot snapshot) {
@@ -54,7 +54,7 @@ class _NotificationViewState extends State<NotificationView> with RouteAware {
               notifications = snapshot.documents;
             }
             if (snapshot.documents.length == 0) {
-              empty = true;
+              empty = false;
             }
           },
         );

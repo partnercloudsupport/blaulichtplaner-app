@@ -38,7 +38,8 @@ class _NotificationViewState extends State<NotificationView> {
   }
 
   _updateNotificationListener(CollectionReference reference) {
-    listenerSubscription = reference.snapshots().listen(
+    listenerSubscription =
+        reference.where('read', isEqualTo: false).orderBy('read', descending: true).snapshots().listen(
       (QuerySnapshot snapshot) {
         setState(
           () {
@@ -59,11 +60,16 @@ class _NotificationViewState extends State<NotificationView> {
     listenerSubscription?.cancel();
   }
 
+  @override
+  void didUpdateWidget(NotificationView oldWidget) {
+    listenerSubscription?.cancel();
+    _updateNotificationListener(notificationsReference);
+  }
+
   Widget _notificationListBuilder() {
     return ListView.builder(
       itemCount: notifications.length,
       itemBuilder: (context, i) {
-
         DocumentSnapshot snapshot = notifications[i];
         Map<String, dynamic> content = Map.castFrom(snapshot.data['content']);
         bool read = snapshot.data['read'];
@@ -75,8 +81,14 @@ class _NotificationViewState extends State<NotificationView> {
           ),
           subtitle: Text(content['body']),
           trailing: read
-              ? Icon(Icons.check_circle, size: 16,)
-              : Icon(Icons.check_circle_outline, size: 16,),
+              ? Icon(
+                  Icons.check_circle,
+                  size: 16,
+                )
+              : Icon(
+                  Icons.check_circle_outline,
+                  size: 16,
+                ),
         );
       },
     );

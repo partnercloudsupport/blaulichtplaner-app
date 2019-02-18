@@ -10,7 +10,10 @@ dependencies:
   intl: "^0.15.7"
   nanoid: ^0.0.4
   url_launcher: ^3.0.3
-  firebase_messaging: ^3.0.1
+  firebase_messaging:
+    git: 
+      url: git://github.com/grundid/plugins.git
+      path: packages/firebase_messaging
   flutter_local_notifications: ^0.5.0
   preferences: ^1.3.0
   device_info: ^0.4.0+1

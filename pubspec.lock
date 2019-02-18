@@ -125,9 +125,11 @@ packages:
   firebase_messaging:
     dependency: "direct main"
     description:
-      name: firebase_messaging
-      url: "https://pub.dartlang.org"
-    source: hosted
+      path: "packages/firebase_messaging"
+      ref: HEAD
+      resolved-ref: "0f2364465a443700a25fcd307f4248e8020502d6"
+      url: "git://github.com/grundid/plugins.git"
+    source: git
     version: "3.0.1"
   flutter:
     dependency: "direct main"

@@ -1,14 +1,12 @@
 import 'dart:convert';
 
-import 'package:blaulichtplaner_app/firestore/firestore_flutter.dart';
 import 'package:blaulichtplaner_app/utils/utils.dart';
-import 'package:blaulichtplaner_app/widgets/notification_view.dart';
 import 'package:blaulichtplaner_lib/blaulichtplaner.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 import 'package:intl/intl.dart';
+import 'dart:io' show Platform;
 
 /// global counter for notifications ids
 int notificationsCounter = 0;
@@ -116,6 +114,9 @@ mixin Notifications {
         if (message.containsKey("aps")) {
           _showNotification(SimpleNotification(message["aps"]["alert"]["title"],
               message["aps"]["alert"]["body"], null, null));
+        } else if (message.containsKey("notification")) {
+          _showNotification(SimpleNotification(message["notification"]["title"],
+              message["notification"]["body"], null, null));
         }
       } catch (e) {
         print(e);
@@ -130,10 +131,9 @@ mixin Notifications {
     }, onResume: (Map<String, dynamic> message) {
       print("OnResume: $message");
       try {
-        Map<String, String> data = message.containsKey("data")
-            ? Map.castFrom(message['data'])
-            : Map.castFrom(message);
-        //_showNotification(NotificationsHelper(data).convertData());
+        if (Platform.isAndroid) {
+          notificationSelected(null);
+        }
       } catch (e) {
         print(e);
       }

@@ -4,6 +4,8 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
+final RouteObserver<PageRoute> routeObserver = RouteObserver<PageRoute>();
+
 Future main() async {
   // debugPaintSizeEnabled = true;
   Firestore firestore = Firestore.instance;
@@ -18,6 +20,7 @@ class ShiftplanApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      navigatorObservers: [routeObserver],
       title: 'Blaulichtplaner',
       theme: ThemeData(
         primarySwatch: Colors.blue,

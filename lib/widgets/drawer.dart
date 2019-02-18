@@ -1,5 +1,6 @@
 import 'package:blaulichtplaner_app/about_widget.dart';
 import 'package:blaulichtplaner_app/roles_widget.dart';
+import 'package:blaulichtplaner_app/widgets/notification_view.dart';
 import 'package:blaulichtplaner_app/widgets/preferences.dart';
 import 'package:blaulichtplaner_lib/blaulichtplaner.dart';
 import 'package:flutter/material.dart';
@@ -79,11 +80,19 @@ class DrawerWidget extends StatelessWidget {
           ),
           ListTile(
               leading: Icon(Icons.exit_to_app),
-              title: Text("Benachrichtigungen"),
+              title: Text("Benachrichtigung Einstellungen"),
               onTap: () {
                 Navigator.pop(context);
                 Navigator.push(context,
                     MaterialPageRoute(builder: (context) => Preferences()));
+              }),
+          ListTile(
+              leading: Icon(Icons.exit_to_app),
+              title: Text("Benachrichtigungen"),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(context,
+                    MaterialPageRoute(builder: (context) => NotificationView()));
               }),
           ListTile(
             leading: Icon(Icons.exit_to_app),

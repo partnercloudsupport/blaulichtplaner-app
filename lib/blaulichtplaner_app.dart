@@ -10,7 +10,7 @@ import 'package:blaulichtplaner_lib/blaulichtplaner.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+//import 'package:blaulichtplaner_app/utils/notifications.dart';
 
 class BlaulichtplanerApp extends StatefulWidget {
   final Function logoutCallback;
@@ -23,10 +23,8 @@ class BlaulichtplanerApp extends StatefulWidget {
   }
 }
 
-class BlaulichtPlanerAppState extends State<BlaulichtplanerApp> {
+class BlaulichtPlanerAppState  extends State<BlaulichtplanerApp>  { //with LocalNotifications
   final FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
-  final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
-      FlutterLocalNotificationsPlugin();
 
   int selectedTab = 0;
   BlpUser user;
@@ -35,74 +33,18 @@ class BlaulichtPlanerAppState extends State<BlaulichtplanerApp> {
   void initState() {
     super.initState();
     user = UserManager.instance.user;
-    _initMessaging();
-    _initLocalNotification();
-    _firebaseMessaging.requestNotificationPermissions();
+   // _initMessaging();
+   // initLocalNotification();
+    //_firebaseMessaging.requestNotificationPermissions();
   }
 
-  _initLocalNotification() {
-    var initializationSettingsAndroid =
-        new AndroidInitializationSettings('app_icon');
-    var initializationSettingsIOS = new IOSInitializationSettings(
-        onDidReceiveLocalNotification: onDidRecieveLocalNotification);
-    var initializationSettings = new InitializationSettings(
-        initializationSettingsAndroid, initializationSettingsIOS);
-    flutterLocalNotificationsPlugin.initialize(initializationSettings,
-        onSelectNotification: onSelectNotification);
-  }
-
-  Future onSelectNotification(String payload) async {
-    if (payload != null) {
-      debugPrint('notification payload: ' + payload);
-    }
-  }
-
-  Future onDidRecieveLocalNotification(
-      int id, String title, String body, String payload) async {
-    // display a dialog with the notification details, tap ok to go to another page
-    showDialog(
-      context: context,
-      builder: (BuildContext context) => new CupertinoAlertDialog(
-            title: new Text(title),
-            content: new Text(body),
-            actions: [
-              CupertinoDialogAction(
-                isDefaultAction: true,
-                child: new Text('Ok'),
-                onPressed: () async {},
-              )
-            ],
-          ),
-    );
-  }
 
   @override
   void didUpdateWidget(BlaulichtplanerApp oldWidget) {
     super.didUpdateWidget(oldWidget);
-    _initMessaging();
+    //_initMessaging();
   }
 
-  void _showNotification(String title, String body) async {
-    print('show notification $title $body');
-
-    try {
-      AndroidNotificationDetails androidPlatformChannelSpecifics =
-          AndroidNotificationDetails(
-              'de.grundid.blaulichtplanner',
-              'Dienstplaner Benachrichtigungen',
-              'Benachrichtigungen über kommende Dienste und weitere Informationen',
-              importance: Importance.Max,
-              priority: Priority.High);
-      IOSNotificationDetails iOSPlatformChannelSpecifics =
-          IOSNotificationDetails(presentAlert: true);
-      NotificationDetails platformChannelSpecifics = NotificationDetails(
-          androidPlatformChannelSpecifics, iOSPlatformChannelSpecifics);
-      await flutterLocalNotificationsPlugin.show(
-          0, title, body, platformChannelSpecifics);
-    } catch (e) {
-      print('notifications error: $e');
-    }
-  }
 
   void _initMessaging() async {
     print("init messaging");
@@ -115,22 +57,42 @@ class BlaulichtPlanerAppState extends State<BlaulichtplanerApp> {
 
     _firebaseMessaging.configure(onMessage: (Map<String, dynamic> message) {
       try {
-        print("onMessage ${message}");
-        Map<String, dynamic> notification = Map.castFrom(message['data']);
-
-        print('this is the $notification');
-        _showNotification(notification['title'], notification['body']);
+        print("onMessage $message");
+        Map<String, String> data = message.containsKey("data")
+            ? Map.castFrom(message['data'])
+            : Map.castFrom(message);
+     //   showNotification(SimpleNotification(message["aps"]["alert"]["title"], message["aps"]["alert"]["body"],
+     //    null, null));
       } catch (e) {
         print(e);
       }
-    }, onLaunch: (Map<String, dynamic> content) {
-      print("OnLaunch: $content");
-    }, onResume: (Map<String, dynamic> content) {
-      print("OnResume: $content");
+    }, onLaunch: (Map<String, dynamic> message) {
+      print("OnLaunch: $message");
+      try {
+        Map<String, String> data = message.containsKey("data")
+            ? Map.castFrom(message['data'])
+            : Map.castFrom(message);
+        //_showNotification(NotificationsHelper(data).convertData());
+      } catch (e) {
+        print(e);
+      }
+
+
+    }, onResume: (Map<String, dynamic> message) {
+      print("OnResume: $message");
+     // Navigator.of(context).push(MaterialPageRoute(builder: (context) => Preferences()));
+      try {
+        Map<String, String> data = message.containsKey("data")
+            ? Map.castFrom(message['data'])
+            : Map.castFrom(message);
+        //_showNotification(NotificationsHelper(data).convertData());
+      } catch (e) {
+        print(e);
+      }
     });
 
     _firebaseMessaging.onTokenRefresh.listen((String token) {
-      _updateTokenIfNecessary(firestore,token);
+      _updateTokenIfNecessary(firestore, token);
     });
   }
 
@@ -148,8 +110,13 @@ class BlaulichtPlanerAppState extends State<BlaulichtplanerApp> {
     if (!tokenExits) {
       DeviceInfo deviceInfo = await getDeviceInfo();
 
-      collection.add({'token': token, 'created': DateTime.now(), 'model': deviceInfo.model, 'version': deviceInfo.version, 'name': deviceInfo.name});
-
+      collection.add({
+        'token': token,
+        'created': DateTime.now(),
+        'model': deviceInfo.model,
+        'version': deviceInfo.version,
+        'name': deviceInfo.name
+      });
     }
   }
 

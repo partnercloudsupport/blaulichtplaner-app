@@ -12,51 +12,40 @@ class NotificationView extends StatefulWidget {
   _NotificationViewState createState() => _NotificationViewState();
 }
 
-class _NotificationViewState extends State<NotificationView> with RouteAware {
+class _NotificationViewState extends State<NotificationView> {
   List<DocumentSnapshot> notifications = [];
-  List<DocumentReference> seenNotification = [];
+  Set<DocumentReference> seenNotification = Set();
   bool empty = true;
   bool loading = true;
+  bool readLatest = true;
+  Firestore _firestore = FirestoreImpl.instance;
 
   BlpUser user = UserManager.instance.user;
-  CollectionReference notificationsReference;
   StreamSubscription listenerSubscription;
 
   @override
   void initState() {
     super.initState();
-    notificationsReference = _getDocumentReference();
+    _initNotificationsListener();
   }
 
-  CollectionReference _getDocumentReference({String where}) {
-    Firestore firestore = FirestoreImpl.instance;
-    CollectionReference notificationsReference = firestore
+  _initNotificationsListener() {
+    CollectionReference notificationsReference = _firestore
         .collection('users')
         .document(user.uid)
         .collection('notifications');
 
-    _updateNotificationListener(
-        notificationsReference, where == null ? 'read' : where);
-    return notificationsReference;
-  }
-
-  _updateNotificationListener(CollectionReference reference, where) {
-    listenerSubscription = reference
-        .where(where, isEqualTo: false)
-        .orderBy('send', descending: true)
-        .snapshots()
-        .listen(
+    Query query = notificationsReference;
+    query = query.where("read", isEqualTo: false);
+    query = query.orderBy('send', descending: true).limit(2);
+    listenerSubscription = query.snapshots().listen(
       (QuerySnapshot snapshot) {
         setState(
           () {
+            loading = false;
             if (snapshot != null) {
-              empty = false;
-              loading = false;
+              empty = snapshot.documents.length == 0;
               notifications = snapshot.documents;
-              print('got the ${notifications.length}');
-            }
-            if (snapshot.documents.length == 0) {
-              empty = true;
             }
           },
         );
@@ -71,23 +60,20 @@ class _NotificationViewState extends State<NotificationView> with RouteAware {
   }
 
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    routeObserver.subscribe(this, ModalRoute.of(context));
-  }
-
-  @override
   void didUpdateWidget(NotificationView oldWidget) {
+    super.didUpdateWidget(oldWidget);
     listenerSubscription?.cancel();
-    _updateNotificationListener(notificationsReference, 'read');
-    _updateNotificationListener(notificationsReference, 'requestShow');
+    _initNotificationsListener();
   }
 
   Widget _notificationListBuilder() {
-    return ListView.builder(
+    return ListView.separated(
+      separatorBuilder: (BuildContext context, int index) {
+        return Divider();
+      },
       itemCount: notifications.length,
-      itemBuilder: (context, i) {
-        DocumentSnapshot snapshot = notifications[i];
+      itemBuilder: (context, int index) {
+        DocumentSnapshot snapshot = notifications[index];
         seenNotification.add(snapshot.reference);
         Map<String, dynamic> content = Map.castFrom(snapshot.data['content']);
         bool read = snapshot.data['read'];
@@ -112,40 +98,35 @@ class _NotificationViewState extends State<NotificationView> with RouteAware {
     );
   }
 
-  @override
-  void didPop() {
+  Future<bool> _markReadAsRead() async {
+    WriteBatch batch = _firestore.batch();
     for (DocumentReference item in seenNotification) {
-      item.setData({'read': true}, merge: true);
+      batch.updateData(item, {'read': true});
     }
-    print('state is updated');
+    batch.commit();
+    return true;
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text('Benachrichtigungen')),
-      body: LoaderBodyWidget(
-        loading: loading,
-        empty: empty,
-        fallbackWidget: Center(
-            child: Column(
-          children: <Widget>[
-            Padding(
-              padding: EdgeInsets.symmetric(vertical: 100),
-            ),
-            Text('Es gibt keine neuen Benachrichtigungen'),
-            RaisedButton(
-              onPressed: () {
-
-                  notificationsReference =
-                      _getDocumentReference(where: 'requestShow');
-             
-              },
-              child: Text('show older notifications?'),
-            )
-          ],
-        )),
-        child: _notificationListBuilder(),
+      body: WillPopScope(
+        onWillPop: _markReadAsRead,
+        child: LoaderBodyWidget(
+          loading: loading,
+          empty: empty,
+          fallbackWidget: Center(
+              child: Column(
+            children: <Widget>[
+              Padding(
+                padding: EdgeInsets.symmetric(vertical: 100),
+              ),
+              Text('Es gibt keine neuen Benachrichtigungen'),
+            ],
+          )),
+          child: _notificationListBuilder(),
+        ),
       ),
     );
   }

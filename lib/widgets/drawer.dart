@@ -70,6 +70,24 @@ class DrawerWidget extends StatelessWidget {
           ),
           Divider(),
           ListTile(
+              leading: Icon(Icons.settings),
+              title: Text("Einstellungen"),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(context,
+                    MaterialPageRoute(builder: (context) => Preferences()));
+              }),
+          ListTile(
+              leading: Icon(Icons.notifications),
+              title: Text("Benachrichtigungen"),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => NotificationView()));
+              }),
+          ListTile(
             leading: Icon(Icons.info_outline),
             title: Text("Über die App"),
             onTap: () {
@@ -78,22 +96,6 @@ class DrawerWidget extends StatelessWidget {
                   MaterialPageRoute(builder: (context) => AboutScreen()));
             },
           ),
-          ListTile(
-              leading: Icon(Icons.exit_to_app),
-              title: Text("Benachrichtigung Einstellungen"),
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.push(context,
-                    MaterialPageRoute(builder: (context) => Preferences()));
-              }),
-          ListTile(
-              leading: Icon(Icons.exit_to_app),
-              title: Text("Benachrichtigungen"),
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.push(context,
-                    MaterialPageRoute(builder: (context) => NotificationView()));
-              }),
           ListTile(
             leading: Icon(Icons.exit_to_app),
             title: Text("Logout"),

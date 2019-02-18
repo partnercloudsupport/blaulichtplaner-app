@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:blaulichtplaner_app/authentication.dart';
 import 'package:blaulichtplaner_app/firestore/firestore_flutter.dart';
-import 'package:blaulichtplaner_app/main.dart';
 import 'package:blaulichtplaner_app/widgets/loader.dart';
 import 'package:blaulichtplaner_lib/blaulichtplaner.dart';
 import 'package:flutter/material.dart';
@@ -17,7 +16,6 @@ class _NotificationViewState extends State<NotificationView> {
   Set<DocumentReference> seenNotification = Set();
   bool empty = true;
   bool loading = true;
-  bool readLatest = true;
   Firestore _firestore = FirestoreImpl.instance;
 
   BlpUser user = UserManager.instance.user;

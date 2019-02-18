@@ -7,10 +7,10 @@ import 'package:intl/intl.dart';
 
 class ShiftViewWidget extends StatefulWidget {
   final DocumentReference shiftRef;
-  final DocumentReference employeeRef;
+  final DocumentReference currentEmployeeRef;
 
   const ShiftViewWidget(
-      {Key key, @required this.shiftRef, @required this.employeeRef})
+      {Key key, @required this.shiftRef, @required this.currentEmployeeRef})
       : super(key: key);
 
   @override
@@ -104,7 +104,7 @@ class _ShiftViewState extends State<ShiftViewWidget> {
     }
 
     _shiftViewModel.isAssignedToShift = _shiftViewModel.assignments.firstWhere(
-            (assignment) => assignment.employeeRef == widget.employeeRef,
+            (assignment) => assignment.employeeRef == widget.currentEmployeeRef,
             orElse: () => null) !=
         null;
 

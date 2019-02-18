@@ -212,7 +212,10 @@ class AssignmentViewState extends State<AssignmentView> {
       onTap: () {
         Navigator.of(context)
             .push(MaterialPageRoute(builder: (BuildContext context) {
-          return ShiftViewWidget(shiftRef: assignment.shiftRef, employeeRef: assignment.employeeRef,);
+          return ShiftViewWidget(
+            shiftRef: assignment.shiftRef,
+            currentEmployeeRef: assignment.employeeRef,
+          );
         }));
       },
       child: Column(

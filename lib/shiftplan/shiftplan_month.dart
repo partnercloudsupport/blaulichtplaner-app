@@ -159,7 +159,7 @@ class ShiftplanMonthState extends State<ShiftplanMonth> {
                   .push(MaterialPageRoute(builder: (BuildContext context) {
                 return ShiftViewWidget(
                   shiftRef: shift.shiftRef,
-                  employeeRef: shift.employeeRef,
+                  currentEmployeeRef: shift.employeeRef,
                 );
               }));
             },

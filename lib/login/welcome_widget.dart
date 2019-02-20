@@ -131,7 +131,8 @@ class LoginFormState extends State<LoginForm> {
       GoogleSignInAccount googleUser = await _googleSignIn.signIn();
       if (googleUser != null) {
         GoogleSignInAuthentication googleAuth = await googleUser.authentication;
-        FirebaseUser user = await _auth.signInWithCredential(GoogleAuthProvider.getCredential(
+        FirebaseUser user =
+            await _auth.signInWithCredential(GoogleAuthProvider.getCredential(
           accessToken: googleAuth.accessToken,
           idToken: googleAuth.idToken,
         ));
@@ -156,7 +157,23 @@ class LoginFormState extends State<LoginForm> {
         email: email,
         password: password,
       );
-      widget.loginCallback(user);
+      if (user.isEmailVerified) {
+        widget.loginCallback(user);
+      } else {
+        Scaffold.of(context).showSnackBar(
+          SnackBar(
+            duration: Duration(seconds: 30),
+            content: Text(
+                'Ihre E-Mail Adresse ist noch nicht bestätigt. Bitte überprüfen Sie Ihr E-Mail Postfach'),
+            action: SnackBarAction(
+              label: "E-Mail erneut senden",
+              onPressed: () {
+                user.sendEmailVerification();
+              },
+            ),
+          ),
+        );
+      }
     } catch (e) {
       print("error logging in: $e");
       Scaffold.of(context).showSnackBar(

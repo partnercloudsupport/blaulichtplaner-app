@@ -1,43 +1,16 @@
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:blaulichtplaner_lib/blaulichtplaner.dart';
 import 'package:flutter/material.dart';
-import 'package:nanoid/nanoid.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 typedef void OnChanged(String value);
 
-class RegistrationModel {
-  String firstName = '';
-  String lastName = '';
-  String email = '';
-  DateTime privacyPolicyAccepted;
-  DateTime termsAccepted;
-  String token;
-
-  RegistrationModel.fromUser(FirebaseUser user) {
-    if (user.displayName != null) {
-      firstName = user.displayName.split(' ').first;
-      lastName = user.displayName.split(' ').last;
-    }
-    email = user.email;
-    token = nanoid(64);
-  }
-
-  Map<String, dynamic> createData() {
-    Map<String, dynamic> data = {};
-    data["firstName"] = firstName;
-    data["lastName"] = lastName;
-    data["email"] = email;
-    data["privacyPolicyAccepted"] = privacyPolicyAccepted;
-    data["termsAccepted"] = termsAccepted;
-    data["token"] = token;
-    return data;
-  }
-}
-
 class TermsForm extends StatefulWidget {
   final GlobalKey<FormState> formKey;
+  final RegistrationModel registrationModel;
 
-  const TermsForm({Key key, this.formKey}) : super(key: key);
+  const TermsForm(
+      {Key key, @required this.formKey, @required this.registrationModel})
+      : super(key: key);
   @override
   State<StatefulWidget> createState() {
     return _TermsFormState();
@@ -47,6 +20,13 @@ class TermsForm extends StatefulWidget {
 class _TermsFormState extends State<TermsForm> {
   bool _eula = false;
   bool _privacy = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _eula = widget.registrationModel.termsAccepted != null;
+    _privacy = widget.registrationModel.privacyPolicyAccepted != null;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -147,7 +127,9 @@ class _NameFormState extends State<NameForm> {
   @override
   void initState() {
     super.initState();
+    _firstNameController.text = widget.registrationModel.firstName;
     _firstNameController.addListener(_firstNameListener);
+    _lastNameController.text = widget.registrationModel.lastName;
     _lastNameController.addListener(_lastNameListener);
   }
 
@@ -182,7 +164,7 @@ class _NameFormState extends State<NameForm> {
             decoration: InputDecoration(helperText: "Vorname"),
             validator: (String value) {
               if (value.isEmpty) {
-                return "Bitte Vorame eingeben";
+                return "Bitte Vornamen eingeben";
               }
             },
           ),
@@ -191,7 +173,7 @@ class _NameFormState extends State<NameForm> {
             decoration: InputDecoration(helperText: "Nachname"),
             validator: (String value) {
               if (value.isEmpty) {
-                return "Bitte Familienname eingeben";
+                return "Bitte Familiennamen eingeben";
               }
             },
           ),
@@ -203,6 +185,7 @@ class _NameFormState extends State<NameForm> {
 
 class EmailRegistrationForm extends StatefulWidget {
   final GlobalKey<FormState> formKey;
+  final RegistrationModel registrationModel;
   final OnChanged onChangedEmail;
   final OnChanged onChangedPassword;
 
@@ -211,21 +194,17 @@ class EmailRegistrationForm extends StatefulWidget {
     @required this.formKey,
     @required this.onChangedEmail,
     @required this.onChangedPassword,
+    @required this.registrationModel,
   }) : super(key: key);
   @override
   State<StatefulWidget> createState() => _EmailRegistrationFormState();
 }
 
 class _EmailRegistrationFormState extends State<EmailRegistrationForm> {
-  String _password;
-
   TextEditingController _emailController = TextEditingController();
   TextEditingController _passwordController = TextEditingController();
 
   _passwordListener() {
-    setState(() {
-      _password = _passwordController.text;
-    });
     widget.onChangedPassword(_passwordController.text);
   }
 
@@ -235,6 +214,8 @@ class _EmailRegistrationFormState extends State<EmailRegistrationForm> {
 
   void initState() {
     super.initState();
+    _emailController.text = widget.registrationModel.email;
+    _passwordController.text = widget.registrationModel.password;
     _passwordController.addListener(_passwordListener);
     _emailController.addListener(_emailListener);
   }
@@ -281,7 +262,7 @@ class _EmailRegistrationFormState extends State<EmailRegistrationForm> {
             obscureText: true,
             decoration: InputDecoration(helperText: 'Passwort wiederholen'),
             validator: (String value) {
-              if (_password != value) {
+              if (_passwordController.text != value) {
                 return 'Passwort stimmt nicht überein!';
               }
             },

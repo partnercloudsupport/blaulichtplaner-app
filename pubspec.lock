@@ -34,7 +34,7 @@ packages:
     description:
       path: "."
       ref: HEAD
-      resolved-ref: "6efd01f162a25154494311dc01f07788ef3ee0cd"
+      resolved-ref: c1de25958e137b6f1a2edf763e485f3b4890b055
       url: "git://github.com/Blaulichtplaner/blaulichtplaner_lib.git"
     source: git
     version: "1.0.0"

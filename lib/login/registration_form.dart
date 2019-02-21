@@ -145,11 +145,11 @@ class _NameFormState extends State<NameForm> {
   }
 
   void _firstNameListener() {
-    widget.onChangedFirstName(_firstNameController.text);
+    widget.onChangedFirstName(_firstNameController.text?.trim());
   }
 
   void _lastNameListener() {
-    widget.onChangedLastName(_lastNameController.text);
+    widget.onChangedLastName(_lastNameController.text?.trim());
   }
 
   @override
@@ -163,7 +163,7 @@ class _NameFormState extends State<NameForm> {
             controller: _firstNameController,
             decoration: InputDecoration(helperText: "Vorname"),
             validator: (String value) {
-              if (value.isEmpty) {
+              if (value.trim().isEmpty) {
                 return "Bitte Vornamen eingeben";
               }
             },
@@ -172,7 +172,7 @@ class _NameFormState extends State<NameForm> {
             controller: _lastNameController,
             decoration: InputDecoration(helperText: "Nachname"),
             validator: (String value) {
-              if (value.isEmpty) {
+              if (value.trim().isEmpty) {
                 return "Bitte Familiennamen eingeben";
               }
             },

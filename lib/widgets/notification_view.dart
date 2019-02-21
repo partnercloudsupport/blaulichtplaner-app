@@ -113,15 +113,7 @@ class _NotificationViewState extends State<NotificationView> {
         child: LoaderBodyWidget(
           loading: loading,
           empty: empty,
-          fallbackWidget: Center(
-              child: Column(
-            children: <Widget>[
-              Padding(
-                padding: EdgeInsets.symmetric(vertical: 100),
-              ),
-              Text('Es gibt keine neuen Benachrichtigungen'),
-            ],
-          )),
+          fallbackText: 'Es gibt keine neuen Benachrichtigungen',
           child: _notificationListBuilder(),
         ),
       ),

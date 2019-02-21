@@ -28,14 +28,13 @@ class _NotificationViewState extends State<NotificationView> {
   }
 
   _initNotificationsListener() {
-    CollectionReference notificationsReference = _firestore
-        .collection('users')
-        .document(user.uid)
-        .collection('notifications');
+    CollectionReference notificationsReference =
+        _firestore.collection('notifications');
 
     Query query = notificationsReference;
+    query = query.where("userRef", isEqualTo: user.userRef);
     query = query.where("read", isEqualTo: false);
-    query = query.orderBy('send', descending: true).limit(2);
+    query = query.orderBy('mobileSend', descending: true);
     listenerSubscription = query.snapshots().listen(
       (QuerySnapshot snapshot) {
         setState(

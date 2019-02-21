@@ -36,9 +36,9 @@ class RegistrationScreenState extends State<RegistrationScreen> {
     if (widget.user != null) {
       _currentStep = 1;
       _startStep = 1;
+      _registrationModel = RegistrationModel.fromUser(
+          widget.user.displayName, widget.user.email, widget.photoUrl);
     }
-    _registrationModel = RegistrationModel.fromUser(
-        widget.user.displayName, widget.user.email, widget.photoUrl);
   }
 
   Widget _buildDialog(BuildContext context, String errorMessage) {

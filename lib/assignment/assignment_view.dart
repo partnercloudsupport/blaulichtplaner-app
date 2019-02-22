@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:blaulichtplaner_app/assignment/assignment_botton_bar.dart';
-import 'package:blaulichtplaner_app/evaluation/evaluation_editor.dart';
 import 'package:blaulichtplaner_app/firestore/firestore_flutter.dart';
 import 'package:blaulichtplaner_app/shift/shift_view.dart';
 import 'package:blaulichtplaner_app/widgets/loader.dart';
@@ -109,11 +108,8 @@ class AssignmentViewState extends State<AssignmentView> {
     setState(() {
       loadableAssignment.loading = true;
     });
-    EvaluationModel evaluationModel =
-        await EvaluationQuery(FirestoreImpl.instance)
-            .getEvaluationForAssignment(loadableAssignment.data);
-    EvaluationSave(FirestoreImpl.instance)
-        .performAction(EvaluationAction(evaluationModel, true));
+    await finishEvaluation(loadableAssignment.data, FirestoreImpl.instance);
+    // TODO update all data???
   }
 
   Widget _assignmentBuilder(BuildContext context, int index) {

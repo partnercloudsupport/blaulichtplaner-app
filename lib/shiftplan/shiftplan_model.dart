@@ -5,6 +5,7 @@ class ShiftplanModel {
   DateTime to;
   String status;
   String label;
+  String locationLabel;
   String companyLabel;
   DocumentReference selfRef;
   DocumentReference employeeRef;
@@ -14,6 +15,7 @@ class ShiftplanModel {
     from = snapshot.data["from"];
     to = snapshot.data["to"];
     status = snapshot.data["status"];
+    locationLabel = snapshot.data["locationLabel"];
     label = snapshot.data["label"];
   }
 
@@ -61,25 +63,25 @@ class ShiftplanHolder {
 }
 
 class ShiftHolder {
-  List<Shift> _shifts = <Shift>[];
+  List<EmployeeShift> _shifts = [];
 
-  void add(Shift shift) {
+  void add(EmployeeShift shift) {
     _shifts.add(shift);
-    _shifts.sort((Shift a, Shift b) => a.to.compareTo(b.to));
+    _shifts.sort((EmployeeShift a, EmployeeShift b) => a.to.compareTo(b.to));
   }
 
-  void modify(Shift shift) {
+  void modify(EmployeeShift shift) {
     int index =
-        _shifts.indexWhere((Shift old) => old.shiftRef == shift.shiftRef);
+        _shifts.indexWhere((EmployeeShift old) => old.shiftRef == shift.shiftRef);
     if (index >= 0) {
       _shifts[index] = shift;
     }
-    _shifts.sort((Shift a, Shift b) => a.to.compareTo(b.to));
+    _shifts.sort((EmployeeShift a, EmployeeShift b) => a.to.compareTo(b.to));
   }
 
-  void remove(Shift shift) {
+  void remove(EmployeeShift shift) {
     int index =
-        _shifts.indexWhere((Shift old) => old.shiftRef == shift.shiftRef);
+        _shifts.indexWhere((EmployeeShift old) => old.shiftRef == shift.shiftRef);
     if (index >= 0) {
       _shifts.removeAt(index);
     }
@@ -91,9 +93,9 @@ class ShiftHolder {
 
   get isEmpty => _shifts.isEmpty;
 
-  List<Shift> get shifts => _shifts;
+  List<EmployeeShift> get shifts => _shifts;
 
-  List<Shift> getShiftsBetween(DateTime from, DateTime to) {
-    return _shifts.where((Shift a) => a.isFromBetween(from, to)).toList();
+  List<EmployeeShift> getShiftsBetween(DateTime from, DateTime to) {
+    return _shifts.where((EmployeeShift a) => a.isFromBetween(from, to)).toList();
   }
 }

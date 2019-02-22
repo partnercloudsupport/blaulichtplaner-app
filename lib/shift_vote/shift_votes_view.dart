@@ -1,4 +1,5 @@
 import 'package:blaulichtplaner_app/firestore/firestore_flutter.dart';
+import 'package:blaulichtplaner_app/shift_vote/shift_vote_button_bar.dart';
 import 'package:blaulichtplaner_app/utils/utils.dart';
 import 'package:blaulichtplaner_app/widgets/loader.dart';
 import 'package:blaulichtplaner_app/widgets/no_employee.dart';
@@ -119,68 +120,6 @@ class ShiftVotesViewState extends State<ShiftVotesView> {
         shiftDurationLabel +
         ")";
 
-    List<FlatButton> buttons = [];
-    if (shiftVote.isBid) {
-      buttons.add(FlatButton(
-        child: Text('Bewerbung löschen'),
-        onPressed: () async {
-          try {
-            EmployeeShiftVoteDelete action =
-                EmployeeShiftVoteDelete(FirestoreImpl.instance);
-            await action.performAction(shiftVote);
-
-            Scaffold.of(context).showSnackBar(SnackBar(
-              content: Text('Bewerbung gelöscht.'),
-            ));
-          } catch (e) {
-            print(e);
-          }
-        },
-      ));
-    } else if (shiftVote.isRejected) {
-      buttons.add(FlatButton(
-        child: Text('Ablehnung löschen'),
-        onPressed: () async {
-          try {
-            EmployeeShiftVoteDelete action =
-                EmployeeShiftVoteDelete(FirestoreImpl.instance);
-            await action.performAction(shiftVote);
-
-            Scaffold.of(context).showSnackBar(SnackBar(
-              content: Text('Ablehnung gelöscht.'),
-            ));
-          } catch (e) {
-            print(e);
-          }
-        },
-      ));
-    } else {
-      buttons.add(FlatButton(
-        textColor: Colors.red,
-        child: Text('Ablehnen'),
-        onPressed: () async {
-          EmployeeShiftVoteSave action =
-              EmployeeShiftVoteSave(FirestoreImpl.instance);
-          await action.performAction(ShiftVoteAction(shiftVote, false));
-          Scaffold.of(context).showSnackBar(SnackBar(
-            content: Text('Ablehnung gespeichert.'),
-          ));
-        },
-      ));
-      buttons.add(FlatButton(
-        child: Text('Bewerben'),
-        onPressed: () async {
-          EmployeeShiftVoteSave action =
-              EmployeeShiftVoteSave(FirestoreImpl.instance);
-          await action.performAction(ShiftVoteAction(shiftVote, true));
-
-          Scaffold.of(context).showSnackBar(SnackBar(
-            content: Text('Bewerbung gespeichert.'),
-          ));
-        },
-      ));
-    }
-
     IconData icon = Icons.help;
     Color color = Colors.grey;
     if (shiftVote.isBid) {
@@ -230,11 +169,8 @@ class ShiftVotesViewState extends State<ShiftVotesView> {
       rows.add(createInfoBox(shiftVote.shift.publicNote, Icons.assignment));
     }
 
-    rows.add(ButtonTheme.bar(
-      // make buttons use the appropriate styles for cards
-      child: ButtonBar(
-        children: buttons,
-      ),
+    rows.add(ShiftVoteButtonBar(
+      shiftVote: shiftVote,
     ));
 
     return Card(

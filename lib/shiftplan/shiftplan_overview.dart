@@ -41,7 +41,9 @@ class ShiftplanOverviewState extends State<ShiftplanOverview> {
         Query query = role.reference
             .collection('shiftplans')
             .where('status', isEqualTo: 'public')
-            .orderBy('to');
+            .where("to", isGreaterThan: DateTime.now())
+            .orderBy('to', descending: true)
+            .orderBy("locationLabel");
         _subs.add(query.snapshots().listen((snapshot) {
           setState(() {
             for (final doc in snapshot.documentChanges) {
@@ -75,6 +77,14 @@ class ShiftplanOverviewState extends State<ShiftplanOverview> {
     }
   }
 
+  String _shiftplanSubtitle(ShiftplanModel shiftplanModel) {
+    if (shiftplanModel.companyLabel != null) {
+      return shiftplanModel.companyLabel + " > " + shiftplanModel.locationLabel;
+    } else {
+      return shiftplanModel.locationLabel;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     if (widget.hasEmployeeRoles()) {
@@ -85,8 +95,7 @@ class ShiftplanOverviewState extends State<ShiftplanOverview> {
               child: ListTile(
                 title: Text(
                     _shiftplans.plans[index].label ?? 'Dienstplan ohne Name'),
-                subtitle: Text(_shiftplans.plans[index].companyLabel ??
-                    'Unbekannte Firma'),
+                subtitle: Text(_shiftplanSubtitle(_shiftplans.plans[index])),
                 onTap: () {
                   Navigator.push(
                     context,

@@ -1,4 +1,6 @@
+import 'package:blaulichtplaner_app/assignment/assignment_botton_bar.dart';
 import 'package:blaulichtplaner_app/firestore/firestore_flutter.dart';
+import 'package:blaulichtplaner_app/shift_vote/shift_vote_button_bar.dart';
 import 'package:blaulichtplaner_app/widgets/date_time_picker.dart';
 import 'package:blaulichtplaner_app/widgets/loader.dart';
 import 'package:blaulichtplaner_lib/blaulichtplaner.dart';
@@ -20,17 +22,24 @@ class ShiftViewWidget extends StatefulWidget {
 }
 
 class _ShiftViewModel {
-  DateTime from = DateTime.now();
-  DateTime to = DateTime.now();
+  DateTime from;
+  DateTime to;
 
-  String locationLabel = "Wollhaus, Heilbronn";
-  String workAreaLabel = "Notdienst";
+  String locationLabel;
+  String workAreaLabel;
 
-  String shiftplanLabel = "Februar 2019";
+  String shiftplanLabel;
   String votingPhase;
-  bool isVotePossible = true;
+  bool isVotingPhaseActive;
+  bool isVotePossible;
   List<AssignmentModel> assignments;
-  bool isAssignedToShift = false;
+  Loadable<AssignmentModel> currentEmployeeAssignment;
+  AssignmentStatus currentEmployeeAssignmentStatus;
+
+  ShiftVote shiftVote;
+
+  bool get isAssignedToShift => currentEmployeeAssignment != null;
+  bool get isPastShift => DateTime.now().isAfter(to);
 }
 
 class LabelWidget extends StatelessWidget {
@@ -79,15 +88,12 @@ class _ShiftViewState extends State<ShiftViewWidget> {
     });
     Shift shift =
         await ShiftQuery(FirestoreImpl.instance).getShift(widget.shiftRef);
-    print("Shift: $shift");
 
     _shiftViewModel.assignments = await AssignmentQuery(FirestoreImpl.instance)
         .getAssignmentsForShift(widget.shiftRef);
 
     Shiftplan shiftplan = await ShiftplanQuery(FirestoreImpl.instance)
         .getShiftplan(shift.shiftplanRef);
-
-    print("Shiftplan: $shiftplan");
 
     _shiftViewModel.from = shift.from;
     _shiftViewModel.to = shift.to;
@@ -99,14 +105,33 @@ class _ShiftViewState extends State<ShiftViewWidget> {
       String to = DateFormat.yMd("de_DE").format(shiftplan.voteTo);
       _shiftViewModel.votingPhase = "von $from bis $to";
       DateTime now = DateTime.now();
-      _shiftViewModel.isVotePossible =
+      _shiftViewModel.isVotingPhaseActive =
           shiftplan.voteFrom.isBefore(now) && shiftplan.voteTo.isAfter(now);
     }
 
-    _shiftViewModel.isAssignedToShift = _shiftViewModel.assignments.firstWhere(
-            (assignment) => assignment.employeeRef == widget.currentEmployeeRef,
-            orElse: () => null) !=
-        null;
+    _shiftViewModel.isVotePossible = _shiftViewModel.isVotingPhaseActive;
+    // always allow voting if shift is unmanned
+    if (!shift.manned) {
+      _shiftViewModel.isVotePossible = true;
+    }
+    if (_shiftViewModel.isPastShift) {
+      _shiftViewModel.isVotePossible = false;
+    }
+
+    AssignmentModel assignmentModel = _shiftViewModel.assignments.firstWhere(
+        (assignment) => assignment.employeeRef == widget.currentEmployeeRef,
+        orElse: () => null);
+
+    _shiftViewModel.currentEmployeeAssignment =
+        assignmentModel != null ? Loadable(assignmentModel) : null;
+    _shiftViewModel.currentEmployeeAssignmentStatus =
+        AssignmentStatus(assignmentModel);
+
+    Vote vote = await VoteQuery(FirestoreImpl.instance)
+        .getVote(widget.shiftRef, widget.currentEmployeeRef);
+
+    _shiftViewModel.shiftVote = ShiftVote(widget.currentEmployeeRef,
+        shift: shift, assignment: assignmentModel, vote: vote);
 
     setState(() {
       loading = false;
@@ -130,13 +155,18 @@ class _ShiftViewState extends State<ShiftViewWidget> {
     ];
 
     if (_shiftViewModel.isAssignedToShift) {
-      result.add(ButtonTheme.bar(
-          child: ButtonBar(
-              alignment: MainAxisAlignment.spaceBetween,
-              children: <Widget>[
-            FlatButton(child: Text('Finalisieren'), onPressed: () {}),
-            FlatButton(child: Text('Auswertung'), onPressed: () {})
-          ])));
+      result.add(AssignmentButtonBar(
+        loadableAssignment: _shiftViewModel.currentEmployeeAssignment,
+        finishCallback:
+            _shiftViewModel.currentEmployeeAssignmentStatus.canBeFinished
+                ? () async {
+                    await finishEvaluation(
+                        _shiftViewModel.currentEmployeeAssignment.data,
+                        FirestoreImpl.instance);
+                    _loadShiftInfo();
+                  }
+                : null,
+      ));
     }
     return result;
   }
@@ -174,15 +204,21 @@ class _ShiftViewState extends State<ShiftViewWidget> {
       ),
     ];
 
-//    if (_shiftViewModel.isVotePossible) {
-        result.add(ButtonTheme.bar(
-            child: ButtonBar(
-                alignment: MainAxisAlignment.spaceBetween,
-                children: <Widget>[
-              FlatButton(child: Text('Ablehen'), onPressed: () {}),
-              FlatButton(child: Text('Bewerben'), onPressed: () {})
-            ])));
-//    }
+    if (_shiftViewModel.isVotePossible) {
+      result.add(ShiftVoteButtonBar(
+        shiftVote: _shiftViewModel.shiftVote,
+        onActionFinished: () {
+          _loadShiftInfo();
+        },
+      ));
+      result.add(Padding(
+        padding: EdgeInsets.symmetric(horizontal: 16),
+        child: Text(
+          "Bewerbungen auf diesen Dienst sind noch möglich",
+          style: TextStyle(color: Colors.green),
+        ),
+      ));
+    }
 
     return result;
   }
@@ -206,26 +242,29 @@ class _ShiftViewState extends State<ShiftViewWidget> {
 
   @override
   Widget build(BuildContext context) {
-    List<Widget> widgets = [];
-    widgets.add(TitleLable(text: "Details"));
-    widgets.addAll(_createShiftInfo());
-    widgets.add(Divider());
-    widgets.addAll(_createShiftplanInfo());
-    widgets.add(Divider());
-    widgets.add(TitleLable(text: "Personal"));
-    widgets.addAll(_createAssignments());
     return Scaffold(
       appBar: AppBar(
         title: Text("Dienstinformationen"),
       ),
       body: LoaderWidget(
         loading: loading,
-        child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: widgets,
-          ),
-        ),
+        builder: (BuildContext context) {
+          List<Widget> widgets = [];
+          widgets.add(TitleLable(text: "Details"));
+          widgets.addAll(_createShiftInfo());
+          widgets.add(Divider());
+          widgets.addAll(_createShiftplanInfo());
+          widgets.add(Divider());
+          widgets.add(TitleLable(text: "Personal"));
+          widgets.addAll(_createAssignments());
+
+          return SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: widgets,
+            ),
+          );
+        },
       ),
     );
   }

@@ -120,76 +120,39 @@ class ShiftplanMonthState extends State<ShiftplanMonth> {
           ),
         ),
       ];
-      List<Shift> shifts =
+      List<EmployeeShift> shifts =
           widget.shiftHolder.getShiftsBetween(day, day.add(Duration(days: 1)));
-      if (shifts.length > 2) {
-        shifts = shifts.sublist(0, 2);
-        shifts.forEach((Shift shift) {
-          shiftBadges.add(ShiftBadge(
+      shifts.forEach((EmployeeShift shift) {
+        shiftBadges.add(InkWell(
+          onTap: () {
+            Navigator.of(context)
+                .push(MaterialPageRoute(builder: (BuildContext context) {
+              return ShiftViewWidget(
+                shiftRef: shift.shiftRef,
+                currentEmployeeRef: shift.employeeRef,
+              );
+            }));
+          },
+          child: ShiftBadge(
             shift: shift,
-            onTap: () {
-              widget.selectDay(day);
-            },
-          ));
-        });
-        shiftBadges.add(Container(
-          width: double.infinity,
-          child: Text(
-            '...',
-            textAlign: TextAlign.center,
-            style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.bold,
-                color: Colors.black.withAlpha(0x8f)),
-          ),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(3.0),
-            border: Border.all(
-              color: Colors.black.withAlpha(0x1f),
-              width: 1.0,
-              style: BorderStyle.solid,
-            ),
           ),
         ));
-      } else {
-        shifts.forEach((Shift shift) {
-          shiftBadges.add(InkWell(
-            onTap: () {
-              Navigator.of(context)
-                  .push(MaterialPageRoute(builder: (BuildContext context) {
-                return ShiftViewWidget(
-                  shiftRef: shift.shiftRef,
-                  currentEmployeeRef: shift.employeeRef,
-                );
-              }));
-            },
-            child: ShiftBadge(
-              shift: shift,
-            ),
-          ));
-        });
-      }
+      });
 
       row.add(
         Expanded(
           flex: 1,
-          child: GestureDetector(
-            onTap: () {
-              widget.selectDay(day);
-            },
-            child: Container(
-              height: 150.0,
-              decoration: BoxDecoration(
-                border: Border.all(color: Colors.grey, width: 0.25),
-              ),
-              alignment: Alignment.topCenter,
-              padding: EdgeInsets.only(top: 8.0, bottom: 8.0),
-              child: Padding(
-                padding: const EdgeInsets.all(1.0),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: shiftBadges,
-                ),
+          child: Container(
+            decoration: BoxDecoration(
+              border: Border.all(color: Colors.grey, width: 0.25),
+            ),
+            alignment: Alignment.topCenter,
+            padding: EdgeInsets.only(top: 8.0, bottom: 8.0),
+            child: Padding(
+              padding: const EdgeInsets.all(1.0),
+              child: Column(
+                
+                children: shiftBadges,
               ),
             ),
           ),
@@ -197,7 +160,7 @@ class ShiftplanMonthState extends State<ShiftplanMonth> {
       );
     }
 
-    return Row(children: row);
+    return Row(children: row, crossAxisAlignment: CrossAxisAlignment.start,);
   }
 
   Widget _month() {

@@ -12,13 +12,15 @@ class LoaderWidget extends StatelessWidget {
   final bool loading;
   final Widget child;
   final EdgeInsetsGeometry padding;
+  final WidgetBuilder builder;
 
-  const LoaderWidget(
-      {Key key,
-      @required this.loading,
-      this.padding = const EdgeInsets.all(0.0),
-      @required this.child})
-      : super(key: key);
+  const LoaderWidget({
+    Key key,
+    @required this.loading,
+    this.padding = const EdgeInsets.all(0.0),
+    @Deprecated("Use builder instead") this.child,
+    this.builder,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -33,7 +35,7 @@ class LoaderWidget extends StatelessWidget {
         ),
       );
     } else {
-      return child;
+      return child != null ? child : builder(context);
     }
   }
 }
@@ -67,15 +69,21 @@ class LoaderBodyWidget extends StatelessWidget {
           ));
     } else {
       if (empty) {
-        return fallbackWidget ?? Container(
-          color: Colors.white,
-          child: Center(
-            child: Column(
-              children: <Widget>[Text(fallbackText, textAlign: TextAlign.center,)],
-              mainAxisAlignment: MainAxisAlignment.center,
-            ),
-          ),
-        );
+        return fallbackWidget ??
+            Container(
+              color: Colors.white,
+              child: Center(
+                child: Column(
+                  children: <Widget>[
+                    Text(
+                      fallbackText,
+                      textAlign: TextAlign.center,
+                    )
+                  ],
+                  mainAxisAlignment: MainAxisAlignment.center,
+                ),
+              ),
+            );
       } else {
         return child;
       }

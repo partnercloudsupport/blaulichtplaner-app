@@ -22,8 +22,6 @@ class ShiftplanWidget extends StatefulWidget {
 
 class ShiftplanWidgetState extends State<ShiftplanWidget> {
   bool _initialized = false;
-  bool _selectMonth = true;
-  DateTime _selectedDate = DateTime.now();
   StreamSubscription _sub;
   ShiftHolder _shifts = new ShiftHolder();
 
@@ -52,7 +50,8 @@ class ShiftplanWidgetState extends State<ShiftplanWidget> {
       (snapshot) {
         setState(() {
           for (final doc in snapshot.documentChanges) {
-            Shift shift = Shift.fromSnapshot(doc.document, widget.plan.employeeRef);
+            EmployeeShift shift = EmployeeShift.fromSnapshot(
+                doc.document, widget.plan.employeeRef);
             if (doc.type == DocumentChangeType.added) {
               _shifts.add(shift);
             } else if (doc.type == DocumentChangeType.modified) {
@@ -78,61 +77,20 @@ class ShiftplanWidgetState extends State<ShiftplanWidget> {
   }
 
   Widget _buildBody() {
-    if (_selectMonth) {
-      return ShiftplanMonth(
-        plan: widget.plan,
-        shiftHolder: _shifts,
-        selectDay: _selectDayCallback,
-      );
-    } else {
-      return ShiftplanDay(
-        shifts: _shifts.getShiftsBetween(
-          _selectedDate,
-          _selectedDate.add(Duration(days: 1)),
-        ),
-      );
-    }
+    return ShiftplanMonth(
+      plan: widget.plan,
+      shiftHolder: _shifts,
+      selectDay: _selectDayCallback,
+    );
   }
 
   _selectDayCallback(DateTime selected) {
-    setState(() {
-      _selectedDate =
-          DateTime(selected.year, selected.month, selected.day, 0, 0);
-      _selectMonth = false;
-    });
-  }
-
-  Widget _createDateNavigation() {
-    if (_selectMonth) {
-      return null;
-    } else {
-      return PreferredSize(
-        preferredSize: const Size.fromHeight(48.0),
-        child: DateNavigation(
-          initialValue: _selectedDate,
-          fromDate: widget.plan.from,
-          toDate: widget.plan.to,
-          onChanged: _selectDayCallback,
-        ),
-      );
-    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        actions: <Widget>[
-          IconButton(
-            icon: Icon(_selectMonth ? Icons.view_day : Icons.view_week),
-            onPressed: () {
-              setState(() {
-                _selectMonth = !_selectMonth;
-              });
-            },
-          )
-        ],
-        bottom: _createDateNavigation(),
         title: Text(widget.plan.label ?? 'Dienstplan'),
       ),
       body: LoaderBodyWidget(

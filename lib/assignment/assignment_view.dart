@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:blaulichtplaner_app/assignment/assignment_botton_bar.dart';
 import 'package:blaulichtplaner_app/evaluation/evaluation_editor.dart';
 import 'package:blaulichtplaner_app/firestore/firestore_flutter.dart';
 import 'package:blaulichtplaner_app/shift/shift_view.dart';
@@ -118,7 +119,9 @@ class AssignmentViewState extends State<AssignmentView> {
   Widget _assignmentBuilder(BuildContext context, int index) {
     Loadable loadableAssignment = _assignments[index];
     AssignmentModel assignment = loadableAssignment.data;
-    final dateFormatter = DateFormat.EEEE("de_DE").add_yMd();
+    AssignmentStatus assignmentStatus = AssignmentStatus(assignment);
+
+    final dateFormatter = DateFormat("EEEE',' ","de_DE").add_yMd();
     final timeFormatter = DateFormat.Hm("de_DE");
 
     String dateTimeLabel = dateFormatter.format(assignment.from);
@@ -148,8 +151,7 @@ class AssignmentViewState extends State<AssignmentView> {
       ),
       Padding(
         padding: EdgeInsets.only(
-            left: 16.0,
-            bottom: assignment.fromIsBefore(DateTime.now()) ? 0 : 8),
+            left: 16.0, bottom: assignmentStatus.started ? 0 : 8),
         child: Wrap(
           children: <Widget>[
             Chip(
@@ -173,39 +175,24 @@ class AssignmentViewState extends State<AssignmentView> {
       ),
     ];
 
-    if (assignment.fromIsBefore(DateTime.now())) {
-      cardChildren.add(
-        LoaderWidget(
-          loading: loadableAssignment.loading,
-          padding: EdgeInsets.all(14.0),
-          child: ButtonTheme.bar(
-            child: ButtonBar(
-              alignment: MainAxisAlignment.spaceBetween,
-              children: <Widget>[
-                FlatButton(
-                  child: Text('Finalisieren'),
-                  onPressed: DateTime.now().isAfter(assignment.to)
-                      ? () {
-                          _finishEvaluation(loadableAssignment);
-                        }
-                      : null,
-                ),
-                FlatButton(
-                  child: Text('Auswertung'),
-                  onPressed: () {
-                    Navigator.push(context,
-                        MaterialPageRoute(builder: (context) {
-                      return EvaluationEditor(
-                        assignment: assignment,
-                      );
-                    }));
-                  },
-                ),
-              ],
-            ),
-          ),
+    if (assignmentStatus.started) {
+      cardChildren.add(AssignmentButtonBar(
+        loadableAssignment: loadableAssignment,
+        finishCallback: assignmentStatus.canBeFinished
+            ? () {
+                _finishEvaluation(loadableAssignment);
+              }
+            : null,
+      ));
+    }
+    if (assignmentStatus.showNotFinishableWarning) {
+      cardChildren.add(Padding(
+        padding: EdgeInsets.only(left: 14, right: 14, bottom: 8),
+        child: Text(
+          "Die Schicht ist noch nicht abgeschlossen und kann nicht finalisiert werden.",
+          style: TextStyle(color: Colors.redAccent),
         ),
-      );
+      ));
     }
     Widget card = Card(
         child: InkWell(

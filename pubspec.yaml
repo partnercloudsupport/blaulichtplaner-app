@@ -18,8 +18,8 @@ dependencies:
   preferences: ^1.3.0
   device_info: ^0.4.0+1
   blaulichtplaner_lib:
-#    path: /Users/adrian/devSystem/projects/blp/blaulichtplaner_lib
-    git: git://github.com/Blaulichtplaner/blaulichtplaner_lib.git
+    path: /Users/adrian/devSystem/projects/blp/blaulichtplaner_lib
+#    git: git://github.com/Blaulichtplaner/blaulichtplaner_lib.git
 
   flutter:
     sdk: flutter

@@ -108,11 +108,13 @@ class _NotificationViewState extends State<NotificationView> {
   }
 
   Future<bool> _markReadAsRead() async {
-    WriteBatch batch = _firestore.batch();
-    for (DocumentReference item in seenNotification) {
-      batch.updateData(item, {'read': true});
+    if (seenNotification.length > 0) {
+      WriteBatch batch = _firestore.batch();
+      for (DocumentReference item in seenNotification) {
+        batch.updateData(item, {'read': true});
+      }
+      batch.commit();
     }
-    batch.commit();
     return true;
   }
 

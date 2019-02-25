@@ -33,7 +33,7 @@ class _ShiftViewModel {
   bool isVotingPhaseActive;
   bool isVotePossible;
   List<AssignmentModel> assignments;
-  Loadable<AssignmentModel> currentEmployeeAssignment;
+  LoadableWrapper<AssignmentModel> currentEmployeeAssignment;
   AssignmentStatus currentEmployeeAssignmentStatus;
 
   ShiftVote shiftVote;
@@ -123,7 +123,7 @@ class _ShiftViewState extends State<ShiftViewWidget> {
         orElse: () => null);
 
     _shiftViewModel.currentEmployeeAssignment =
-        assignmentModel != null ? Loadable(assignmentModel) : null;
+        assignmentModel != null ? LoadableWrapper(assignmentModel) : null;
     _shiftViewModel.currentEmployeeAssignmentStatus =
         AssignmentStatus(assignmentModel);
 

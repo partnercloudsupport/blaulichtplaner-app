@@ -28,83 +28,40 @@ class AssignmentView extends StatefulWidget {
 }
 
 class AssignmentViewState extends State<AssignmentView> {
-  final List<Loadable<AssignmentModel>> _assignments = [];
-  final List<StreamSubscription> subs = [];
   bool _initialized = false;
+  AssignmentHolder _assignmentHolder;
 
   @override
   void initState() {
     super.initState();
-    _initDataListeners();
+    _initAssignmentHolder();
+  }
+
+  void _initAssignmentHolder() async {
+    _assignmentHolder = AssignmentHolder(
+        FirestoreImpl.instance, widget.upcomingShifts, widget.employeeRoles,
+        () {
+      setState(() {});
+    });
+    await _assignmentHolder.initDataListeners();
+    _initialized = true;
   }
 
   @override
   void didUpdateWidget(AssignmentView oldWidget) {
     super.didUpdateWidget(oldWidget);
-    _cancelDataListeners();
-    _assignments.clear();
-    _initDataListeners();
+    _assignmentHolder?.dispose();
+    _initAssignmentHolder();
   }
 
   @override
   void dispose() {
     super.dispose();
-    _cancelDataListeners();
+    _assignmentHolder?.dispose();
   }
 
-  void _cancelDataListeners() {
-    for (final sub in subs) {
-      sub.cancel();
-    }
-  }
 
-  void _initDataListeners() {
-    final firestore = FirestoreImpl.instance;
-    if (widget.hasEmployeeRoles()) {
-      for (final role in widget.employeeRoles) {
-        Query query = firestore
-            .collection("assignments")
-            .where("status", isEqualTo: "public")
-            .where("employeeRef", isEqualTo: role.employeeRef);
-        if (widget.upcomingShifts) {
-          query = query
-              .where("to", isGreaterThanOrEqualTo: DateTime.now())
-              .orderBy("to");
-        } else {
-          query = query
-              .where("evaluated", isEqualTo: false)
-              .where("to", isLessThanOrEqualTo: DateTime.now())
-              .orderBy("to", descending: true);
-        }
-
-        subs.add(query.snapshots().listen((snapshot) {
-          setState(() {
-            for (final doc in snapshot.documentChanges) {
-              final assignmentRef = doc.document.reference;
-
-              if (doc.type == DocumentChangeType.added) {
-                _assignments
-                    .add(Loadable(AssignmentModel.fromSnapshot(doc.document)));
-              } else if (doc.type == DocumentChangeType.modified) {
-                _assignments.removeWhere(
-                    (assignment) => assignment.data.selfRef == assignmentRef);
-                _assignments
-                    .add(Loadable(AssignmentModel.fromSnapshot(doc.document)));
-              } else if (doc.type == DocumentChangeType.removed) {
-                _assignments.removeWhere(
-                    (assignment) => assignment.data.selfRef == assignmentRef);
-              }
-            }
-            _assignments.sort((s1, s2) => s1.data.from.compareTo(s2.data.from));
-
-            _initialized = true;
-          });
-        }));
-      }
-    }
-  }
-
-  void _finishEvaluation(Loadable<AssignmentModel> loadableAssignment) async {
+  void _finishEvaluation(LoadableWrapper<AssignmentModel> loadableAssignment) async {
     setState(() {
       loadableAssignment.loading = true;
     });
@@ -113,7 +70,7 @@ class AssignmentViewState extends State<AssignmentView> {
   }
 
   Widget _assignmentBuilder(BuildContext context, int index) {
-    Loadable loadableAssignment = _assignments[index];
+    LoadableWrapper loadableAssignment = _assignmentHolder.assignments[index];
     AssignmentModel assignment = loadableAssignment.data;
     AssignmentStatus assignmentStatus = AssignmentStatus(assignment);
 
@@ -222,8 +179,8 @@ class AssignmentViewState extends State<AssignmentView> {
     if (index == 0) {
       return null;
     }
-    DateTime from = _assignments[index - 1].data.to;
-    DateTime to = _assignments[index].data.from;
+    DateTime from = _assignmentHolder.assignments[index - 1].data.to;
+    DateTime to = _assignmentHolder.assignments[index].data.from;
     Duration diff = to.difference(from);
     if (diff.inMinutes > 0) {
       String label = "";
@@ -263,9 +220,9 @@ class AssignmentViewState extends State<AssignmentView> {
         loading: !_initialized,
         child: ListView.builder(
           itemBuilder: _assignmentBuilder,
-          itemCount: _assignments.length,
+          itemCount: _assignmentHolder.assignments.length,
         ),
-        empty: _assignments.isEmpty,
+        empty: _assignmentHolder.assignments.isEmpty,
         fallbackText: widget.upcomingShifts
             ? "Sie haben keine zugewiesenen Schichten!"
             : "Keine Schichten vorhanden, die eine Auswertung benötigen!",

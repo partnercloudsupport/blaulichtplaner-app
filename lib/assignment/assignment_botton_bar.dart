@@ -4,7 +4,7 @@ import 'package:blaulichtplaner_lib/blaulichtplaner.dart';
 import 'package:flutter/material.dart';
 
 class AssignmentButtonBar extends StatelessWidget {
-  final Loadable<AssignmentModel> loadableAssignment;
+  final LoadableWrapper<AssignmentModel> loadableAssignment;
   final Function finishCallback;
 
   const AssignmentButtonBar(

@@ -1,13 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 
-class Loadable<T> {
-  T data;
-  bool loading = false;
-
-  Loadable(this.data);
-}
-
 class LoaderWidget extends StatelessWidget {
   final bool loading;
   final Widget child;

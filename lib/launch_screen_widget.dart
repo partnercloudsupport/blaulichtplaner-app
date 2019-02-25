@@ -5,11 +5,12 @@ import 'package:blaulichtplaner_app/login/registration_service.dart';
 import 'package:blaulichtplaner_app/login/welcome_widget.dart';
 import 'package:blaulichtplaner_app/widgets/loader.dart';
 import 'package:blaulichtplaner_lib/blaulichtplaner.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_auth/firebase_auth.dart' as fbauth;
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter/services.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:blaulichtplaner_app/utils/notifications.dart';
 
 class LaunchScreen extends StatefulWidget {
   LaunchScreen({Key key}) : super(key: key);
@@ -18,11 +19,11 @@ class LaunchScreen extends StatefulWidget {
   LaunchScreenState createState() => LaunchScreenState();
 }
 
-class LaunchScreenState extends State<LaunchScreen> {
+class LaunchScreenState extends State<LaunchScreen> with NotificationToken {
   final UserManager _userManager = UserManager.instance;
   bool _initialized = false;
   bool _loginInProgress = false;
-  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final fbauth.FirebaseAuth _auth = fbauth.FirebaseAuth.instance;
   BlpUser _user;
 
   @override
@@ -32,7 +33,7 @@ class LaunchScreenState extends State<LaunchScreen> {
   }
 
   void _initUser() async {
-    FirebaseUser currentUser = await _auth.currentUser();
+    fbauth.FirebaseUser currentUser = await _auth.currentUser();
     if (currentUser != null) {
       if (currentUser.isEmailVerified) {
         _user = await _userManager.initUser(currentUser);
@@ -46,29 +47,36 @@ class LaunchScreenState extends State<LaunchScreen> {
   }
 
   void _logout() async {
-    FirebaseUser user = await _auth.currentUser();
+    if (_user != null) {
+      await clearNotificationsToken(_user.userRef);
+    }
+    fbauth.FirebaseUser user = await _auth.currentUser();
     if (user != null) {
-      // TODO check if providerId should be google. the framework returns "firebase" atm
       if (user.providerId == "firebase") {
-        final GoogleSignIn googleSignIn = GoogleSignIn(
-          scopes: ['email'],
-        );
-        try {
-          await googleSignIn.disconnect();
-        } on PlatformException catch (e) {
-          print(
-              e); // open issue here https://github.com/flutter/flutter/issues/26705
+        for (fbauth.UserInfo userInfo in user.providerData) {
+          if (userInfo.providerId == "google") {
+            final GoogleSignIn googleSignIn = GoogleSignIn(
+              scopes: ['email'],
+            );
+            try {
+              await googleSignIn.disconnect();
+            } on PlatformException catch (e) {
+              // open issue here https://github.com/flutter/flutter/issues/26705
+              print(e);
+            }
+          }
         }
       }
     }
     await _auth.signOut();
     _userManager.logout();
+    print("Logout finished");
     setState(() {
       _user = null;
     });
   }
 
-  _login(FirebaseUser user) async {
+  _login(fbauth.FirebaseUser user) async {
     setState(() {
       _loginInProgress = true;
     });
@@ -93,8 +101,8 @@ class LaunchScreenState extends State<LaunchScreen> {
     GoogleSignInAccount account = await googleSignIn.signIn();
     if (account != null) {
       GoogleSignInAuthentication googleAuth = await account.authentication;
-      FirebaseUser newUser =
-          await _auth.signInWithCredential(GoogleAuthProvider.getCredential(
+      fbauth.FirebaseUser newUser = await _auth
+          .signInWithCredential(fbauth.GoogleAuthProvider.getCredential(
         accessToken: googleAuth.accessToken,
         idToken: googleAuth.idToken,
       ));

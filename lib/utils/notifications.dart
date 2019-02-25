@@ -104,7 +104,6 @@ mixin Notifications {
   void _initFirebaseMessaging(DocumentReference userRef) async {
     print("init messaging");
     String token = await _firebaseMessaging.getToken();
-    print('gotten $token');
 
     await _updateTokenIfNecessary(userRef, token);
 
@@ -148,14 +147,10 @@ mixin Notifications {
       DocumentReference userRef, String token) async {
     CollectionReference collection = userRef.collection('tokens');
 
-    QuerySnapshot querySnapshot = await collection.getDocuments();
+    QuerySnapshot querySnapshot =
+        await collection.where("token", isEqualTo: token).getDocuments();
 
-    bool tokenExits = querySnapshot.documents.firstWhere(
-            (snapshot) => snapshot.data['token'] == token,
-            orElse: () => null) !=
-        null;
-
-    if (!tokenExits) {
+    if (querySnapshot.empty) {
       DeviceInfo deviceInfo = await getDeviceInfo();
 
       collection.add({
@@ -205,5 +200,25 @@ mixin Notifications {
     } catch (e) {
       print('notifications error: $e');
     }
+  }
+}
+
+mixin NotificationToken {
+  final FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
+
+  Future clearNotificationsToken(DocumentReference userRef) async {
+    print("Deleting current user token");
+    String token = await _firebaseMessaging.getToken();
+    CollectionReference collection = userRef.collection('tokens');
+
+    QuerySnapshot querySnapshot =
+        await collection.where("token", isEqualTo: token).getDocuments();
+
+    if (!querySnapshot.empty) {
+      for (DocumentSnapshot snapshot in querySnapshot.documents) {
+        await snapshot.reference.delete();
+      }
+    }
+    print("Token delete finished");
   }
 }

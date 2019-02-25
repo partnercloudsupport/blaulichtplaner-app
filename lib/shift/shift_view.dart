@@ -6,6 +6,7 @@ import 'package:blaulichtplaner_app/widgets/loader.dart';
 import 'package:blaulichtplaner_lib/blaulichtplaner.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class ShiftViewWidget extends StatefulWidget {
   final DocumentReference shiftRef;
@@ -26,6 +27,7 @@ class _ShiftViewModel {
   DateTime to;
 
   String locationLabel;
+  String locationAddress;
   String workAreaLabel;
 
   String shiftplanLabel;
@@ -95,10 +97,16 @@ class _ShiftViewState extends State<ShiftViewWidget> {
     Shiftplan shiftplan = await ShiftplanQuery(FirestoreImpl.instance)
         .getShiftplan(shift.shiftplanRef);
 
+    CompanyLocation companyLocation =
+        await LocationQuery(FirestoreImpl.instance)
+            .getLocation(shiftplan.locationRef);
+
     _shiftViewModel.from = shift.from;
     _shiftViewModel.to = shift.to;
     _shiftViewModel.shiftplanLabel = shiftplan.label;
-    _shiftViewModel.locationLabel = shiftplan.locationLabel;
+    _shiftViewModel.locationLabel = companyLocation.locationLabel;
+    _shiftViewModel.locationAddress =
+        companyLocation.hasAddress() ? companyLocation.createAddress() : null;
     _shiftViewModel.workAreaLabel = shift.workAreaLabel;
     if (shiftplan.voteFrom != null && shiftplan.voteTo != null) {
       String from = DateFormat.yMd("de_DE").format(shiftplan.voteFrom);
@@ -172,37 +180,51 @@ class _ShiftViewState extends State<ShiftViewWidget> {
   }
 
   List<Widget> _createShiftplanInfo() {
-    List<Widget> result = [
-      ListTile(
-        title: Text("Dienstplan"),
-        subtitle: Text(
-          _shiftViewModel.shiftplanLabel,
-          style: TextStyle(fontSize: 18),
-        ),
+    List<Widget> result = [];
+    result.add(ListTile(
+      title: Text("Dienstplan"),
+      subtitle: Text(
+        _shiftViewModel.shiftplanLabel,
+        style: TextStyle(fontSize: 18),
       ),
-      ListTile(
-        title: Text("Bewerbungsphase"),
-        subtitle: Text(
-          _shiftViewModel.votingPhase ?? "-",
-          style: TextStyle(fontSize: 18),
-        ),
+    ));
+    result.add(ListTile(
+      title: Text("Bewerbungsphase"),
+      subtitle: Text(
+        _shiftViewModel.votingPhase ?? "-",
+        style: TextStyle(fontSize: 18),
       ),
-      ListTile(
+    ));
+    result.add(ListTile(
         title: Text("Standort"),
         subtitle: Text(
           _shiftViewModel.locationLabel,
           style: TextStyle(fontSize: 18),
-        ),
-        trailing: Icon(Icons.location_on),
+        )));
+    result.add(ListTile(
+      title: Text("Adresse"),
+      subtitle: Text(
+        _shiftViewModel.locationAddress,
+        style: TextStyle(fontSize: 18),
       ),
-      ListTile(
-        title: Text("Arbeitsbereich"),
-        subtitle: Text(
-          _shiftViewModel.workAreaLabel,
-          style: TextStyle(fontSize: 18),
-        ),
+      trailing: Icon(Icons.location_on),
+      onTap: () async {
+        String url =
+            "http://maps.google.com/maps?q=" + _shiftViewModel.locationAddress;
+        if (await canLaunch(url)) {
+          await launch(url);
+        } else {
+          throw 'Can not launch $url';
+        }
+      },
+    ));
+    result.add(ListTile(
+      title: Text("Arbeitsbereich"),
+      subtitle: Text(
+        _shiftViewModel.workAreaLabel,
+        style: TextStyle(fontSize: 18),
       ),
-    ];
+    ));
 
     if (_shiftViewModel.isVotePossible) {
       result.add(ShiftVoteButtonBar(

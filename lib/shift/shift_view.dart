@@ -215,7 +215,7 @@ class _ShiftViewState extends State<ShiftViewWidget> {
         padding: EdgeInsets.symmetric(horizontal: 16),
         child: Text(
           "Bewerbungen auf diesen Dienst sind noch möglich",
-          style: TextStyle(color: Colors.green),
+          style: TextStyle(color: Colors.grey, fontStyle: FontStyle.italic),
         ),
       ));
     }

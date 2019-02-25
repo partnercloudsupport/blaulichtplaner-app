@@ -117,7 +117,7 @@ class AssignmentViewState extends State<AssignmentView> {
     AssignmentModel assignment = loadableAssignment.data;
     AssignmentStatus assignmentStatus = AssignmentStatus(assignment);
 
-    final dateFormatter = DateFormat("EEEE',' ","de_DE").add_yMd();
+    final dateFormatter = DateFormat("EEEE',' ", "de_DE").add_yMd();
     final timeFormatter = DateFormat.Hm("de_DE");
 
     String dateTimeLabel = dateFormatter.format(assignment.from);
@@ -186,7 +186,7 @@ class AssignmentViewState extends State<AssignmentView> {
         padding: EdgeInsets.only(left: 14, right: 14, bottom: 8),
         child: Text(
           "Die Schicht ist noch nicht abgeschlossen und kann nicht finalisiert werden.",
-          style: TextStyle(color: Colors.redAccent),
+          style: TextStyle(color: Colors.grey, fontStyle: FontStyle.italic),
         ),
       ));
     }

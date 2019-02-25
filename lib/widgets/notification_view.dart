@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:blaulichtplaner_app/authentication.dart';
 import 'package:blaulichtplaner_app/firestore/firestore_flutter.dart';
+import 'package:blaulichtplaner_app/shift/shift_view.dart';
 import 'package:blaulichtplaner_app/widgets/loader.dart';
 import 'package:blaulichtplaner_lib/blaulichtplaner.dart';
 import 'package:flutter/material.dart';
@@ -63,35 +64,46 @@ class _NotificationViewState extends State<NotificationView> {
     _initNotificationsListener();
   }
 
+  Widget _itemBuilder(BuildContext context, int index) {
+    DocumentSnapshot snapshot = notifications[index];
+    seenNotification.add(snapshot.reference);
+    Map<String, dynamic> content = Map.castFrom(snapshot.data['content']);
+
+    DocumentReference shiftRef = snapshot.data["sourceRef"];
+    DocumentReference employeeRef = snapshot.data["employeeRef"];
+    String type = snapshot.data["type"];
+
+    return ListTile(
+      title: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8.0),
+        child: Text(content['title']),
+      ),
+      subtitle: Text(content['body']),
+      onTap: () {
+        if (type == "upcoming") {
+          Navigator.of(context)
+              .push(MaterialPageRoute(builder: (BuildContext context) {
+            return ShiftViewWidget(
+              shiftRef: shiftRef,
+              currentEmployeeRef: employeeRef,
+            );
+          }));
+        }
+      },
+      trailing: Icon(
+        Icons.event,
+        size: 16,
+      ),
+    );
+  }
+
   Widget _notificationListBuilder() {
     return ListView.separated(
       separatorBuilder: (BuildContext context, int index) {
         return Divider();
       },
       itemCount: notifications.length,
-      itemBuilder: (context, int index) {
-        DocumentSnapshot snapshot = notifications[index];
-        seenNotification.add(snapshot.reference);
-        Map<String, dynamic> content = Map.castFrom(snapshot.data['content']);
-        bool read = snapshot.data['read'];
-
-        return ListTile(
-          title: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 8.0),
-            child: Text(content['title']),
-          ),
-          subtitle: Text(content['body']),
-          trailing: read
-              ? Icon(
-                  Icons.check_circle,
-                  size: 16,
-                )
-              : Icon(
-                  Icons.check_circle_outline,
-                  size: 16,
-                ),
-        );
-      },
+      itemBuilder: _itemBuilder,
     );
   }
 

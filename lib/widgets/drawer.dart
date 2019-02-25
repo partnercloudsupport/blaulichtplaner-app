@@ -99,7 +99,10 @@ class DrawerWidget extends StatelessWidget {
           ListTile(
             leading: Icon(Icons.exit_to_app),
             title: Text("Logout"),
-            onTap: logoutCallback,
+            onTap: () {
+              Navigator.pop(context);
+              logoutCallback();
+            },
           ),
         ],
       ),

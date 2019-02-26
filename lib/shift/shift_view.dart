@@ -28,6 +28,7 @@ class _ShiftViewModel {
 
   String locationLabel;
   String locationAddress;
+  String locationInfoUrl;
   String workAreaLabel;
 
   String shiftplanLabel;
@@ -107,6 +108,7 @@ class _ShiftViewState extends State<ShiftViewWidget> {
     _shiftViewModel.locationLabel = companyLocation.locationLabel;
     _shiftViewModel.locationAddress =
         companyLocation.hasAddress() ? companyLocation.createAddress() : null;
+    _shiftViewModel.locationInfoUrl = companyLocation.infoUrl;
     _shiftViewModel.workAreaLabel = shift.workAreaLabel;
     if (shiftplan.voteFrom != null && shiftplan.voteTo != null) {
       String from = DateFormat.yMd("de_DE").format(shiftplan.voteFrom);
@@ -218,6 +220,24 @@ class _ShiftViewState extends State<ShiftViewWidget> {
         }
       },
     ));
+    if (_shiftViewModel.locationInfoUrl != null) {
+      result.add(ListTile(
+        title: Text("Standortinformationen"),
+        subtitle: Text(
+          _shiftViewModel.locationInfoUrl,
+          style: TextStyle(fontSize: 18),
+        ),
+        trailing: Icon(Icons.link),
+        onTap: () async {
+          String url = _shiftViewModel.locationInfoUrl;
+          if (await canLaunch(url)) {
+            await launch(url);
+          } else {
+            throw 'Can not launch $url';
+          }
+        },
+      ));
+    }
     result.add(ListTile(
       title: Text("Arbeitsbereich"),
       subtitle: Text(

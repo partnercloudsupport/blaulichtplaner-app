@@ -40,16 +40,26 @@ class ShiftVotesViewState extends State<ShiftVotesView> {
   }
 
   void _initDataListeners() async {
-    _shiftVoteHolder =
-        ShiftVoteHolder(widget.employeeRoles, FirestoreImpl.instance, () {
-      setState(() {
-        shiftVotes = _shiftVoteHolder.shiftVotes;
-      });
-    });
+    _shiftVoteHolder = ShiftVoteHolder(
+        widget.employeeRoles, FirestoreImpl.instance, _updateShiftVotes);
     await _shiftVoteHolder.initListeners();
     setState(() {
       _initialized = true;
     });
+  }
+
+  void _updateShiftVotes() {
+    List<ShiftVote> filteredShiftVotes = _filterShiftVotes();
+    setState(() {
+      shiftVotes = filteredShiftVotes;
+    });
+  }
+
+  List<ShiftVote> _filterShiftVotes() {
+    List<ShiftVote> unfilteredShiftVotes = _shiftVoteHolder.shiftVotes;
+    List<ShiftVote> filteredShifts =
+        unfilteredShiftVotes.where(widget.filterConfig.filter).toList();
+    return filteredShifts;
   }
 
   @override
@@ -193,16 +203,8 @@ class ShiftVotesViewState extends State<ShiftVotesView> {
     }
   }
 
-  List<ShiftVote> filterShiftVotes() {
-    List<ShiftVote> unfilteredShiftVotes = _shiftVoteHolder.shiftVotes;
-    List<ShiftVote> filteredShifts =
-        unfilteredShiftVotes.where(widget.filterConfig.filter).toList();
-    return filteredShifts;
-  }
-
   @override
   Widget build(BuildContext context) {
-    shiftVotes = filterShiftVotes();
     if (widget.hasEmployeeRoles()) {
       return LoaderBodyWidget(
         loading: !_initialized,

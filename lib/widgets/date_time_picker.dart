@@ -66,7 +66,7 @@ class DateTimePickerWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     List<Widget> rowChildren = [
       Expanded(
-        flex: 2,
+        flex: 5,
         child: GestureDetector(
           child: Padding(
             padding: EdgeInsets.only(right: 8.0),
@@ -93,7 +93,7 @@ class DateTimePickerWidget extends StatelessWidget {
         ),
       ),
       Expanded(
-        flex: 1,
+        flex: 2,
         child: GestureDetector(
           child: Padding(
             padding: const EdgeInsets.only(right: 8.0),

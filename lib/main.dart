@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:blaulichtplaner_app/launch_screen_widget.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -17,12 +19,15 @@ Future main() async {
 class ShiftplanApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    List<Locale> locales =
+        Platform.isIOS ? [Locale("en", "US")] : [Locale("de", "DE")];
+
     return MaterialApp(
       localizationsDelegates: [
         GlobalMaterialLocalizations.delegate,
         GlobalWidgetsLocalizations.delegate,
       ],
-      supportedLocales: [Locale('en', 'US'), Locale("de", "DE")],
+      supportedLocales: locales,
       title: 'Blaulichtplaner',
       theme: ThemeData(
         primarySwatch: Colors.blue,

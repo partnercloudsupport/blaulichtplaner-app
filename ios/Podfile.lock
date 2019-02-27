@@ -13,23 +13,23 @@ PODS:
     - Flutter
   - device_info (0.0.1):
     - Flutter
-  - Firebase/Auth (5.16.0):
+  - Firebase/Auth (5.17.0):
     - Firebase/CoreOnly
-    - FirebaseAuth (= 5.3.0)
-  - Firebase/Core (5.16.0):
+    - FirebaseAuth (= 5.3.1)
+  - Firebase/Core (5.17.0):
     - Firebase/CoreOnly
-    - FirebaseAnalytics (= 5.5.0)
-  - Firebase/CoreOnly (5.16.0):
-    - FirebaseCore (= 5.2.0)
-  - Firebase/Database (5.16.0):
+    - FirebaseAnalytics (= 5.6.0)
+  - Firebase/CoreOnly (5.17.0):
+    - FirebaseCore (= 5.3.0)
+  - Firebase/Database (5.17.0):
     - Firebase/CoreOnly
     - FirebaseDatabase (= 5.1.0)
-  - Firebase/Firestore (5.16.0):
+  - Firebase/Firestore (5.17.0):
     - Firebase/CoreOnly
-    - FirebaseFirestore (= 1.0.0)
-  - Firebase/Messaging (5.16.0):
+    - FirebaseFirestore (= 1.0.1)
+  - Firebase/Messaging (5.17.0):
     - Firebase/CoreOnly
-    - FirebaseMessaging (= 3.3.0)
+    - FirebaseMessaging (= 3.3.1)
   - firebase_auth (0.0.1):
     - Firebase/Auth
     - Firebase/Core
@@ -41,48 +41,48 @@ PODS:
     - Firebase/Core
     - Firebase/Messaging
     - Flutter
-  - FirebaseAnalytics (5.5.0):
-    - FirebaseCore (~> 5.2)
-    - FirebaseInstanceID (~> 3.4)
-    - GoogleAppMeasurement (= 5.5.0)
+  - FirebaseAnalytics (5.6.0):
+    - FirebaseCore (~> 5.3)
+    - FirebaseInstanceID (~> 3.5)
+    - GoogleAppMeasurement (= 5.6.0)
     - GoogleUtilities/AppDelegateSwizzler (~> 5.2)
     - GoogleUtilities/MethodSwizzler (~> 5.2)
     - GoogleUtilities/Network (~> 5.2)
     - "GoogleUtilities/NSData+zlib (~> 5.2)"
     - nanopb (~> 0.3)
-  - FirebaseAnalyticsInterop (1.1.0)
-  - FirebaseAuth (5.3.0):
+  - FirebaseAnalyticsInterop (1.2.0)
+  - FirebaseAuth (5.3.1):
     - FirebaseAuthInterop (~> 1.0)
     - FirebaseCore (~> 5.2)
     - GoogleUtilities/Environment (~> 5.2)
     - GTMSessionFetcher/Core (~> 1.1)
   - FirebaseAuthInterop (1.0.0)
-  - FirebaseCore (5.2.0):
+  - FirebaseCore (5.3.0):
     - GoogleUtilities/Logger (~> 5.2)
   - FirebaseDatabase (5.1.0):
     - FirebaseAuthInterop (~> 1.0)
     - FirebaseCore (~> 5.2)
     - leveldb-library (~> 1.18)
-  - FirebaseFirestore (1.0.0):
+  - FirebaseFirestore (1.0.1):
     - FirebaseAuthInterop (~> 1.0)
     - FirebaseCore (~> 5.2)
-    - FirebaseFirestore/abseil-cpp (= 1.0.0)
+    - FirebaseFirestore/abseil-cpp (= 1.0.1)
     - "gRPC-C++ (= 0.0.6)"
     - leveldb-library (~> 1.20)
     - nanopb (~> 0.3.901)
     - Protobuf (~> 3.1)
-  - FirebaseFirestore/abseil-cpp (1.0.0):
+  - FirebaseFirestore/abseil-cpp (1.0.1):
     - FirebaseAuthInterop (~> 1.0)
     - FirebaseCore (~> 5.2)
     - "gRPC-C++ (= 0.0.6)"
     - leveldb-library (~> 1.20)
     - nanopb (~> 0.3.901)
     - Protobuf (~> 3.1)
-  - FirebaseInstanceID (3.4.0):
-    - FirebaseCore (~> 5.2)
+  - FirebaseInstanceID (3.5.0):
+    - FirebaseCore (~> 5.3)
     - GoogleUtilities/Environment (~> 5.3)
     - GoogleUtilities/UserDefaults (~> 5.3)
-  - FirebaseMessaging (3.3.0):
+  - FirebaseMessaging (3.3.1):
     - FirebaseAnalyticsInterop (~> 1.1)
     - FirebaseCore (~> 5.2)
     - FirebaseInstanceID (~> 3.4)
@@ -95,7 +95,7 @@ PODS:
   - google_sign_in (0.0.1):
     - Flutter
     - GoogleSignIn (~> 4.0)
-  - GoogleAppMeasurement (5.5.0):
+  - GoogleAppMeasurement (5.6.0):
     - GoogleUtilities/AppDelegateSwizzler (~> 5.2)
     - GoogleUtilities/MethodSwizzler (~> 5.2)
     - GoogleUtilities/Network (~> 5.2)
@@ -222,23 +222,23 @@ SPEC CHECKSUMS:
   BoringSSL-GRPC: 2a230d9cd93e7ce39916044f645cebb31f37dde6
   cloud_firestore: 980813a98d8beb5c321b589845fabf6c4c5bd571
   device_info: 76ce0b32e13034d1883be4a382433648f9dcee63
-  Firebase: 749a8ff4962f9d8c79dda1966de20f6f77583d67
+  Firebase: 59d557e064217fab6a03ff00baa73c06e73832e6
   firebase_auth: a5b249720380ab4ee1c633368cbb84aac9959359
   firebase_core: c96aa8b2fcf7f5167d32f22034f502f9304952b8
   firebase_messaging: a5f5d4a9491b660f33a1f94bd0596558f820bad1
-  FirebaseAnalytics: d35d47c03c50c73c14a7fd31463c5775843e78a9
-  FirebaseAnalyticsInterop: e5f21be9af6548372e2f0815834ff909bff395a2
-  FirebaseAuth: c9b3ff063c223d2841d97240af547ce511bce19a
+  FirebaseAnalytics: 75e4bbc6417d190cc98ec1f17c41a4fad4c2c976
+  FirebaseAnalyticsInterop: efbe45c8385ec626e29f9525e5ebd38520dfb6c1
+  FirebaseAuth: 0f61e1329237da5682c49c9abd135e8f9d07a151
   FirebaseAuthInterop: 0ffa57668be100582bb7643d4fcb7615496c41fc
-  FirebaseCore: ea2d1816723ef21492b8e9113303e1350db5e08c
+  FirebaseCore: c0c4befb82374d6aef64d800e569f47625352edc
   FirebaseDatabase: 23acb0c53cd4d4070a427b60100b2e4aaa97c45d
-  FirebaseFirestore: 6f2b93b4f7bb8416628142763c91ccc00fa04c86
-  FirebaseInstanceID: 97ea7a5dca9afd72c79bfcdddb7a44aa1cbb42a1
-  FirebaseMessaging: acbd51fe1a172bf29abaaa6e93a60f98bbf8e4f9
+  FirebaseFirestore: e95af4fe30552092d6e72a8f97ea475d93891b75
+  FirebaseInstanceID: 4522aad88f69297622062c0e9ffccdee3dd9b151
+  FirebaseMessaging: 08289db05bdc71d91fe70916de95bb0c3c86ca9b
   Flutter: 9d0fac939486c9aba2809b7982dfdbb47a7b0296
   flutter_local_notifications: 696a74904e0a0ab754e27a5f761da4a7f9153710
   google_sign_in: cbeb57b96679823d14df6b2240b629b983a42d79
-  GoogleAppMeasurement: 621f3bc6211d5ba548debe01fafad30cf5ab6859
+  GoogleAppMeasurement: 008e04ecd8efedd97a693aea8634aefe220bd26e
   GoogleSignIn: 7ff245e1a7b26d379099d3243a562f5747e23d39
   GoogleToolboxForMac: ff31605b7d66400dcec09bed5861689aebadda4d
   GoogleUtilities: 111a012f4c3a29c9e7c954c082fafd6ee3c999c0

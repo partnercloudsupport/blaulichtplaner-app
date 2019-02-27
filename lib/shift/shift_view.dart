@@ -211,8 +211,10 @@ class _ShiftViewState extends State<ShiftViewWidget> {
       ),
       trailing: Icon(Icons.location_on),
       onTap: () async {
-        String url =
-            "http://maps.google.com/maps?q=" + _shiftViewModel.locationAddress;
+        String url = Uri.https("www.google.com", "/maps/search/", {
+          "api": "1",
+          "query": _shiftViewModel.locationAddress
+        }).toString();        
         if (await canLaunch(url)) {
           await launch(url);
         } else {

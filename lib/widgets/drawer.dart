@@ -2,6 +2,7 @@ import 'package:blaulichtplaner_app/about_widget.dart';
 import 'package:blaulichtplaner_app/roles_widget.dart';
 import 'package:blaulichtplaner_app/widgets/notification_view.dart';
 import 'package:blaulichtplaner_app/widgets/preferences.dart';
+import 'package:blaulichtplaner_app/widgets/project_id.dart';
 import 'package:blaulichtplaner_lib/blaulichtplaner.dart';
 import 'package:flutter/material.dart';
 
@@ -104,6 +105,8 @@ class DrawerWidget extends StatelessWidget {
               logoutCallback();
             },
           ),
+          Divider(),
+          Center(child: ProjectIdText())
         ],
       ),
     );

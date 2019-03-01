@@ -186,12 +186,12 @@ class AssignmentViewState extends State<AssignmentView> {
       String label = "";
       if (diff.inHours > 1) {
         if (diff.inDays > 1) {
-          label = '${diff.inDays} Tage frei';
+          label = 'Nächster Dienst in ${diff.inDays} Tagen';
         } else {
-          label = '${diff.inHours} Stunden frei';
+          label = 'Nächster Dienst in ${diff.inHours} Stunden';
         }
       } else {
-        label = '${diff.inMinutes} Minuten frei';
+        label = 'Nächster Dienst in ${diff.inMinutes} Minuten';
       }
       return Container(
         alignment: Alignment.center,

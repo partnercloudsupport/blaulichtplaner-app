@@ -203,25 +203,27 @@ class _ShiftViewState extends State<ShiftViewWidget> {
           _shiftViewModel.locationLabel,
           style: TextStyle(fontSize: 18),
         )));
-    result.add(ListTile(
-      title: Text("Adresse"),
-      subtitle: Text(
-        _shiftViewModel.locationAddress,
-        style: TextStyle(fontSize: 18),
-      ),
-      trailing: Icon(Icons.location_on),
-      onTap: () async {
-        String url = Uri.https("www.google.com", "/maps/search/", {
-          "api": "1",
-          "query": _shiftViewModel.locationAddress
-        }).toString();        
-        if (await canLaunch(url)) {
-          await launch(url);
-        } else {
-          throw 'Can not launch $url';
-        }
-      },
-    ));
+    if (_shiftViewModel.locationAddress != null) {
+      result.add(ListTile(
+        title: Text("Adresse"),
+        subtitle: Text(
+          _shiftViewModel.locationAddress,
+          style: TextStyle(fontSize: 18),
+        ),
+        trailing: Icon(Icons.location_on),
+        onTap: () async {
+          String url = Uri.https("www.google.com", "/maps/search/", {
+            "api": "1",
+            "query": _shiftViewModel.locationAddress
+          }).toString();
+          if (await canLaunch(url)) {
+            await launch(url);
+          } else {
+            throw 'Can not launch $url';
+          }
+        },
+      ));
+    }
     if (_shiftViewModel.locationInfoUrl != null) {
       result.add(ListTile(
         title: Text("Standortinformationen"),

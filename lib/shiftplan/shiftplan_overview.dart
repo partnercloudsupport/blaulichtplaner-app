@@ -7,6 +7,8 @@ import 'package:flutter/material.dart';
 import 'package:blaulichtplaner_app/widgets/no_employee.dart';
 import 'dart:async';
 
+import 'package:intl/intl.dart';
+
 class ShiftplanOverview extends StatefulWidget {
   final List<UserRole> employeeRoles;
   ShiftplanOverview({
@@ -27,7 +29,9 @@ class ShiftplanOverview extends StatefulWidget {
 class ShiftplanOverviewState extends State<ShiftplanOverview> {
   bool _initialized = false;
   final List<StreamSubscription> _subs = [];
-  ShiftplanHolder _shiftplans = new ShiftplanHolder();
+  ShiftplanHolder _shiftplans = ShiftplanHolder();
+  final simpleDateFormatter = DateFormat.yMd("de_DE");
+
   @override
   void initState() {
     super.initState();
@@ -40,7 +44,6 @@ class ShiftplanOverviewState extends State<ShiftplanOverview> {
       for (UserRole role in widget.employeeRoles) {
         Query query = role.reference
             .collection('shiftplans')
-            .where('status', isEqualTo: 'public')
             .where("to", isGreaterThan: DateTime.now())
             .orderBy('to', descending: true)
             .orderBy("locationLabel");
@@ -77,31 +80,25 @@ class ShiftplanOverviewState extends State<ShiftplanOverview> {
     }
   }
 
-  String _shiftplanSubtitle(ShiftplanModel shiftplanModel) {
-    if (shiftplanModel.companyLabel != null) {
-      return shiftplanModel.companyLabel + " > " + shiftplanModel.locationLabel;
-    } else {
-      return shiftplanModel.locationLabel;
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     if (widget.hasEmployeeRoles()) {
       return LoaderBodyWidget(
         child: ListView.builder(
           itemBuilder: (BuildContext context, int index) {
+            ShiftplanModel plan = _shiftplans.plans[index];
+            String subtitle =
+                "${simpleDateFormatter.format(plan.from)} - ${simpleDateFormatter.format(plan.to)}";
             return Card(
               child: ListTile(
-                title: Text(
-                    _shiftplans.plans[index].label ?? 'Dienstplan ohne Name'),
-                subtitle: Text(_shiftplanSubtitle(_shiftplans.plans[index])),
+                title: Text(plan.shiftplanLabel + " (" + plan.title + ")"),
+                subtitle: Text(subtitle),
                 onTap: () {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
                       builder: (BuildContext context) =>
-                          ShiftplanWidget(plan: _shiftplans.plans[index]),
+                          ShiftplanWidget(plan: plan),
                     ),
                   );
                 },
@@ -112,7 +109,7 @@ class ShiftplanOverviewState extends State<ShiftplanOverview> {
         ),
         empty: _shiftplans.isEmpty,
         loading: !_initialized,
-        fallbackText: 'Sie haben keine Dienstpläne',
+        fallbackText: 'Es sind keine Dienstpläne erstellt',
       );
     } else {
       return NoEmployee();

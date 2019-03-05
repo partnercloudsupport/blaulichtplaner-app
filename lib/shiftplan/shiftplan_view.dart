@@ -44,7 +44,6 @@ class ShiftplanWidgetState extends State<ShiftplanWidget> {
     Query query = FirestoreImpl.instance
         .collection('shifts')
         .where('shiftplanRef', isEqualTo: widget.plan.selfRef)
-        .where('status', isEqualTo: 'public')
         .orderBy('from');
     _sub = query.snapshots().listen(
       (snapshot) {
@@ -84,14 +83,23 @@ class ShiftplanWidgetState extends State<ShiftplanWidget> {
     );
   }
 
-  _selectDayCallback(DateTime selected) {
-  }
+  _selectDayCallback(DateTime selected) {}
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.plan.label ?? 'Dienstplan'),
+        title: Text(widget.plan.shiftplanLabel),
+        bottom: PreferredSize(
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Text(
+              widget.plan.title,
+              style: TextStyle(color: Colors.white),
+            ),
+          ),
+          preferredSize: Size.fromHeight(16),
+        ),
       ),
       body: LoaderBodyWidget(
         child: _buildBody(),

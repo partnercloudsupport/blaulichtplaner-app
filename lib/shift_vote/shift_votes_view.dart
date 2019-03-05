@@ -31,7 +31,7 @@ class ShiftVotesView extends StatefulWidget {
 class ShiftVotesViewState extends State<ShiftVotesView> {
   ShiftVoteHolder _shiftVoteHolder;
   bool _initialized = false;
-  List<ShiftVote> shiftVotes;
+  List<ShiftVote> shiftVotes = [];
 
   @override
   void initState() {

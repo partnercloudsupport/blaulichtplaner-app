@@ -179,7 +179,8 @@ class ShiftVotesViewState extends State<ShiftVotesView> {
     if (shiftVote.hasShift() && isNotEmpty(shiftVote.shift.publicNote)) {
       rows.add(createInfoBox(shiftVote.shift.publicNote, Icons.assignment));
     }
-    if (shiftVote.hasShift()) {
+    
+    if (shiftVote.hasShift() && !shiftVote.hasAssignment()) {
       if (shiftVote.shift.isVotingPossible()) {
         rows.add(ShiftVoteButtonBar(
           shiftVote: shiftVote,

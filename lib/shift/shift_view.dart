@@ -42,6 +42,7 @@ class _ShiftViewModel {
 
   bool get isAssignedToShift => currentEmployeeAssignment != null;
   bool get isPastShift => DateTime.now().isAfter(to);
+  bool get shiftStarted => DateTime.now().isAfter(from);
 }
 
 class LabelWidget extends StatelessWidget {
@@ -152,7 +153,7 @@ class _ShiftViewState extends State<ShiftViewWidget> {
       ),
     ];
 
-    if (_shiftViewModel.isAssignedToShift) {
+    if (_shiftViewModel.isAssignedToShift && _shiftViewModel.shiftStarted) {
       result.add(AssignmentButtonBar(
         loadableAssignment: _shiftViewModel.currentEmployeeAssignment,
         finishCallback:

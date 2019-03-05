@@ -18,27 +18,29 @@ class AssignmentButtonBar extends StatelessWidget {
     return LoaderWidget(
       loading: loadableAssignment.loading,
       padding: EdgeInsets.all(14.0),
-      child: ButtonTheme.bar(
-        child: ButtonBar(
-          alignment: MainAxisAlignment.spaceBetween,
-          children: <Widget>[
-            FlatButton(
-              child: Text('Finalisieren'),
-              onPressed: finishCallback,
-            ),
-            FlatButton(
-              child: Text('Auswertung'),
-              onPressed: () {
-                Navigator.push(context, MaterialPageRoute(builder: (context) {
-                  return EvaluationEditor(
-                    assignment: loadableAssignment.data,
-                  );
-                }));
-              },
-            ),
-          ],
-        ),
-      ),
+      builder: (BuildContext context) {
+        return ButtonTheme.bar(
+          child: ButtonBar(
+            alignment: MainAxisAlignment.spaceBetween,
+            children: <Widget>[
+              FlatButton(
+                child: Text('Finalisieren'),
+                onPressed: finishCallback,
+              ),
+              FlatButton(
+                child: Text('Auswertung'),
+                onPressed: () {
+                  Navigator.push(context, MaterialPageRoute(builder: (context) {
+                    return EvaluationEditor(
+                      assignment: loadableAssignment.data,
+                    );
+                  }));
+                },
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 }

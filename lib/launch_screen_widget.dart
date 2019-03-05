@@ -35,10 +35,16 @@ class LaunchScreenState extends State<LaunchScreen> with NotificationToken {
   void _initUser() async {
     fbauth.FirebaseUser currentUser = await _auth.currentUser();
     if (currentUser != null) {
-      if (currentUser.isEmailVerified) {
-        _user = await _userManager.initUser(currentUser);
-      } else {
-        _auth.signOut();
+      try {
+        if (currentUser.isEmailVerified) {
+          _user = await _userManager.initUser(currentUser);
+        } else {
+          _auth.signOut();
+        }
+      } catch (e) {
+        print(e);
+        // ignore error, force user login
+        _user = null;
       }
     }
     setState(() {

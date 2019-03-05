@@ -1,6 +1,7 @@
 import 'package:blaulichtplaner_app/assignment/assignment_botton_bar.dart';
 import 'package:blaulichtplaner_app/firestore/firestore_flutter.dart';
 import 'package:blaulichtplaner_app/shift_vote/shift_vote_button_bar.dart';
+import 'package:blaulichtplaner_app/shift_vote/shift_vote_message.dart';
 import 'package:blaulichtplaner_app/widgets/date_time_picker.dart';
 import 'package:blaulichtplaner_app/widgets/loader.dart';
 import 'package:blaulichtplaner_lib/blaulichtplaner.dart';
@@ -33,8 +34,6 @@ class _ShiftViewModel {
 
   String shiftplanLabel;
   String votingPhase;
-  bool isVotingPhaseActive;
-  bool isVotePossible;
   List<AssignmentModel> assignments;
   LoadableWrapper<AssignmentModel> currentEmployeeAssignment;
   AssignmentStatus currentEmployeeAssignmentStatus;
@@ -110,22 +109,11 @@ class _ShiftViewState extends State<ShiftViewWidget> {
         companyLocation.hasAddress() ? companyLocation.createAddress() : null;
     _shiftViewModel.locationInfoUrl = companyLocation.infoUrl;
     _shiftViewModel.workAreaLabel = shift.workAreaLabel;
+
     if (shiftplan.voteFrom != null && shiftplan.voteTo != null) {
       String from = DateFormat.yMd("de_DE").format(shiftplan.voteFrom);
       String to = DateFormat.yMd("de_DE").format(shiftplan.voteTo);
       _shiftViewModel.votingPhase = "von $from bis $to";
-      DateTime now = DateTime.now();
-      _shiftViewModel.isVotingPhaseActive =
-          shiftplan.voteFrom.isBefore(now) && shiftplan.voteTo.isAfter(now);
-    }
-
-    _shiftViewModel.isVotePossible = _shiftViewModel.isVotingPhaseActive;
-    // always allow voting if shift is unmanned
-    if (!shift.manned) {
-      _shiftViewModel.isVotePossible = true;
-    }
-    if (_shiftViewModel.isPastShift) {
-      _shiftViewModel.isVotePossible = false;
     }
 
     AssignmentModel assignmentModel = _shiftViewModel.assignments.firstWhere(
@@ -178,6 +166,21 @@ class _ShiftViewState extends State<ShiftViewWidget> {
                 : null,
       ));
     }
+    if (_shiftViewModel.shiftVote.hasShift()) {
+      if (_shiftViewModel.shiftVote.shift.isVotingPossible()) {
+        result.add(ShiftVoteButtonBar(
+          shiftVote: _shiftViewModel.shiftVote,
+          onActionFinished: () {
+            _loadShiftInfo();
+          },
+        ));
+      } else {
+        result.add(ShiftVoteMessage(
+          shift: _shiftViewModel.shiftVote.shift,
+        ));
+      }
+    }
+
     return result;
   }
 
@@ -250,22 +253,6 @@ class _ShiftViewState extends State<ShiftViewWidget> {
       ),
     ));
 
-    if (_shiftViewModel.isVotePossible) {
-      result.add(ShiftVoteButtonBar(
-        shiftVote: _shiftViewModel.shiftVote,
-        onActionFinished: () {
-          _loadShiftInfo();
-        },
-      ));
-      result.add(Padding(
-        padding: EdgeInsets.symmetric(horizontal: 16),
-        child: Text(
-          "Bewerbungen auf diesen Dienst sind noch möglich",
-          style: TextStyle(color: Colors.grey, fontStyle: FontStyle.italic),
-        ),
-      ));
-    }
-
     return result;
   }
 
@@ -296,12 +283,12 @@ class _ShiftViewState extends State<ShiftViewWidget> {
         loading: loading,
         builder: (BuildContext context) {
           List<Widget> widgets = [];
-          widgets.add(TitleLable(text: "Details"));
+          widgets.add(TitleLabel(text: "Details"));
           widgets.addAll(_createShiftInfo());
           widgets.add(Divider());
           widgets.addAll(_createShiftplanInfo());
           widgets.add(Divider());
-          widgets.add(TitleLable(text: "Personal"));
+          widgets.add(TitleLabel(text: "Personal"));
           widgets.addAll(_createAssignments());
 
           return SingleChildScrollView(
@@ -316,9 +303,9 @@ class _ShiftViewState extends State<ShiftViewWidget> {
   }
 }
 
-class TitleLable extends StatelessWidget {
+class TitleLabel extends StatelessWidget {
   final String text;
-  TitleLable({
+  TitleLabel({
     Key key,
     @required this.text,
   }) : super(key: key);

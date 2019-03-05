@@ -1,5 +1,6 @@
 import 'package:blaulichtplaner_app/firestore/firestore_flutter.dart';
 import 'package:blaulichtplaner_app/shift_vote/shift_vote_button_bar.dart';
+import 'package:blaulichtplaner_app/shift_vote/shift_vote_message.dart';
 import 'package:blaulichtplaner_app/utils/utils.dart';
 import 'package:blaulichtplaner_app/widgets/loader.dart';
 import 'package:blaulichtplaner_app/widgets/no_employee.dart';
@@ -32,6 +33,8 @@ class ShiftVotesViewState extends State<ShiftVotesView> {
   ShiftVoteHolder _shiftVoteHolder;
   bool _initialized = false;
   List<ShiftVote> shiftVotes = [];
+  final dateFormatter = DateFormat.EEEE("de_DE").add_yMd();
+  final timeFormatter = DateFormat.Hm("de_DE");
 
   @override
   void initState() {
@@ -109,9 +112,6 @@ class ShiftVotesViewState extends State<ShiftVotesView> {
   Widget _listElementBuilder(BuildContext context, int index) {
     ShiftVote shiftVote = shiftVotes[index];
 
-    final dateFormatter = DateFormat.EEEE("de_DE").add_yMd();
-    final timeFormatter = DateFormat.Hm("de_DE");
-
     String dateTimeLabel = dateFormatter.format(shiftVote.from);
 
     final shiftDuration = shiftVote.shiftDuration();
@@ -178,10 +178,17 @@ class ShiftVotesViewState extends State<ShiftVotesView> {
     if (shiftVote.hasShift() && isNotEmpty(shiftVote.shift.publicNote)) {
       rows.add(createInfoBox(shiftVote.shift.publicNote, Icons.assignment));
     }
-
-    rows.add(ShiftVoteButtonBar(
-      shiftVote: shiftVote,
-    ));
+    if (shiftVote.hasShift()) {
+      if (shiftVote.shift.isVotingPossible()) {
+        rows.add(ShiftVoteButtonBar(
+          shiftVote: shiftVote,
+        ));
+      } else {
+        rows.add(ShiftVoteMessage(
+          shift: shiftVote.shift,
+        ));
+      }
+    }
 
     return Card(
       child: Column(

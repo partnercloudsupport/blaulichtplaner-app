@@ -1,4 +1,5 @@
 import 'package:blaulichtplaner_app/firestore/firestore_flutter.dart';
+import 'package:blaulichtplaner_app/shift/shift_view.dart';
 import 'package:blaulichtplaner_app/shift_vote/shift_vote_button_bar.dart';
 import 'package:blaulichtplaner_app/shift_vote/shift_vote_message.dart';
 import 'package:blaulichtplaner_app/utils/utils.dart';
@@ -191,10 +192,21 @@ class ShiftVotesViewState extends State<ShiftVotesView> {
     }
 
     return Card(
-      child: Column(
-        mainAxisSize: MainAxisSize.max,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: rows,
+      child: InkWell(
+        child: Column(
+          mainAxisSize: MainAxisSize.max,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: rows,
+        ),
+        onTap: () {
+          Navigator.of(context)
+              .push(MaterialPageRoute(builder: (BuildContext context) {
+            return ShiftViewWidget(
+              shiftRef: shiftVote.shiftRef,
+              currentEmployeeRef: shiftVote.employeeRef,
+            );
+          }));
+        },
       ),
     );
   }

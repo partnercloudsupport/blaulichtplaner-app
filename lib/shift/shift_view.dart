@@ -167,7 +167,8 @@ class _ShiftViewState extends State<ShiftViewWidget> {
                 : null,
       ));
     }
-    if (_shiftViewModel.shiftVote.hasShift()) {
+    // show voting buttons only if not assigned yet
+    if (!_shiftViewModel.isAssignedToShift && _shiftViewModel.shiftVote.hasShift()) {
       if (_shiftViewModel.shiftVote.shift.isVotingPossible()) {
         result.add(ShiftVoteButtonBar(
           shiftVote: _shiftViewModel.shiftVote,

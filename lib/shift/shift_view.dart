@@ -98,7 +98,7 @@ class _ShiftViewState extends State<ShiftViewWidget> {
     Shiftplan shiftplan = await ShiftplanQuery(FirestoreImpl.instance)
         .getShiftplan(shift.shiftplanRef);
 
-    CompanyLocation companyLocation =
+    Location companyLocation =
         await LocationQuery(FirestoreImpl.instance)
             .getLocation(shiftplan.locationRef);
 

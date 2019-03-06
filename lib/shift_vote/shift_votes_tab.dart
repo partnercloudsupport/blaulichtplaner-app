@@ -1,5 +1,9 @@
+import 'package:blaulichtplaner_app/firestore/firestore_flutter.dart';
+import 'package:blaulichtplaner_app/location/location_view.dart';
 import 'package:blaulichtplaner_app/shift_vote/shift_votes_view.dart';
 import 'package:blaulichtplaner_app/widgets/date_navigation.dart';
+import 'package:blaulichtplaner_app/widgets/loader.dart';
+import 'package:blaulichtplaner_app/widgets/no_employee.dart';
 import 'package:blaulichtplaner_lib/blaulichtplaner.dart';
 import 'package:flutter/material.dart';
 
@@ -96,14 +100,84 @@ class ShiftVotesTabWidget extends StatefulWidget {
 
   @override
   State<StatefulWidget> createState() {
-    return _ShiftVotesTabState();
+    return _ShiftVotesTabState(user.companyEmployeeRoles());
   }
 }
 
 class _ShiftVotesTabState extends State<ShiftVotesTabWidget> {
+  final List<CompanyEmployeeRole> companyRoles;
+  List<ShiftVote> _shiftVotes = [];
   FilterConfig _filterConfig = FilterConfig();
-  bool _selectDate = false;
   DateTime _initialDate = today();
+  bool _initialized = false;
+  ShiftVoteHolder _shiftVoteHolder;
+
+  _ShiftVotesTabState(this.companyRoles);
+
+  @override
+  void initState() {
+    super.initState();
+    _initDataListeners();
+  }
+
+  void _initDataListeners() async {
+    // load favorites first
+    await _loadFavorites();
+    _shiftVoteHolder = ShiftVoteHolder(
+        companyRoles, FirestoreImpl.instance, _updateShiftVotes);
+    await _shiftVoteHolder.initListeners();
+    setState(() {
+      _initialized = true;
+    });
+  }
+
+  void _updateShiftVotes() {
+    List<ShiftVote> filteredShiftVotes = _filterShiftVotes();
+    setState(() {
+      _shiftVotes = filteredShiftVotes;
+    });
+  }
+
+  List<ShiftVote> _filterShiftVotes() {
+    List<ShiftVote> unfilteredShiftVotes = _shiftVoteHolder.shiftVotes;
+    List<ShiftVote> filteredShifts =
+        unfilteredShiftVotes.where(_filterConfig.filter).toList();
+    return filteredShifts;
+  }
+
+  @override
+  void didUpdateWidget(ShiftVotesTabWidget oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    setState(() {
+      _initialized = false;
+    });
+    _shiftVoteHolder.cancelSubscriptions();
+    _shiftVoteHolder.clear();
+    _initDataListeners();
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    _shiftVoteHolder.cancelSubscriptions();
+  }
+
+  Future<void> _loadFavorites() async {
+    DocumentReference favoritesRef = widget.user.userRef
+        .collection("settings")
+        .document("locationFavorites");
+
+    DocumentSnapshot snapshot = await favoritesRef.document;
+    if (snapshot.exists) {
+      List<DocumentReference> favorites =
+          List.castFrom(snapshot.data["favorites"]);
+      if (favorites != null) {
+        _filterConfig.favoriteLocations = Set.from(favorites);
+      } else {
+        _filterConfig.favoriteLocations = null;
+      }
+    }
+  }
 
   String _createTitle() {
     switch (_filterConfig.option) {
@@ -117,19 +191,46 @@ class _ShiftVotesTabState extends State<ShiftVotesTabWidget> {
     }
   }
 
+  _fallbackText() {
+    String suffix = _filterConfig.hasFilterBesidesOption
+        ? ", die dem Filter entsprechen"
+        : "";
+    switch (_filterConfig.option) {
+      case FilterOption.rejected:
+        return 'Keine abgelehnten Dienste' + suffix;
+      case FilterOption.accepted:
+        return 'Keine Dienste mit Bewerbung' + suffix;
+      case FilterOption.withoutVote:
+        return 'Keine unbesetzten Dienste' + suffix;
+    }
+  }
+
   List<Widget> _createAppBarActions() {
     return <Widget>[
       IconButton(
+        icon: Icon(Icons.local_hospital),
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => LocationView(
+                    companyRefs:
+                        companyRoles.map((role) => role.reference).toList(),
+                    favoritesForSelection: true,
+                  ),
+            ),
+          );
+        },
+      ),
+      IconButton(
         icon: Icon(Icons.today),
         onPressed: () {
-          setState(() {
-            _selectDate = !_selectDate;
-            if (!_selectDate) {
-              _filterConfig.selectedDate = null;
-            } else {
-              _filterConfig.selectedDate = DateTime.now();
-            }
-          });
+          if (_filterConfig.selectedDate != null) {
+            _filterConfig.selectedDate = null;
+          } else {
+            _filterConfig.selectedDate = DateTime.now();
+          }
+          _updateShiftVotes();
         },
       ),
       IconButton(
@@ -150,11 +251,11 @@ class _ShiftVotesTabState extends State<ShiftVotesTabWidget> {
     ];
   }
 
-  Widget _createDateNavigation() {
-    if (_selectDate) {
-      return PreferredSize(
-        preferredSize: Size.fromHeight(48),
-        child: DateNavigation(
+  Widget _createBottom() {
+    if (_filterConfig.hasFilterBesidesOption) {
+      List<Widget> elements = [];
+      if (_filterConfig.selectedDate != null) {
+        elements.add(DateNavigation(
           fromDate: _initialDate,
           initialValue: _filterConfig.selectedDate,
           onChanged: (DateTime date) {
@@ -162,10 +263,40 @@ class _ShiftVotesTabState extends State<ShiftVotesTabWidget> {
               _filterConfig.selectedDate = date;
             });
           },
-        ),
-      );
+        ));
+      }
+      if (_filterConfig.hasFavoriteLocationsFilter) {
+        elements.add(Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          child: Text(
+            "Standortfilter aktiv.",
+            style: TextStyle(color: Colors.white),
+          ),
+        ));
+      }
+      return PreferredSize(
+          preferredSize:
+              elements.length == 1 ? Size.fromHeight(48) : Size.fromHeight(96),
+          child: Column(
+            children: elements,
+          ));
     } else {
       return null;
+    }
+  }
+
+  Widget _body() {
+    if (companyRoles != null && companyRoles.isNotEmpty) {
+      return LoaderBodyWidget(
+        loading: !_initialized,
+        child: ShiftVotesView(
+          shiftVotes: _shiftVotes,
+        ),
+        fallbackText: _fallbackText(),
+        empty: _shiftVotes.isEmpty,
+      );
+    } else {
+      return NoEmployee();
     }
   }
 
@@ -175,12 +306,10 @@ class _ShiftVotesTabState extends State<ShiftVotesTabWidget> {
       appBar: AppBar(
         title: Text(_createTitle()),
         actions: _createAppBarActions(),
-        bottom: _createDateNavigation(),
+        bottom: _createBottom(),
       ),
       drawer: widget.drawer,
-      body: ShiftVotesView(
-          employeeRoles: widget.user.companyEmployeeRoles(),
-          filterConfig: _filterConfig),
+      body: _body(),
       bottomNavigationBar: widget.bottomNavigationBar,
     );
   }

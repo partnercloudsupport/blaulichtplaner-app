@@ -1,3 +1,4 @@
+import 'package:blaulichtplaner_app/location/location_view.dart';
 import 'package:blaulichtplaner_app/widgets/no_employee.dart';
 import 'package:blaulichtplaner_lib/blaulichtplaner.dart';
 import 'package:flutter/material.dart';
@@ -8,9 +9,18 @@ class RolesScreen extends StatelessWidget {
   RolesScreen({Key key, @required this.companyRoles}) : super(key: key);
 
   Widget _tileBuilder(BuildContext context, CompanyEmployeeRole role) {
-//    String sinceLabel = 'Seit ' + DateFormat.yMMM("de_DE").format(role.created);
     return ListTile(
       title: Text(role.label),
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => LocationView(
+                  companyRefs: [role.reference],
+                ),
+          ),
+        );
+      },
     );
   }
 

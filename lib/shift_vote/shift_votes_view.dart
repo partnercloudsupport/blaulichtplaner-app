@@ -1,87 +1,18 @@
-import 'package:blaulichtplaner_app/firestore/firestore_flutter.dart';
 import 'package:blaulichtplaner_app/shift/shift_view.dart';
 import 'package:blaulichtplaner_app/shift_vote/shift_vote_button_bar.dart';
 import 'package:blaulichtplaner_app/shift_vote/shift_vote_message.dart';
 import 'package:blaulichtplaner_app/utils/utils.dart';
-import 'package:blaulichtplaner_app/widgets/loader.dart';
-import 'package:blaulichtplaner_app/widgets/no_employee.dart';
 import 'package:blaulichtplaner_lib/blaulichtplaner.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:intl/intl.dart';
 
-class ShiftVotesView extends StatefulWidget {
-  final List<CompanyEmployeeRole> employeeRoles;
-  final FilterConfig filterConfig;
-
-  ShiftVotesView({
-    Key key,
-    @required this.employeeRoles,
-    @required this.filterConfig,
-  });
-
-  bool hasEmployeeRoles() {
-    return employeeRoles != null && employeeRoles.isNotEmpty;
-  }
-
-  @override
-  ShiftVotesViewState createState() {
-    return ShiftVotesViewState();
-  }
-}
-
-class ShiftVotesViewState extends State<ShiftVotesView> {
-  ShiftVoteHolder _shiftVoteHolder;
-  bool _initialized = false;
-  List<ShiftVote> shiftVotes = [];
+class ShiftVotesView extends StatelessWidget {
+  final List<ShiftVote> shiftVotes;
   final dateFormatter = DateFormat.EEEE("de_DE").add_yMd();
   final timeFormatter = DateFormat.Hm("de_DE");
 
-  @override
-  void initState() {
-    super.initState();
-    _initDataListeners();
-  }
-
-  void _initDataListeners() async {
-    _shiftVoteHolder = ShiftVoteHolder(
-        widget.employeeRoles, FirestoreImpl.instance, _updateShiftVotes);
-    await _shiftVoteHolder.initListeners();
-    setState(() {
-      _initialized = true;
-    });
-  }
-
-  void _updateShiftVotes() {
-    List<ShiftVote> filteredShiftVotes = _filterShiftVotes();
-    setState(() {
-      shiftVotes = filteredShiftVotes;
-    });
-  }
-
-  List<ShiftVote> _filterShiftVotes() {
-    List<ShiftVote> unfilteredShiftVotes = _shiftVoteHolder.shiftVotes;
-    List<ShiftVote> filteredShifts =
-        unfilteredShiftVotes.where(widget.filterConfig.filter).toList();
-    return filteredShifts;
-  }
-
-  @override
-  void didUpdateWidget(ShiftVotesView oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    setState(() {
-      _initialized = false;
-    });
-    _shiftVoteHolder.cancelSubscriptions();
-    _shiftVoteHolder.clear();
-    _initDataListeners();
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
-    _shiftVoteHolder.cancelSubscriptions();
-  }
+  ShiftVotesView({Key key, @required this.shiftVotes}) : super(key: key);
 
   Widget createInfoBox(String text, IconData iconData) {
     return Padding(
@@ -179,7 +110,7 @@ class ShiftVotesViewState extends State<ShiftVotesView> {
     if (shiftVote.hasShift() && isNotEmpty(shiftVote.shift.publicNote)) {
       rows.add(createInfoBox(shiftVote.shift.publicNote, Icons.assignment));
     }
-    
+
     if (shiftVote.hasShift() && !shiftVote.hasAssignment()) {
       if (shiftVote.shift.isVotingPossible()) {
         rows.add(ShiftVoteButtonBar(
@@ -212,29 +143,9 @@ class ShiftVotesViewState extends State<ShiftVotesView> {
     );
   }
 
-  _fallbackText() {
-    switch (widget.filterConfig.option) {
-      case FilterOption.rejected:
-        return 'Keine abgelehnten Dienste';
-      case FilterOption.accepted:
-        return 'Keine Dienste mit Bewerbung';
-      case FilterOption.withoutVote:
-        return 'Keine unbesetzten Dienste';
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
-    if (widget.hasEmployeeRoles()) {
-      return LoaderBodyWidget(
-        loading: !_initialized,
-        child: ListView.builder(
-            itemCount: shiftVotes.length, itemBuilder: _listElementBuilder),
-        fallbackText: _fallbackText(),
-        empty: shiftVotes.isEmpty,
-      );
-    } else {
-      return NoEmployee();
-    }
+    return ListView.builder(
+        itemCount: shiftVotes.length, itemBuilder: _listElementBuilder);
   }
 }

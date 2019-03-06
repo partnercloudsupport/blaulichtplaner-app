@@ -27,6 +27,12 @@ class _ShiftVoteButtonBarState extends State<ShiftVoteButtonBar> {
     }
   }
 
+  @override
+  void didUpdateWidget(ShiftVoteButtonBar oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    loading = false;
+  }
+
   void _showErrorMessage(BuildContext context, String error) {
     showDialog(
       context: context,

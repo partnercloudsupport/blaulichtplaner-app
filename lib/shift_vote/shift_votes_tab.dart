@@ -208,7 +208,7 @@ class _ShiftVotesTabState extends State<ShiftVotesTabWidget> {
   List<Widget> _createAppBarActions() {
     return <Widget>[
       IconButton(
-        icon: Icon(Icons.local_hospital),
+        icon: Icon(Icons.not_listed_location),
         onPressed: () {
           Navigator.push(
             context,
@@ -242,9 +242,8 @@ class _ShiftVotesTabState extends State<ShiftVotesTabWidget> {
                     selectedFilterOption: _filterConfig.option,
                   ));
           if (option != null) {
-            setState(() {
-              _filterConfig.option = option;
-            });
+            _filterConfig.option = option;
+            _updateShiftVotes();
           }
         },
       )

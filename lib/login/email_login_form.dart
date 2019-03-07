@@ -1,3 +1,4 @@
+import 'package:blaulichtplaner_app/auth/reset_password.dart';
 import 'package:flutter/material.dart';
 
 typedef void EmailLoginHandler(String email, String password);
@@ -49,18 +50,33 @@ class EmailLoginFormState extends State<EmailLoginForm> {
             visible: !widget.loginInProgress,
             child: Padding(
               padding: EdgeInsets.only(top: 8),
-              child: RaisedButton(
-                color: Colors.blue,
-                onPressed: () {
-                  if (_formKey.currentState.validate()) {
-                    widget.emailLogin(
-                        _emailController.text, _passwordController.text);
-                  }
-                },
-                child: Text(
-                  'Anmelden',
-                  style: TextStyle(color: Colors.white),
-                ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: <Widget>[
+                  RaisedButton(
+                    color: Colors.blue,
+                    onPressed: () {
+                      if (_formKey.currentState.validate()) {
+                        widget.emailLogin(
+                            _emailController.text, _passwordController.text);
+                      }
+                    },
+                    child: Text(
+                      'Anmelden',
+                      style: TextStyle(color: Colors.white),
+                    ),
+                  ),
+                  FlatButton(
+                    child: Text("Passwort zurücksetzen"),
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (BuildContext context) => ResetPassword()),
+                      );
+                    },
+                  )
+                ],
               ),
             ),
           ),

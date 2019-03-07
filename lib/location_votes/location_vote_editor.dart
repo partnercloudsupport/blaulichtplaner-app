@@ -1,4 +1,4 @@
-import 'package:blaulichtplaner_app/authentication.dart';
+import 'package:blaulichtplaner_app/auth/authentication.dart';
 import 'package:blaulichtplaner_app/location_votes/location_vote_form.dart';
 import 'package:blaulichtplaner_app/location_votes/location_vote.dart';
 import 'package:blaulichtplaner_app/location_votes/location_vote_service.dart';

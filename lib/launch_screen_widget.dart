@@ -1,4 +1,4 @@
-import 'package:blaulichtplaner_app/authentication.dart';
+import 'package:blaulichtplaner_app/auth/authentication.dart';
 import 'package:blaulichtplaner_app/blaulichtplaner_app.dart';
 import 'package:blaulichtplaner_app/login/email_registration_widget.dart';
 import 'package:blaulichtplaner_app/login/registration_service.dart';

@@ -152,7 +152,7 @@ mixin Notifications {
 
     if (querySnapshot.empty) {
       DeviceInfo deviceInfo = await getDeviceInfo();
-
+      
       collection.add({
         'token': token,
         'created': DateTime.now(),

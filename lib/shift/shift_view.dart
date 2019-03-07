@@ -43,7 +43,8 @@ class _ShiftViewModel {
   bool get isAssignedToShift => currentEmployeeAssignment != null;
   bool get isPastShift => DateTime.now().isAfter(to);
   bool get shiftStarted => DateTime.now().isAfter(from);
-  bool get hasLocationLabel => locationLabel != null && locationLabel.isNotEmpty;
+  bool get hasLocationLabel =>
+      locationLabel != null && locationLabel.isNotEmpty;
 }
 
 class LabelWidget extends StatelessWidget {
@@ -99,9 +100,8 @@ class _ShiftViewState extends State<ShiftViewWidget> {
     Shiftplan shiftplan = await ShiftplanQuery(FirestoreImpl.instance)
         .getShiftplan(shift.shiftplanRef);
 
-    Location companyLocation =
-        await LocationQuery(FirestoreImpl.instance)
-            .getLocation(shiftplan.locationRef);
+    Location companyLocation = await LocationQuery(FirestoreImpl.instance)
+        .getLocation(shiftplan.locationRef);
 
     _shiftViewModel.from = shift.from;
     _shiftViewModel.to = shift.to;
@@ -169,7 +169,8 @@ class _ShiftViewState extends State<ShiftViewWidget> {
       ));
     }
     // show voting buttons only if not assigned yet
-    if (!_shiftViewModel.isAssignedToShift && _shiftViewModel.shiftVote.hasShift()) {
+    if (!_shiftViewModel.isAssignedToShift &&
+        _shiftViewModel.shiftVote.hasShift()) {
       if (_shiftViewModel.shiftVote.shift.isVotingPossible()) {
         result.add(ShiftVoteButtonBar(
           shiftVote: _shiftViewModel.shiftVote,
@@ -264,7 +265,7 @@ class _ShiftViewState extends State<ShiftViewWidget> {
 
     if (_shiftViewModel.assignments == null ||
         _shiftViewModel.assignments.isEmpty) {
-      result.add(ListTile(title: Text("Kein Personal zugeordnet")));
+      result.add(ListTile(title: Text("Keine Mitarbeiter zugeordnet")));
     } else {
       result = _shiftViewModel.assignments
           .map((assignment) => ListTile(
@@ -289,10 +290,10 @@ class _ShiftViewState extends State<ShiftViewWidget> {
           widgets.add(TitleLabel(text: "Details"));
           widgets.addAll(_createShiftInfo());
           widgets.add(Divider());
-          widgets.addAll(_createShiftplanInfo());
-          widgets.add(Divider());
-          widgets.add(TitleLabel(text: "Personal"));
+          widgets.add(TitleLabel(text: "Mitarbeiter"));
           widgets.addAll(_createAssignments());
+          widgets.add(Divider());
+          widgets.addAll(_createShiftplanInfo());
 
           return SingleChildScrollView(
             child: Column(

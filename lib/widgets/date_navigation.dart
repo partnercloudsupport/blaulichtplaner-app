@@ -85,10 +85,14 @@ class DateNavigationState extends State<DateNavigation> {
           onPressed: showMinusButton ? _subtractDay : null,
           color: Colors.white,
         ),
+        
         FlatButton(
           child: Text(
             DateFormat.yMMMd("de_DE").format(_selectedDate),
-            style: TextStyle(color: Colors.white),
+            style: TextStyle(
+              color: Colors.white,
+              decoration: TextDecoration.underline,
+            ),
           ),
           onPressed: _selectDay,
         ),

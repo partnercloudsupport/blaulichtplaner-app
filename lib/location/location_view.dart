@@ -107,8 +107,9 @@ class _LocationViewState extends State<LocationView> {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             child: Text(
-                "Wählen Sie hier Ihre bevorzugten Standorte aus. Ohne eine Auswahl werden alle Standorte angezeigt.",
-                textAlign: TextAlign.center,),
+              "Wählen Sie hier Ihre bevorzugten Standorte aus. Ohne eine Auswahl werden alle Standorte angezeigt.",
+              textAlign: TextAlign.center,
+            ),
           ),
           ListView.builder(
             shrinkWrap: true,
@@ -134,7 +135,11 @@ class _LocationViewState extends State<LocationView> {
       ),
       body: WillPopScope(
         onWillPop: () async {
-          await _saveFavorites();
+          try {
+            await _saveFavorites();
+          } catch (e) {
+            print(e);
+          }
           return true;
         },
         child: LoaderBodyWidget(

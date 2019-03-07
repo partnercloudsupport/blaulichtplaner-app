@@ -43,6 +43,7 @@ class _ShiftViewModel {
   bool get isAssignedToShift => currentEmployeeAssignment != null;
   bool get isPastShift => DateTime.now().isAfter(to);
   bool get shiftStarted => DateTime.now().isAfter(from);
+  bool get hasLocationLabel => locationLabel != null && locationLabel.isNotEmpty;
 }
 
 class LabelWidget extends StatelessWidget {

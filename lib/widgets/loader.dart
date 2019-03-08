@@ -68,9 +68,12 @@ class LoaderBodyWidget extends StatelessWidget {
               child: Center(
                 child: Column(
                   children: <Widget>[
-                    Text(
-                      fallbackText,
-                      textAlign: TextAlign.center,
+                    Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Text(
+                        fallbackText,
+                        textAlign: TextAlign.center,
+                      ),
                     )
                   ],
                   mainAxisAlignment: MainAxisAlignment.center,

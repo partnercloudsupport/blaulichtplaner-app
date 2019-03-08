@@ -83,18 +83,16 @@ class LaunchScreenState extends State<LaunchScreen>
     }
     fbauth.FirebaseUser user = await _auth.currentUser();
     if (user != null) {
-      if (user.providerId == "firebase") {
-        for (fbauth.UserInfo userInfo in user.providerData) {
-          if (userInfo.providerId == "google") {
-            final GoogleSignIn googleSignIn = GoogleSignIn(
-              scopes: ['email'],
-            );
-            try {
-              await googleSignIn.disconnect();
-            } on PlatformException catch (e) {
-              // open issue here https://github.com/flutter/flutter/issues/26705
-              print(e);
-            }
+      for (fbauth.UserInfo userInfo in user.providerData) {
+        if (userInfo.providerId == "google") {
+          final GoogleSignIn googleSignIn = GoogleSignIn(
+            scopes: ['email'],
+          );
+          try {
+            await googleSignIn.disconnect();
+          } on PlatformException catch (e) {
+            // open issue here https://github.com/flutter/flutter/issues/26705
+            print(e);
           }
         }
       }

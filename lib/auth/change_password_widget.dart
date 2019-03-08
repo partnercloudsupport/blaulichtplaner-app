@@ -6,9 +6,7 @@ import 'package:flutter/widgets.dart';
 class ChangePasswordWidget extends StatefulWidget {
   final FirebaseUser user;
 
-  const ChangePasswordWidget(
-      {Key key, @required this.user})
-      : super(key: key);
+  const ChangePasswordWidget({Key key, @required this.user}) : super(key: key);
 
   @override
   State<StatefulWidget> createState() {
@@ -19,12 +17,38 @@ class ChangePasswordWidget extends StatefulWidget {
 class ChangePasswordState extends State<ChangePasswordWidget> {
   final _formKey = GlobalKey<FormState>();
 
+  bool _loading = true;
+  bool _passwordChangePossible = false;
   bool _obscureText = true;
   bool _changingPassword = false;
 
   TextEditingController currentPassword = TextEditingController();
   TextEditingController newPassword1 = TextEditingController();
   TextEditingController newPassword2 = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    _checkPasswordProvider();
+  }
+
+  void _checkPasswordProvider() async {
+    setState(() {
+      _loading = true;
+    });
+    FirebaseAuth _auth = FirebaseAuth.instance;
+    FirebaseUser user = await _auth.currentUser();
+    if (user != null) {
+      for (UserInfo userInfo in user.providerData) {
+        if (userInfo.providerId == "password") {
+          _passwordChangePossible = true;
+        }
+      }
+    }
+    setState(() {
+      _loading = false;
+    });
+  }
 
   String _minLengthPasswordValidator(value) {
     if (value != null && value.length < 8) {
@@ -102,76 +126,87 @@ class ChangePasswordState extends State<ChangePasswordWidget> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text("Passwort ändern")),
-      body: SingleChildScrollView(
-        child: Column(
-          children: <Widget>[
-            ListTile(
-              title: Text("Account:"),
-              subtitle: Text(widget.user.email),
-            ),
-            Form(
-              key: _formKey,
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  children: <Widget>[
-                    TextFormField(
-                      controller: currentPassword,
-                      decoration:
-                          InputDecoration(labelText: "Ihr bisheriges Passwort"),
-                      obscureText: _obscureText,
-                      validator: _minLengthPasswordValidator,
-                    ),
-                    TextFormField(
-                      controller: newPassword1,
-                      decoration: InputDecoration(labelText: "Neues Passwort"),
-                      obscureText: _obscureText,
-                      validator: _validateNewPassword,
-                    ),
-                    TextFormField(
-                      controller: newPassword2,
-                      decoration: InputDecoration(
-                          labelText: "Neues Passwort wiederholen"),
-                      obscureText: _obscureText,
-                      validator: _validateNewPassword,
-                    ),
-                    CheckboxListTile(
-                        title: Text("Passwortzeichen anzeigen"),
-                        value: !_obscureText,
-                        controlAffinity: ListTileControlAffinity.leading,
-                        onChanged: (value) {
-                          setState(() {
-                            _obscureText = !value;
-                          });
-                        }),
-                    LoaderWidget(
-                      loading: _changingPassword,
-                      padding: EdgeInsets.symmetric(vertical: 16.0),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: <Widget>[
-                          RaisedButton(
-                            onPressed: () async {
-                              if (_formKey.currentState.validate()) {
-                                setState(() {
-                                  _changingPassword = true;
-                                });
-                                bool success = await _changePassword(context);
-                                if (success) {
-                                  Navigator.pop(context);
-                                }
-                              }
-                            },
-                            child: Text('Passwort ändern'),
-                          ),
-                        ],
+      body: LoaderBodyWidget(
+        loading: _loading,
+        empty: !_passwordChangePossible,
+        fallbackText:
+            "Sie haben sich ohne Passwort angemeldet. Eine Änderung des Passworts ist daher nicht möglich.",
+        child: SingleChildScrollView(
+          child: Column(
+            children: <Widget>[
+              ListTile(
+                title: Text("Account:"),
+                subtitle: Text(widget.user.email),
+              ),
+              Form(
+                key: _formKey,
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    children: <Widget>[
+                      TextFormField(
+                        controller: currentPassword,
+                        decoration: InputDecoration(
+                            labelText: "Ihr bisheriges Passwort"),
+                        obscureText: _obscureText,
+                        validator: _minLengthPasswordValidator,
                       ),
-                    ),
-                  ],
+                      TextFormField(
+                        controller: newPassword1,
+                        decoration:
+                            InputDecoration(labelText: "Neues Passwort"),
+                        obscureText: _obscureText,
+                        validator: _validateNewPassword,
+                      ),
+                      TextFormField(
+                        controller: newPassword2,
+                        decoration: InputDecoration(
+                            labelText: "Neues Passwort wiederholen"),
+                        obscureText: _obscureText,
+                        validator: _validateNewPassword,
+                      ),
+                      CheckboxListTile(
+                          title: Text("Passwortzeichen anzeigen"),
+                          value: !_obscureText,
+                          controlAffinity: ListTileControlAffinity.leading,
+                          onChanged: (value) {
+                            setState(() {
+                              _obscureText = !value;
+                            });
+                          }),
+                      LoaderWidget(
+                        loading: _changingPassword,
+                        padding: EdgeInsets.symmetric(vertical: 16.0),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: <Widget>[
+                            RaisedButton(
+                              color: Colors.blue,
+                              onPressed: () async {
+                                if (_formKey.currentState.validate()) {
+                                  setState(() {
+                                    _changingPassword = true;
+                                  });
+                                  bool success = await _changePassword(context);
+                                  if (success) {
+                                    Navigator.pop(context);
+                                  }
+                                }
+                              },
+                              child: Text(
+                                'Passwort ändern',
+                                style: TextStyle(color: Colors.white),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

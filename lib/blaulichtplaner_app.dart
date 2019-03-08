@@ -3,9 +3,7 @@ import 'package:blaulichtplaner_app/auth/authentication.dart';
 import 'package:blaulichtplaner_app/invitation/invitation_view.dart';
 import 'package:blaulichtplaner_app/shift_vote/shift_votes_tab.dart';
 import 'package:blaulichtplaner_app/shiftplan/shiftplan_overview_tab.dart';
-import 'package:blaulichtplaner_app/utils/notifications.dart';
 import 'package:blaulichtplaner_app/widgets/drawer.dart';
-import 'package:blaulichtplaner_app/widgets/notification_view.dart';
 import 'package:blaulichtplaner_lib/blaulichtplaner.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -21,8 +19,7 @@ class BlaulichtplanerApp extends StatefulWidget {
   }
 }
 
-class BlaulichtPlanerAppState extends State<BlaulichtplanerApp>
-    with Notifications {
+class BlaulichtPlanerAppState extends State<BlaulichtplanerApp> {
   int selectedTab = 0;
   BlpUser user;
 
@@ -30,21 +27,12 @@ class BlaulichtPlanerAppState extends State<BlaulichtplanerApp>
   void initState() {
     super.initState();
     user = UserManager.instance.user;
-    initNotifications(user.userRef, _notificationHandler);
   }
 
-/*  @override
+  @override
   void didUpdateWidget(Widget oldWidget) {
     super.didUpdateWidget(oldWidget);
-    initNotifications(user.userRef, _notificationHandler);
-  }*/
-
-  void _notificationHandler(String payload) {
-    Navigator.popUntil(context, (Route<dynamic> route) {
-      return route.isFirst;
-    });
-    Navigator.of(context)
-        .push(MaterialPageRoute(builder: (context) => NotificationView()));
+    user = UserManager.instance.user;
   }
 
   Widget _createWidget(

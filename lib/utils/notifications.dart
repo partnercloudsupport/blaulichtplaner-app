@@ -152,7 +152,7 @@ mixin Notifications {
 
     if (querySnapshot.empty) {
       DeviceInfo deviceInfo = await getDeviceInfo();
-      
+
       collection.add({
         'token': token,
         'created': DateTime.now(),
@@ -204,11 +204,10 @@ mixin Notifications {
 }
 
 mixin NotificationToken {
-  final FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
-
   Future clearNotificationsToken(DocumentReference userRef) async {
     print("Deleting current user token");
-    String token = await _firebaseMessaging.getToken();
+    final FirebaseMessaging firebaseMessaging = FirebaseMessaging();
+    String token = await firebaseMessaging.getToken();
     CollectionReference collection = userRef.collection('tokens');
 
     QuerySnapshot querySnapshot =

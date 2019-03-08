@@ -4,6 +4,7 @@ import 'package:blaulichtplaner_app/login/email_registration_widget.dart';
 import 'package:blaulichtplaner_app/login/registration_service.dart';
 import 'package:blaulichtplaner_app/login/welcome_widget.dart';
 import 'package:blaulichtplaner_app/widgets/loader.dart';
+import 'package:blaulichtplaner_app/widgets/notification_view.dart';
 import 'package:blaulichtplaner_lib/blaulichtplaner.dart';
 import 'package:firebase_auth/firebase_auth.dart' as fbauth;
 import 'package:flutter/material.dart';
@@ -19,7 +20,8 @@ class LaunchScreen extends StatefulWidget {
   LaunchScreenState createState() => LaunchScreenState();
 }
 
-class LaunchScreenState extends State<LaunchScreen> with NotificationToken {
+class LaunchScreenState extends State<LaunchScreen>
+    with NotificationToken, Notifications {
   final UserManager _userManager = UserManager.instance;
   bool _initialized = false;
   bool _loginInProgress = false;
@@ -37,7 +39,7 @@ class LaunchScreenState extends State<LaunchScreen> with NotificationToken {
     if (currentUser != null) {
       try {
         if (currentUser.isEmailVerified) {
-          _user = await _userManager.initUser(currentUser);
+          await _initUserManagerAndNotifications(currentUser);
         } else {
           _auth.signOut();
         }
@@ -52,7 +54,30 @@ class LaunchScreenState extends State<LaunchScreen> with NotificationToken {
     });
   }
 
+  Future<BlpUser> _initUserManagerAndNotifications(
+      fbauth.FirebaseUser newUser) async {
+    BlpUser user = await _userManager.initUser(newUser);
+    if (user != null) {
+      initNotifications(user.userRef, _notificationHandler);
+    }
+    setState(() {
+      _user = user;
+    });
+    return user;
+  }
+
+  void _notificationHandler(String payload) {
+    Navigator.popUntil(context, (Route<dynamic> route) {
+      return route.isFirst;
+    });
+    Navigator.of(context)
+        .push(MaterialPageRoute(builder: (context) => NotificationView()));
+  }
+
   void _logout() async {
+    setState(() {
+      _initialized = false;
+    });
     if (_user != null) {
       await clearNotificationsToken(_user.userRef);
     }
@@ -78,6 +103,7 @@ class LaunchScreenState extends State<LaunchScreen> with NotificationToken {
     _userManager.logout();
     print("Logout finished");
     setState(() {
+      _initialized = true;
       _user = null;
     });
   }
@@ -86,7 +112,7 @@ class LaunchScreenState extends State<LaunchScreen> with NotificationToken {
     setState(() {
       _loginInProgress = true;
     });
-    _user = await _userManager.initUser(user);
+    await _initUserManagerAndNotifications(user);
     setState(() {
       _loginInProgress = false;
     });

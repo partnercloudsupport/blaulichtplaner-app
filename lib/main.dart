@@ -8,6 +8,8 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 
 Future main() async {
   // debugPaintSizeEnabled = true;
+  print("dart.vm.product: ${bool.fromEnvironment("dart.vm.product")}");
+  
   Firestore firestore = Firestore.instance;
   FirebaseOptions options = await firestore.app.options;
   print("Using database: ${options.databaseURL}");

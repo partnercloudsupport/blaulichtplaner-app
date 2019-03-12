@@ -12,3 +12,4 @@ build/
 keystore.properties
 *.keystore
 google-services.json
+GoogleService-Info*.plist

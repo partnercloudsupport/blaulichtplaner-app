@@ -249,14 +249,14 @@ class _WriteBatch extends WriteBatch {
   void setData(DocumentReference document, Map<String, dynamic> data,
       {bool merge = false}) {
     _writeBatch.setData(
-        (document as _DocumentReferenceImpl)._documentReference, data,
+        (document as _DocumentReferenceImpl)._documentReference, _dataWrapper.unwrapMap(data),
         merge: merge);
   }
 
   @override
   void updateData(DocumentReference document, Map<String, dynamic> data) {
     _writeBatch.updateData(
-        (document as _DocumentReferenceImpl)._documentReference, data);
+        (document as _DocumentReferenceImpl)._documentReference, _dataWrapper.unwrapMap(data));
   }
 }
 

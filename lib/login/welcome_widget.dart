@@ -1,4 +1,6 @@
+import 'package:blaulichtplaner_app/firestore/firestore_flutter.dart';
 import 'package:blaulichtplaner_app/widgets/project_id.dart';
+import 'package:blaulichtplaner_lib/blaulichtplaner.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -139,8 +141,23 @@ class LoginFormState extends State<LoginForm> {
           accessToken: googleAuth.accessToken,
           idToken: googleAuth.idToken,
         ));
-        print("signed in " + user.displayName);
-        widget.loginCallback(user);
+        if (user != null) {
+          final Firestore _firestore = FirestoreImpl.instance;
+          DocumentSnapshot userSnapshot =
+              await _firestore.collection("users").document(user.uid).document;
+          if (userSnapshot.exists) {
+            print("signed in " + user.displayName);
+            widget.loginCallback(user);
+          } else {
+            user.delete();
+            Scaffold.of(context).showSnackBar(
+              SnackBar(
+                duration: Duration(seconds: 5),
+                content: Text('Der Benutzer ist noch nicht registriert'),
+              ),
+            );
+          }
+        }
       }
     } catch (e) {
       print(e);

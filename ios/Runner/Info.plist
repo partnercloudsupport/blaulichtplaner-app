@@ -27,7 +27,15 @@
 			<string>Editor</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
-				<string>com.googleusercontent.apps.946323987274-odc090qqaiu9c1mde0ctqquslkfk9a6u</string>
+				<string>com.googleusercontent.apps.946323987274-k57te3hn3ncgi2e5mh1mbfg6a1b0b94g</string>
+			</array>
+		</dict>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>com.googleusercontent.apps.65189812255-ppb2aq3dglge3lvm4kdnc22optavqnjo</string>
 			</array>
 		</dict>
 	</array>
@@ -53,6 +61,8 @@
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
+	<false/>
+	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
 </dict>
 </plist>

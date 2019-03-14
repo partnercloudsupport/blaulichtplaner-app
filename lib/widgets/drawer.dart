@@ -1,4 +1,5 @@
 import 'package:blaulichtplaner_app/about_widget.dart';
+import 'package:blaulichtplaner_app/invitation/invitation_view.dart';
 import 'package:blaulichtplaner_app/roles_widget.dart';
 import 'package:blaulichtplaner_app/widgets/notification_view.dart';
 import 'package:blaulichtplaner_app/widgets/project_id.dart';
@@ -9,13 +10,8 @@ import 'package:flutter/material.dart';
 class DrawerWidget extends StatelessWidget {
   final BlpUser user;
   final Function logoutCallback;
-  final Function invitationCallback;
 
-  DrawerWidget(
-      {Key key,
-      @required this.user,
-      @required this.logoutCallback,
-      @required this.invitationCallback})
+  DrawerWidget({Key key, @required this.user, @required this.logoutCallback})
       : super(key: key);
 
   Widget _buildImage() {
@@ -55,7 +51,15 @@ class DrawerWidget extends StatelessWidget {
           ListTile(
             leading: Icon(Icons.insert_link),
             title: Text("Einladungen"),
-            onTap: invitationCallback,
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (BuildContext context) => InvitationScreen(),
+                ),
+              );
+            },
           ),
           ListTile(
             leading: Icon(Icons.location_on),

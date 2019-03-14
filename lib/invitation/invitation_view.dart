@@ -1,97 +1,36 @@
 import 'package:blaulichtplaner_app/auth/authentication.dart';
 import 'package:blaulichtplaner_app/firestore/firestore_flutter.dart';
-import 'package:blaulichtplaner_app/invitation/invitation_model.dart';
 import 'package:blaulichtplaner_app/widgets/loader.dart';
 import 'package:blaulichtplaner_lib/blaulichtplaner.dart';
 
 import 'package:flutter/material.dart';
 
-class Invitation extends StatefulWidget {
-  final InvitationModel invitationModel;
+class Invitation extends StatelessWidget {
+  final LoadableWrapper<InvitationModel> loadableInvitationModel;
+  final Function(LoadableWrapper<InvitationModel> loadableInvitationModel)
+      onAccept;
 
-  const Invitation({Key key, @required this.invitationModel}) : super(key: key);
-
-  @override
-  State createState() {
-    return _InvitationState();
-  }
-}
-
-class _InvitationState extends State<Invitation> {
-  bool _saving = false;
-  _saveInvitation() async {
-    setState(() {
-      _saving = true;
-    });
-    try {
-      BlpUser user = UserManager.instance.user;
-
-      DocumentReference userRef =
-          FirestoreImpl.instance.collection('users').document(user.uid);
-      QuerySnapshot snapshot = await userRef
-          .collection('roles')
-          .where('reference', isEqualTo: widget.invitationModel.employeeRef)
-          .where('type', isEqualTo: 'employee')
-          .getDocuments();
-      if (snapshot.documents.isEmpty) {
-        WriteBatch batch = FirestoreImpl.instance.batch();
-        Map<String, dynamic> roleData = {};
-        roleData['role'] = 'user';
-        roleData['type'] = 'employee';
-        roleData['created'] = DateTime.now();
-        roleData['reference'] = widget.invitationModel.employeeRef;
-        roleData['companyRef'] = widget.invitationModel.companyRef;
-        roleData['companyLabel'] = widget.invitationModel.companyLabel;
-
-        Map<String, Object> invitationData = {};
-        invitationData["accepted"] = true;
-        invitationData["acceptedOn"] = DateTime.now();
-
-        Map<String, Object> employeeData = {};
-        employeeData["userRef"] = userRef;
-        employeeData["invitationPending"] = false;
-
-        batch
-          ..setData(userRef.collection('roles').document(), roleData)
-          ..updateData(widget.invitationModel.selfRef, invitationData)
-          ..updateData(widget.invitationModel.employeeRef, employeeData);
-
-        await batch.commit();
-        Scaffold.of(context).showSnackBar(SnackBar(
-          content: Text('Einladung erfolgreich akzeptiert'),
-        ));
-      } else {
-        Map<String, Object> invitationData = {};
-        invitationData["accepted"] = true;
-        invitationData["acceptedOn"] = DateTime.now();
-        widget.invitationModel.selfRef.update(invitationData);
-        print("user has already employee role");
-        Scaffold.of(context).showSnackBar(SnackBar(
-          content: Text(
-              'Sie sind wurden schon einmal zu diesem Standort eingeladen.'),
-        ));
-      }
-    } catch (e) {
-      print(e);
-      Scaffold.of(context).showSnackBar(SnackBar(
-        content: Text('Einladung konnte nicht akzeptiert werden.'),
-      ));
-    }
-  }
+  const Invitation(
+      {Key key,
+      @required this.loadableInvitationModel,
+      @required this.onAccept})
+      : super(key: key);
 
   _buildColumn() {
     List<Widget> widgets = [
       ListTile(
         contentPadding:
             EdgeInsets.only(left: 16.0, right: 16.0, top: 0.0, bottom: 0.0),
-        title: Text('Eingeladen von: ${widget.invitationModel.invitedBy}'),
+        title:
+            Text('Eingeladen von: ${loadableInvitationModel.data.invitedBy}'),
       ),
       Padding(
         padding: const EdgeInsets.only(left: 16.0),
         child: Wrap(
           children: <Widget>[
             Chip(
-              label: Text('Firma: ${widget.invitationModel.companyLabel}'),
+              label:
+                  Text('Firma: ${loadableInvitationModel.data.companyLabel}'),
               backgroundColor: Colors.white,
               shape: RoundedRectangleBorder(
                 side: BorderSide(
@@ -105,20 +44,23 @@ class _InvitationState extends State<Invitation> {
         ),
       ),
       LoaderWidget(
-        loading: _saving,
-        padding: EdgeInsets.all(14.0),
-        child: ButtonTheme.bar(
-          child: ButtonBar(
-            alignment: MainAxisAlignment.end,
-            children: <Widget>[
-              FlatButton(
-                child: Text('Akzeptieren'),
-                onPressed: _saveInvitation,
-              )
-            ],
-          ),
-        ),
-      )
+          loading: loadableInvitationModel.loading,
+          padding: EdgeInsets.all(14.0),
+          builder: (BuildContext context) {
+            return ButtonTheme.bar(
+              child: ButtonBar(
+                alignment: MainAxisAlignment.end,
+                children: <Widget>[
+                  FlatButton(
+                    child: Text('Akzeptieren'),
+                    onPressed: () {
+                      onAccept(loadableInvitationModel);
+                    },
+                  )
+                ],
+              ),
+            );
+          })
     ];
     return Column(
       mainAxisSize: MainAxisSize.max,
@@ -135,13 +77,32 @@ class _InvitationState extends State<Invitation> {
   }
 }
 
-class InvitationScreen extends StatelessWidget {
-  final Function onSaved;
+class InvitationList extends StatefulWidget {
+  final BlpUser user;
 
-  const InvitationScreen({
-    Key key,
-    @required this.onSaved,
-  }) : super(key: key);
+  InvitationList({Key key, @required this.user}) : super(key: key);
+
+  @override
+  _InvitationListState createState() => _InvitationListState();
+}
+
+class _InvitationListState extends State<InvitationList> {
+  _acceptInvitation(
+      LoadableWrapper<InvitationModel> loadableInvitationModel) async {
+    setState(() {
+      loadableInvitationModel.loading = true;
+    });
+
+    ActionResult result = await InvitationAccept(FirestoreImpl.instance)
+        .performAction(
+            InvitationAction(loadableInvitationModel.data, widget.user));
+    if (result.ok) {
+      UserManager.instance.updateRoles();
+    }
+    Scaffold.of(context).showSnackBar(SnackBar(
+      content: Text(result.message),
+    ));
+  }
 
   Widget _streamBuilder(
       BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
@@ -155,8 +116,9 @@ class InvitationScreen extends StatelessWidget {
     return ListView.builder(
       itemBuilder: (BuildContext context, int index) {
         return Invitation(
-          invitationModel:
-              InvitationModel.fromSnapshot(snapshot.data.documents[index]),
+          loadableInvitationModel: LoadableWrapper(
+              InvitationModel.fromSnapshot(snapshot.data.documents[index])),
+          onAccept: _acceptInvitation,
         );
       },
       itemCount: snapshot.data.documents.length,
@@ -165,18 +127,27 @@ class InvitationScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    return StreamBuilder<QuerySnapshot>(
+      stream: FirestoreImpl.instance
+          .collection('invitations')
+          .where('email', isEqualTo: widget.user.email)
+          .where('accepted', isEqualTo: false)
+          .snapshots(),
+      builder: _streamBuilder,
+    );
+  }
+}
+
+class InvitationScreen extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
     BlpUser user = UserManager.instance.user;
     return Scaffold(
       appBar: AppBar(
         title: Text('Einladungslink'),
       ),
-      body: StreamBuilder<QuerySnapshot>(
-        stream: FirestoreImpl.instance
-            .collection('invitations')
-            .where('email', isEqualTo: user.email)
-            .where('accepted', isEqualTo: false)
-            .snapshots(),
-        builder: _streamBuilder,
+      body: InvitationList(
+        user: user,
       ),
     );
   }

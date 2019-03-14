@@ -1,6 +1,5 @@
 import 'package:blaulichtplaner_app/assignment/assignment_tab.dart';
 import 'package:blaulichtplaner_app/auth/authentication.dart';
-import 'package:blaulichtplaner_app/invitation/invitation_view.dart';
 import 'package:blaulichtplaner_app/shift_vote/shift_votes_tab.dart';
 import 'package:blaulichtplaner_app/shiftplan/shiftplan_overview_tab.dart';
 import 'package:blaulichtplaner_app/widgets/drawer.dart';
@@ -64,18 +63,6 @@ class BlaulichtPlanerAppState extends State<BlaulichtplanerApp> {
   Widget _createDrawer(BlpUser user) {
     return DrawerWidget(
       user: user,
-      invitationCallback: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (BuildContext context) => InvitationScreen(
-                  onSaved: () {
-                    // TODO user.updateUserData(user);
-                  },
-                ),
-          ),
-        );
-      },
       logoutCallback: widget.logoutCallback,
     );
   }

@@ -80,6 +80,13 @@ class UserManager {
     }
   }
 
+  Future<void> updateRoles() async {
+    if (_user != null) {
+      _user.clearRoles();
+      return _initRoles(user.userRef);
+    }
+  }
+
   void logout() {
     _user = null;
   }

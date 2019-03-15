@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:blaulichtplaner_app/auth/authentication.dart';
 import 'package:blaulichtplaner_app/evaluation/evaluation_form.dart';
 import 'package:blaulichtplaner_app/firestore/firestore_flutter.dart';
 import 'package:blaulichtplaner_app/widgets/loader.dart';
@@ -38,7 +39,8 @@ class EvaluationEditorState extends State<EvaluationEditor> {
   }
 
   void _saveEvaluation(bool finish) async {
-    await EvaluationSave(FirestoreImpl.instance)
+    await EvaluationSave(FirestoreImpl.instance,
+            ActionContext(UserManager.instance.user, null, null))
         .performAction(EvaluationAction(model, finish));
     Navigator.pop(context);
   }

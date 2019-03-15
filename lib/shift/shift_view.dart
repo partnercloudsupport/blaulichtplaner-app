@@ -1,4 +1,5 @@
 import 'package:blaulichtplaner_app/assignment/assignment_botton_bar.dart';
+import 'package:blaulichtplaner_app/auth/authentication.dart';
 import 'package:blaulichtplaner_app/firestore/firestore_flutter.dart';
 import 'package:blaulichtplaner_app/shift_vote/shift_vote_button_bar.dart';
 import 'package:blaulichtplaner_app/shift_vote/shift_vote_message.dart';
@@ -162,7 +163,8 @@ class _ShiftViewState extends State<ShiftViewWidget> {
                 ? () async {
                     await finishEvaluation(
                         _shiftViewModel.currentEmployeeAssignment.data,
-                        FirestoreImpl.instance);
+                        FirestoreImpl.instance,
+                        ActionContext(UserManager.instance.user, null, null));
                     _loadShiftInfo();
                   }
                 : null,

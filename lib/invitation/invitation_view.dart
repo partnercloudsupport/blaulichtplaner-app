@@ -93,7 +93,8 @@ class _InvitationListState extends State<InvitationList> {
       loadableInvitationModel.loading = true;
     });
 
-    ActionResult result = await InvitationAccept(FirestoreImpl.instance)
+    ActionResult result = await InvitationAccept(FirestoreImpl.instance,
+            ActionContext(UserManager.instance.user, null, null))
         .performAction(
             InvitationAction(loadableInvitationModel.data, widget.user));
     if (result.ok) {

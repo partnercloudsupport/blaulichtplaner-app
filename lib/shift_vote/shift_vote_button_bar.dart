@@ -1,3 +1,4 @@
+import 'package:blaulichtplaner_app/auth/authentication.dart';
 import 'package:blaulichtplaner_app/firestore/firestore_flutter.dart';
 import 'package:blaulichtplaner_app/widgets/loader.dart';
 import 'package:blaulichtplaner_lib/blaulichtplaner.dart';
@@ -79,8 +80,9 @@ class _ShiftVoteButtonBarState extends State<ShiftVoteButtonBar> {
       buttons.add(FlatButton(
         child: Text('Bewerbung löschen'),
         onPressed: _onPressedFunction(() async {
-          EmployeeShiftVoteDelete action =
-              EmployeeShiftVoteDelete(FirestoreImpl.instance);
+          EmployeeShiftVoteDelete action = EmployeeShiftVoteDelete(
+              FirestoreImpl.instance,
+              ActionContext(UserManager.instance.user, null, null));
           await action.performAction(widget.shiftVote);
           _showSnackbarAndNotifyActionFinished(context, 'Bewerbung gelöscht.');
         }),
@@ -89,8 +91,9 @@ class _ShiftVoteButtonBarState extends State<ShiftVoteButtonBar> {
       buttons.add(FlatButton(
         child: Text('Ablehnung löschen'),
         onPressed: _onPressedFunction(() async {
-          EmployeeShiftVoteDelete action =
-              EmployeeShiftVoteDelete(FirestoreImpl.instance);
+          EmployeeShiftVoteDelete action = EmployeeShiftVoteDelete(
+              FirestoreImpl.instance,
+              ActionContext(UserManager.instance.user, null, null));
           await action.performAction(widget.shiftVote);
           _showSnackbarAndNotifyActionFinished(context, 'Ablehnung gelöscht.');
         }),
@@ -100,8 +103,9 @@ class _ShiftVoteButtonBarState extends State<ShiftVoteButtonBar> {
         textColor: Colors.red,
         child: Text('Ablehnen'),
         onPressed: _onPressedFunction(() async {
-          EmployeeShiftVoteSave action =
-              EmployeeShiftVoteSave(FirestoreImpl.instance);
+          EmployeeShiftVoteSave action = EmployeeShiftVoteSave(
+              FirestoreImpl.instance,
+              ActionContext(UserManager.instance.user, null, null));
           await action.performAction(ShiftVoteAction(widget.shiftVote, false));
           _showSnackbarAndNotifyActionFinished(
               context, 'Ablehnung gespeichert.');
@@ -110,8 +114,9 @@ class _ShiftVoteButtonBarState extends State<ShiftVoteButtonBar> {
       buttons.add(FlatButton(
         child: Text('Bewerben'),
         onPressed: _onPressedFunction(() async {
-          EmployeeShiftVoteSave action =
-              EmployeeShiftVoteSave(FirestoreImpl.instance);
+          EmployeeShiftVoteSave action = EmployeeShiftVoteSave(
+              FirestoreImpl.instance,
+              ActionContext(UserManager.instance.user, null, null));
           await action.performAction(ShiftVoteAction(widget.shiftVote, true));
           _showSnackbarAndNotifyActionFinished(
               context, 'Bewerbung gespeichert.');

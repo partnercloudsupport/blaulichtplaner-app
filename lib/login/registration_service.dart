@@ -7,9 +7,7 @@ class RegistrationResult {
   RegistrationResult(this.user);
 }
 
-class RegistrationService extends RegistrationHelper {
-  RegistrationService() : super(FirestoreImpl.instance);
-
+class RegistrationService {
   Future<void> registerWithEmailAndPassword(
       RegistrationModel registrationModel) async {
     FirebaseUser _user =
@@ -24,7 +22,10 @@ class RegistrationService extends RegistrationHelper {
     if (!_user.isEmailVerified) {
       await _user.sendEmailVerification();
     }
-    await saveUserData(_user.uid, registrationModel);
+
+    await UserRegistration(
+            FirestoreImpl.instance, ActionContext(null, null, null))
+        .performAction(RegistrationAction(_user.uid, registrationModel));
     FirebaseAuth.instance.signOut();
   }
 }

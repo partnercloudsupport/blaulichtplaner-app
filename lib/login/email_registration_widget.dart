@@ -1,3 +1,4 @@
+import 'package:blaulichtplaner_app/firestore/firestore_flutter.dart';
 import 'package:blaulichtplaner_app/login/registration_service.dart';
 import 'package:blaulichtplaner_lib/blaulichtplaner.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -89,8 +90,10 @@ class RegistrationScreenState extends State<RegistrationScreen> {
     setState(() {
       _saving = true;
     });
-    await RegistrationService()
-        .saveUserData(widget.user.uid, _registrationModel);
+    await UserRegistration(
+            FirestoreImpl.instance, ActionContext(null, null, null))
+        .performAction(RegistrationAction(widget.user.uid, _registrationModel));
+
     await showDialog(
         barrierDismissible: false,
         context: context,

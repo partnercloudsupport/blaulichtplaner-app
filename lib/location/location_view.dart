@@ -53,6 +53,16 @@ class _LocationViewState extends State<LocationView> {
   }
 
   Future<void> _saveFavorites() async {
+    for (DocumentReference favoriteLocation in _favorites.toList()) {
+      final found = _locations.firstWhere((_CompanyLocation companyLocation) {
+        return favoriteLocation == companyLocation.location.selfRef;
+      }, orElse: () => null);
+      if (found == null) {
+        _favorites.remove(favoriteLocation);
+      }
+    }
+  
+
     return favoritesRef.setData({"favorites": _favorites.toList()});
   }
 
@@ -135,11 +145,7 @@ class _LocationViewState extends State<LocationView> {
       ),
       body: WillPopScope(
         onWillPop: () async {
-          try {
-            await _saveFavorites();
-          } catch (e) {
-            print(e);
-          }
+          _saveFavorites(); // won't await since it creates an issue on the framework side
           return true;
         },
         child: LoaderBodyWidget(

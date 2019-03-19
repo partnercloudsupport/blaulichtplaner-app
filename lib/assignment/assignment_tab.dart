@@ -1,5 +1,7 @@
 import 'package:blaulichtplaner_app/assignment/assignment_view.dart';
+import 'package:blaulichtplaner_app/widgets/connection_widget.dart';
 import 'package:blaulichtplaner_lib/blaulichtplaner.dart';
+import 'package:connectivity/connectivity.dart';
 import 'package:flutter/material.dart';
 
 class AssignmentTabWidget extends StatefulWidget {
@@ -48,9 +50,11 @@ class _AssignmentTabState extends State<AssignmentTabWidget> {
         actions: _createAppBarActions(),
       ),
       drawer: widget.drawer,
-      body: AssignmentView(
-          employeeRoles: widget.user.employeeRoles(),
-          upcomingShifts: upcomingShifts),
+      body: ConnectionWidget(
+        child: AssignmentView(
+            employeeRoles: widget.user.employeeRoles(),
+            upcomingShifts: upcomingShifts),
+      ),
       bottomNavigationBar: widget.bottomNavigationBar,
     );
   }

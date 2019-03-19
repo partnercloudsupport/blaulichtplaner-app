@@ -1,11 +1,15 @@
+import 'dart:async';
+
 import 'package:blaulichtplaner_app/assignment/assignment_tab.dart';
 import 'package:blaulichtplaner_app/auth/authentication.dart';
 import 'package:blaulichtplaner_app/shift_vote/shift_votes_tab.dart';
 import 'package:blaulichtplaner_app/shiftplan/shiftplan_overview_tab.dart';
+import 'package:blaulichtplaner_app/widgets/connection_widget.dart';
 import 'package:blaulichtplaner_app/widgets/drawer.dart';
 import 'package:blaulichtplaner_lib/blaulichtplaner.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:connectivity/connectivity.dart';
 
 class BlaulichtplanerApp extends StatefulWidget {
   final Function logoutCallback;
@@ -21,11 +25,26 @@ class BlaulichtplanerApp extends StatefulWidget {
 class BlaulichtPlanerAppState extends State<BlaulichtplanerApp> {
   int selectedTab = 0;
   BlpUser user;
+  StreamSubscription _connectivity;
+  ConnectivityResult _connectivityResult;
 
   @override
   void initState() {
     super.initState();
     user = UserManager.instance.user;
+    _connectivity = Connectivity()
+        .onConnectivityChanged
+        .listen((ConnectivityResult result) {
+      setState(() {
+        _connectivityResult = result;
+      });
+    });
+  }
+
+  @override
+  void dispose() {
+    _connectivity?.cancel();
+    super.dispose();
   }
 
   @override
@@ -92,6 +111,8 @@ class BlaulichtPlanerAppState extends State<BlaulichtplanerApp> {
         });
       },
     );
-    return _createWidget(user, bottomNavigationBar, _createDrawer(user));
+    return ConnectionStateWidget(
+        connectivityResult: _connectivityResult,
+        child: _createWidget(user, bottomNavigationBar, _createDrawer(user)));
   }
 }

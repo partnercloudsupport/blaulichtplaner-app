@@ -1,4 +1,5 @@
 import 'package:blaulichtplaner_app/shiftplan/shiftplan_overview.dart';
+import 'package:blaulichtplaner_app/widgets/connection_widget.dart';
 import 'package:blaulichtplaner_lib/blaulichtplaner.dart';
 import 'package:flutter/material.dart';
 
@@ -21,9 +22,10 @@ class ShiftplanOverviewTabWidget extends StatelessWidget {
         title: Text("Aktuelle Dienstpläne"),
       ),
       drawer: drawer,
-      body: ShiftplanOverview(
+      body: ConnectionWidget(
+          child: ShiftplanOverview(
         employeeRoles: user.employeeRoles(),
-      ),
+      )),
       bottomNavigationBar: bottomNavigationBar,
     );
   }

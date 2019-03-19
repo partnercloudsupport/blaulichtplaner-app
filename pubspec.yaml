@@ -10,6 +10,7 @@ dependencies:
   intl: "^0.15.7"
   nanoid: ^0.0.4
   url_launcher: ^3.0.3
+  connectivity: ^0.4.2
   firebase_messaging:
     git: 
       url: git://github.com/grundid/plugins.git

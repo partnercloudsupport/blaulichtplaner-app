@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:blaulichtplaner_app/assignment/assignment_botton_bar.dart';
 import 'package:blaulichtplaner_app/auth/authentication.dart';
 import 'package:blaulichtplaner_app/firestore/firestore_flutter.dart';

@@ -1,6 +1,7 @@
 import 'package:blaulichtplaner_app/firestore/firestore_flutter.dart';
 import 'package:blaulichtplaner_app/location/location_view.dart';
 import 'package:blaulichtplaner_app/shift_vote/shift_votes_view.dart';
+import 'package:blaulichtplaner_app/widgets/connection_widget.dart';
 import 'package:blaulichtplaner_app/widgets/date_navigation.dart';
 import 'package:blaulichtplaner_app/widgets/loader.dart';
 import 'package:blaulichtplaner_app/widgets/no_employee.dart';
@@ -121,10 +122,10 @@ class _ShiftVotesTabState extends State<ShiftVotesTabWidget> {
   }
 
   void _initDataListeners() async {
-    // load favorites first
-    await _loadFavorites();
     _shiftVoteHolder = ShiftVoteHolder(
         companyRoles, FirestoreImpl.instance, _updateShiftVotes);
+    // load favorites first
+    await _loadFavorites();
     await _shiftVoteHolder.initListeners();
     setState(() {
       _initialized = true;
@@ -151,15 +152,15 @@ class _ShiftVotesTabState extends State<ShiftVotesTabWidget> {
     setState(() {
       _initialized = false;
     });
-    _shiftVoteHolder.cancelSubscriptions();
-    _shiftVoteHolder.clear();
+    _shiftVoteHolder?.cancelSubscriptions();
+    _shiftVoteHolder?.clear();
     _initDataListeners();
   }
 
   @override
   void dispose() {
     super.dispose();
-    _shiftVoteHolder.cancelSubscriptions();
+    _shiftVoteHolder?.cancelSubscriptions();
   }
 
   Future<void> _loadFavorites() async {
@@ -308,7 +309,7 @@ class _ShiftVotesTabState extends State<ShiftVotesTabWidget> {
         bottom: _createBottom(),
       ),
       drawer: widget.drawer,
-      body: _body(),
+      body: ConnectionWidget(child: _body()),
       bottomNavigationBar: widget.bottomNavigationBar,
     );
   }

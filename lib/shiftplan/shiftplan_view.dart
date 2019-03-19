@@ -1,10 +1,8 @@
 import 'dart:async';
 
 import 'package:blaulichtplaner_app/firestore/firestore_flutter.dart';
-import 'package:blaulichtplaner_app/shiftplan/shiftplan_day.dart';
 import 'package:blaulichtplaner_app/shiftplan/shiftplan_model.dart';
 import 'package:blaulichtplaner_app/shiftplan/shiftplan_month.dart';
-import 'package:blaulichtplaner_app/widgets/date_navigation.dart';
 import 'package:blaulichtplaner_app/widgets/loader.dart';
 import 'package:blaulichtplaner_lib/blaulichtplaner.dart';
 import 'package:flutter/material.dart';
@@ -89,17 +87,8 @@ class ShiftplanWidgetState extends State<ShiftplanWidget> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.plan.shiftplanLabel),
-        bottom: PreferredSize(
-          child: Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Text(
-              widget.plan.title,
-              style: TextStyle(color: Colors.white),
-            ),
-          ),
-          preferredSize: Size.fromHeight(16),
-        ),
+        title: Text(
+            widget.plan.shiftplanLabel + " / " + widget.plan.locationLabel),
       ),
       body: LoaderBodyWidget(
         child: _buildBody(),

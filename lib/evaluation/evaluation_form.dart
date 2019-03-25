@@ -106,7 +106,7 @@ class EvaluationFormState extends State<EvaluationForm> {
           },
         ),
         FlatButton(
-          child: Text("Speichern"),
+          child: Text("Hinzufügen"),
           onPressed: () {
             Navigator.pop(context, number);
           },
@@ -184,9 +184,7 @@ class EvaluationFormState extends State<EvaluationForm> {
             final number =
                 await showDialog(context: context, builder: _buildDialog);
             if (number != null) {
-              setState(() {
-                model.tasks.add(AssignmentTask(number));
-              });
+              addTask(model, number);
             }
           },
         ),
@@ -256,5 +254,20 @@ class EvaluationFormState extends State<EvaluationForm> {
             crossAxisAlignment: CrossAxisAlignment.start, children: formItems),
       ),
     );
+  }
+
+  void addTask(EvaluationModel model, String number) {
+    AssignmentTask task = model.tasks.firstWhere(
+        (knownTasks) => knownTasks.reference == number,
+        orElse: () => null);
+    if (task == null) {
+      setState(() {
+        model.tasks.add(AssignmentTask(number));
+      });
+    } else {
+      Scaffold.of(context).showSnackBar(SnackBar(
+        content: Text("Einsatznummer existiert bereits"),
+      ));
+    }
   }
 }

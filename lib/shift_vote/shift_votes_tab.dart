@@ -279,6 +279,7 @@ class _ShiftVotesTabState extends State<ShiftVotesTabWidget> {
             setState(() {
               _filterConfig.selectedDate = date;
             });
+            _updateShiftVotes();
           },
         ));
       }

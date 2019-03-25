@@ -26,7 +26,7 @@ class _AssignmentTabState extends State<AssignmentTabWidget> {
   bool upcomingShifts = true;
 
   String _createTitle() {
-    return upcomingShifts ? "Kommende Dienste" : "Vergangene Dienste";
+    return upcomingShifts ? "Kommende Dienste" : "Dienste zur Auswertung";
   }
 
   List<Widget> _createAppBarActions() {

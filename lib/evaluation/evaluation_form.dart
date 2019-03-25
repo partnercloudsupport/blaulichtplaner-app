@@ -45,7 +45,7 @@ class OvertimeWidget extends StatelessWidget {
                 value: startValue,
                 items: [
                   DropdownMenuItem(
-                    child: Text("Kein Grund"),
+                    child: Text("Bitte auswählen"),
                     value: 0,
                   ),
                   DropdownMenuItem(
@@ -70,8 +70,12 @@ class OvertimeWidget extends StatelessWidget {
         padding: EdgeInsets.only(top: 16.0, bottom: 16.0),
         child: Row(
           children: <Widget>[
-            Icon(
-              Icons.check,
+            Padding(
+              padding: const EdgeInsets.only(right: 8),
+              child: Icon(
+                Icons.check,
+                color: Colors.green,
+              ),
             ),
             Text("Keine Überstunden"),
           ],
@@ -201,41 +205,48 @@ class EvaluationFormState extends State<EvaluationForm> {
         },
       ),
       Padding(
-        padding: const EdgeInsets.symmetric(vertical: 16.0),
+        padding: const EdgeInsets.symmetric(vertical: 8.0),
         child: LoaderWidget(
           loading: _saving,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: <Widget>[
-              RaisedButton(
-                onPressed: DateTime.now().isAfter(model.actualTo)
-                    ? () {
-                        setState(() {
-                          _saving = true;
-                        });
-                        widget.onSave(true);
-                      }
-                    : null,
-                child: Text("Finalisieren"),
-              ),
-              RaisedButton(
-                onPressed: () {
-                  if (_formKey.currentState.validate()) {
-                    setState(() {
-                      _saving = true;
-                    });
-                    widget.onSave(false);
-                  } else {
-                    Scaffold.of(context).showSnackBar(SnackBar(
-                        content: Text('Bitte füllen Sie alle Felder aus.')));
-                  }
-                },
-                child: Text('Speichern'),
-              ),
-            ],
+          child: ButtonTheme.bar(
+            child: ButtonBar(
+              alignment: MainAxisAlignment.spaceBetween,
+              children: <Widget>[
+                FlatButton(
+                  textColor: Colors.red,
+                  onPressed: DateTime.now().isAfter(model.actualTo)
+                      ? () {
+                          setState(() {
+                            _saving = true;
+                          });
+                          widget.onSave(true);
+                        }
+                      : null,
+                  child: Text("Final auswerten"),
+                ),
+                FlatButton(
+                  onPressed: () {
+                    if (_formKey.currentState.validate()) {
+                      setState(() {
+                        _saving = true;
+                      });
+                      widget.onSave(false);
+                    } else {
+                      Scaffold.of(context).showSnackBar(SnackBar(
+                          content: Text('Bitte füllen Sie alle Felder aus.')));
+                    }
+                  },
+                  child: Text('Speichern'),
+                ),
+              ],
+            ),
           ),
         ),
       ),
+      Text(
+        "Sie können die Auswertung jederzeit speichern und später final auswerten. Nach der finalen Auswertung sind keine Änderungen mehr möglich.",
+        style: TextStyle(color: Colors.grey, fontStyle: FontStyle.italic),
+      )
     ];
     return Form(
       key: _formKey,

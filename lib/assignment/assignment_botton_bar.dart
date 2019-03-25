@@ -24,7 +24,8 @@ class AssignmentButtonBar extends StatelessWidget {
             alignment: MainAxisAlignment.spaceBetween,
             children: <Widget>[
               FlatButton(
-                child: Text('Finalisieren'),
+                textColor: Colors.red,
+                child: Text('Final auswerten'),
                 onPressed: finishCallback,
               ),
               FlatButton(

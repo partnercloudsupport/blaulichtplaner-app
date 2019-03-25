@@ -130,6 +130,7 @@ class _ShiftVoteButtonBarState extends State<ShiftVoteButtonBar> {
       builder: (BuildContext context) {
         return ButtonTheme.bar(
           child: ButtonBar(
+            alignment: MainAxisAlignment.spaceBetween,
             children: buttons,
           ),
         );

@@ -38,6 +38,15 @@ class WelcomeScreen extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: <Widget>[
                         Center(
+                          child: Padding(
+                            padding: EdgeInsets.all(8.0),
+                            child: Image.asset(
+                              "assets/blp-logo.png",
+                              width: 64,
+                            ),
+                          ),
+                        ),
+                        Center(
                           child: Text(
                             'Willkommen beim Blaulichtplaner',
                             textAlign: TextAlign.center,
@@ -47,12 +56,13 @@ class WelcomeScreen extends StatelessWidget {
                         ),
                         Center(
                           child: Text(
-                            'Bitte loggen Sie sich ein oder erstellen Sie einen Benutzer.',
+                            'Bitte loggen Sie sich ein.',
                             textAlign: TextAlign.center,
                           ),
                         ),
                         LoginForm(
                           loginCallback: loginCallback,
+                          loginWithGoogle: registerWithGoogle != null,
                         ),
                         RegisterButtons(
                           registerWithGoogle: registerWithGoogle,
@@ -86,32 +96,45 @@ class RegisterButtons extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: <Widget>[
-        Text(
-          'Registrieren',
-          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-        ),
-        FlatButton(
-          onPressed: registerWithGoogle,
-          child: Text('Mit Google-Konto registrieren'),
-        ),
-        FlatButton(
-          onPressed: registerWithMail,
-          child: Text('Mit E-Mail und Passwort registerieren'),
-        )
-      ],
-    );
+    if (registerWithGoogle != null || registerWithMail != null) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          Text(
+            'Registrieren',
+            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+          ),
+          Visibility(
+            visible: registerWithGoogle != null,
+            child: FlatButton(
+              onPressed: registerWithGoogle,
+              child: Text('Mit Google-Konto registrieren'),
+            ),
+          ),
+          FlatButton(
+            onPressed: registerWithMail,
+            child: Text('Mit E-Mail und Passwort registerieren'),
+          )
+        ],
+      );
+    } else {
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 16),
+        child: Text(
+            "Der Blaulichtplaner befindet sich in einer offenen Testphase. Sie möchten den Blaulichtplaner für Ihren Standort nutzen oder sich als Notarzt registrieren, dann schreiben Sie bitte eine kurze Mail an info@blaulichtplaner.de und wir erstellen Ihnen einen Account."),
+      );
+    }
   }
 }
 
 class LoginForm extends StatefulWidget {
   final LoginCallback loginCallback;
+  final bool loginWithGoogle;
 
   const LoginForm({
     Key key,
     @required this.loginCallback,
+    @required this.loginWithGoogle,
   }) : super(key: key);
   @override
   LoginFormState createState() {
@@ -225,9 +248,12 @@ class LoginFormState extends State<LoginForm> {
           emailLogin: _handleEmailSignIn,
           loginInProgress: _loginInProgress,
         ),
-        FlatButton(
-          onPressed: _handleGoogleLogin,
-          child: Text("Mit Google-Konto anmelden"),
+        Visibility(
+          visible: widget.loginWithGoogle,
+          child: FlatButton(
+            onPressed: _handleGoogleLogin,
+            child: Text("Mit Google-Konto anmelden"),
+          ),
         ),
       ],
     );

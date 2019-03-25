@@ -13,6 +13,9 @@ import 'package:flutter/services.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:blaulichtplaner_app/utils/notifications.dart';
 
+bool _allowGoogleRegistration = false;
+bool _allowMailRegistration = false;
+
 class LaunchScreen extends StatefulWidget {
   LaunchScreen({Key key}) : super(key: key);
 
@@ -160,8 +163,8 @@ class LaunchScreenState extends State<LaunchScreen>
       empty: _user == null,
       fallbackWidget: WelcomeScreen(
         loginCallback: _login,
-        registerWithGoogle: _registerWithGoogle,
-        registerWithMail: _registerWithMail,
+        registerWithGoogle: _allowGoogleRegistration ? _registerWithGoogle : null,
+        registerWithMail: _allowMailRegistration ?  _registerWithMail : null,
       ),
     );
   }

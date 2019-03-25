@@ -34,9 +34,9 @@ class AboutScreen extends StatelessWidget {
             LinkListTile(
                 title: "info@blaulichtplaner.de",
                 url: "mailto:info@blaulichtplaner.de"),
-            LinkListTile(
+            /*LinkListTile(
                 title: "Datenschutzerklärung anzeigen",
-                url: "https://blaulichtplaner.de"),
+                url: "https://blaulichtplaner.de"),*/
           ],
         ),
       ),

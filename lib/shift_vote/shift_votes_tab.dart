@@ -206,23 +206,32 @@ class _ShiftVotesTabState extends State<ShiftVotesTabWidget> {
     }
   }
 
+  _filterVotes() async {
+    FilterOption option = await showModalBottomSheet(
+        context: context,
+        builder: (BuildContext context) => _FilterMenu(
+              selectedFilterOption: _filterConfig.option,
+            ));
+    if (option != null) {
+      _filterConfig.option = option;
+      _updateShiftVotes();
+    }
+  }
+
+  _filterLocation() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => LocationView(
+              companyRefs: companyRoles.map((role) => role.reference).toList(),
+              favoritesForSelection: true,
+            ),
+      ),
+    );
+  }
+
   List<Widget> _createAppBarActions() {
     return <Widget>[
-      IconButton(
-        icon: Icon(Icons.not_listed_location),
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => LocationView(
-                    companyRefs:
-                        companyRoles.map((role) => role.reference).toList(),
-                    favoritesForSelection: true,
-                  ),
-            ),
-          );
-        },
-      ),
       IconButton(
         icon: Icon(Icons.today),
         onPressed: () {
@@ -234,20 +243,28 @@ class _ShiftVotesTabState extends State<ShiftVotesTabWidget> {
           _updateShiftVotes();
         },
       ),
-      IconButton(
-        icon: Icon(Icons.filter_list),
-        onPressed: () async {
-          FilterOption option = await showModalBottomSheet(
-              context: context,
-              builder: (BuildContext context) => _FilterMenu(
-                    selectedFilterOption: _filterConfig.option,
-                  ));
-          if (option != null) {
-            _filterConfig.option = option;
-            _updateShiftVotes();
-          }
-        },
-      )
+      PopupMenuButton(
+          onSelected: (String menu) {
+            switch (menu) {
+              case "location_filter":
+                _filterLocation();
+                break;
+
+              case "type_filter":
+                _filterVotes();
+                break;
+            }
+          },
+          itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+                const PopupMenuItem<String>(
+                  value: "location_filter",
+                  child: Text('Standortfilter'),
+                ),
+                const PopupMenuItem<String>(
+                  value: "type_filter",
+                  child: Text('Filtern'),
+                ),
+              ])
     ];
   }
 

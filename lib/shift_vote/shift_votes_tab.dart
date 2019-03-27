@@ -69,7 +69,7 @@ class _FilterMenu extends StatelessWidget {
             value: FilterOption.rejected,
             title: Row(
               children: <Widget>[
-                Text('Abgelehnte Dienste'),
+                Text('Ausgeblendete Dienste'),
                 Padding(
                   padding: EdgeInsets.only(left: 8),
                   child: Icon(
@@ -188,7 +188,7 @@ class _ShiftVotesTabState extends State<ShiftVotesTabWidget> {
         return "Beworbene Diente";
       case FilterOption.rejected:
       default:
-        return "Abgelehnte Dienste";
+        return "Ausgeblendete Dienste";
     }
   }
 
@@ -198,7 +198,7 @@ class _ShiftVotesTabState extends State<ShiftVotesTabWidget> {
         : "";
     switch (_filterConfig.option) {
       case FilterOption.rejected:
-        return 'Keine abgelehnten Dienste' + suffix;
+        return 'Keine ausgeblendeten Dienste' + suffix;
       case FilterOption.accepted:
         return 'Keine Dienste mit Bewerbung' + suffix;
       case FilterOption.withoutVote:

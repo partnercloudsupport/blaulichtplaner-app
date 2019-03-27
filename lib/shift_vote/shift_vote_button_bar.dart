@@ -89,26 +89,26 @@ class _ShiftVoteButtonBarState extends State<ShiftVoteButtonBar> {
       ));
     } else if (widget.shiftVote.isRejected) {
       buttons.add(FlatButton(
-        child: Text('Ablehnung löschen'),
+        child: Text('Wieder einblenden'),
         onPressed: _onPressedFunction(() async {
           EmployeeShiftVoteDelete action = EmployeeShiftVoteDelete(
               FirestoreImpl.instance,
               ActionContext(UserManager.instance.user, null, null));
           await action.performAction(widget.shiftVote);
-          _showSnackbarAndNotifyActionFinished(context, 'Ablehnung gelöscht.');
+          _showSnackbarAndNotifyActionFinished(context, 'Eingeblendet');
         }),
       ));
     } else {
       buttons.add(FlatButton(
         textColor: Colors.red,
-        child: Text('Ablehnen'),
+        child: Text('Ausblenden'),
         onPressed: _onPressedFunction(() async {
           EmployeeShiftVoteSave action = EmployeeShiftVoteSave(
               FirestoreImpl.instance,
               ActionContext(UserManager.instance.user, null, null));
           await action.performAction(ShiftVoteAction(widget.shiftVote, false));
           _showSnackbarAndNotifyActionFinished(
-              context, 'Ablehnung gespeichert.');
+              context, 'Ausgeblendet');
         }),
       ));
       buttons.add(FlatButton(

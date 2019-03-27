@@ -83,7 +83,7 @@ class _ShiftVoteButtonBarState extends State<ShiftVoteButtonBar> {
           EmployeeShiftVoteDelete action = EmployeeShiftVoteDelete(
               FirestoreImpl.instance,
               ActionContext(UserManager.instance.user, null, null));
-          await action.performAction(widget.shiftVote);
+          await action.performAction(widget.shiftVote.vote);
           _showSnackbarAndNotifyActionFinished(context, 'Bewerbung gelöscht.');
         }),
       ));
@@ -94,7 +94,7 @@ class _ShiftVoteButtonBarState extends State<ShiftVoteButtonBar> {
           EmployeeShiftVoteDelete action = EmployeeShiftVoteDelete(
               FirestoreImpl.instance,
               ActionContext(UserManager.instance.user, null, null));
-          await action.performAction(widget.shiftVote);
+          await action.performAction(widget.shiftVote.vote);
           _showSnackbarAndNotifyActionFinished(context, 'Eingeblendet');
         }),
       ));
@@ -106,9 +106,9 @@ class _ShiftVoteButtonBarState extends State<ShiftVoteButtonBar> {
           EmployeeShiftVoteSave action = EmployeeShiftVoteSave(
               FirestoreImpl.instance,
               ActionContext(UserManager.instance.user, null, null));
-          await action.performAction(ShiftVoteAction(widget.shiftVote, false));
-          _showSnackbarAndNotifyActionFinished(
-              context, 'Ausgeblendet');
+          await action.performAction(ShiftVoteAction(
+              widget.shiftVote.employeeRef, widget.shiftVote.shift, false));
+          _showSnackbarAndNotifyActionFinished(context, 'Ausgeblendet');
         }),
       ));
       buttons.add(FlatButton(
@@ -117,7 +117,8 @@ class _ShiftVoteButtonBarState extends State<ShiftVoteButtonBar> {
           EmployeeShiftVoteSave action = EmployeeShiftVoteSave(
               FirestoreImpl.instance,
               ActionContext(UserManager.instance.user, null, null));
-          await action.performAction(ShiftVoteAction(widget.shiftVote, true));
+          await action.performAction(ShiftVoteAction(
+              widget.shiftVote.employeeRef, widget.shiftVote.shift, true));
           _showSnackbarAndNotifyActionFinished(
               context, 'Bewerbung gespeichert.');
         }),

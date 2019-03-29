@@ -118,11 +118,7 @@ class RegisterButtons extends StatelessWidget {
         ],
       );
     } else {
-      return Padding(
-        padding: const EdgeInsets.symmetric(vertical: 16),
-        child: Text(
-            "Sie möchten den Blaulichtplaner für Ihren Standort nutzen oder sich als Notarzt registrieren, dann schreiben Sie bitte eine kurze Mail an info@blaulichtplaner.de und wir erstellen Ihnen einen Account."),
-      );
+      return Text("");
     }
   }
 }

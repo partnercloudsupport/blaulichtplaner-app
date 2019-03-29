@@ -163,6 +163,12 @@ class _DocumentReferenceImpl extends DocumentReference {
   Future<void> update(Map<String, dynamic> data) {
     return _documentReference.updateData(_dataWrapper.unwrapMap(data));
   }
+
+  @override
+  CollectionReference get parent {
+    throw Exception(
+        "not implemented yet"); // see https://github.com/flutter/flutter/issues/30103
+  }
 }
 
 class _CollectionReferenceImpl extends _QueryImpl
@@ -181,6 +187,12 @@ class _CollectionReferenceImpl extends _QueryImpl
   @override
   DocumentReference document([String path]) {
     return _DocumentReferenceImpl(_collectionReference.document(path));
+  }
+
+  @override
+  DocumentReference get parent {
+    throw Exception(
+        "not implemented yet"); // see https://github.com/flutter/flutter/issues/30103
   }
 }
 
@@ -248,15 +260,16 @@ class _WriteBatch extends WriteBatch {
   @override
   void setData(DocumentReference document, Map<String, dynamic> data,
       {bool merge = false}) {
-    _writeBatch.setData(
-        (document as _DocumentReferenceImpl)._documentReference, _dataWrapper.unwrapMap(data),
+    _writeBatch.setData((document as _DocumentReferenceImpl)._documentReference,
+        _dataWrapper.unwrapMap(data),
         merge: merge);
   }
 
   @override
   void updateData(DocumentReference document, Map<String, dynamic> data) {
     _writeBatch.updateData(
-        (document as _DocumentReferenceImpl)._documentReference, _dataWrapper.unwrapMap(data));
+        (document as _DocumentReferenceImpl)._documentReference,
+        _dataWrapper.unwrapMap(data));
   }
 }
 

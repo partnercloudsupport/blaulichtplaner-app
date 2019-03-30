@@ -50,7 +50,7 @@ class _FilterMenu extends StatelessWidget {
             value: FilterOption.accepted,
             title: Row(
               children: <Widget>[
-                Text('Dienste mit Bewerbung'),
+                Text('Beworbene Dienste'),
                 Padding(
                   padding: EdgeInsets.only(left: 8),
                   child: Icon(
@@ -200,7 +200,7 @@ class _ShiftVotesTabState extends State<ShiftVotesTabWidget> {
       case FilterOption.rejected:
         return 'Keine ausgeblendeten Dienste' + suffix;
       case FilterOption.accepted:
-        return 'Keine Dienste mit Bewerbung' + suffix;
+        return 'Keine beworbenen Dienste' + suffix;
       case FilterOption.withoutVote:
         return 'Keine unbesetzten Dienste' + suffix;
     }

@@ -97,7 +97,7 @@ class BlaulichtPlanerAppState extends State<BlaulichtplanerApp> {
         ),
         BottomNavigationBarItem(
           icon: Icon(Icons.table_chart),
-          title: Text('Dienstpäne'),
+          title: Text('Dienstpläne'),
         ),
         BottomNavigationBarItem(
           icon: Icon(Icons.date_range),

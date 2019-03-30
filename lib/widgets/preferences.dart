@@ -13,9 +13,9 @@ class Preferences extends StatefulWidget {
 
 class PreferencesState extends State<Preferences> {
   final List<SettingConfig> configs = [
-    SettingConfig('Benachrichtigung: ', 'Benachrichtigung via Mobile phone',
+    SettingConfig('Benachrichtigung: ', 'Benachrichtigung via Smartphone',
         'notifications'),
-    SettingConfig('Email-Benachrichtigung: ', 'Benachrichtigung via Email',
+    SettingConfig('E-Mail Benachrichtigungen: ', 'Benachrichtigung via E-Mail',
         'emailNotifications'),
   ];
   BlpUser user = UserManager.instance.user;
